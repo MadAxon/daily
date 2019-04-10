@@ -12,28 +12,34 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.recyclerview.widget.RecyclerView;
 import ru.vital.daily.adapter.viewholder.BaseViewHolder;
+import ru.vital.daily.listener.SingleLiveEvent;
 
 public abstract class BaseAdapter<M, VH extends BaseViewHolder, VDB extends ViewDataBinding>
         extends RecyclerView.Adapter<VH> {
 
-    private final ArrayList<M> items;
+    protected final ArrayList<M> items;
+
+    public final SingleLiveEvent<M> clickEvent;
 
     public abstract @LayoutRes
-    int getLayoutId();
+    int getLayoutId(int viewType);
 
-    public abstract VH onCreateViewHolderBinding(VDB viewDataBinding);
+    public abstract VH onCreateViewHolderBinding(VDB viewDataBinding, int viewType);
 
     public BaseAdapter() {
         items = new ArrayList<>();
+        clickEvent = new SingleLiveEvent<>();
     }
 
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        VDB viewDataBinding = DataBindingUtil.inflate(layoutInflater, getLayoutId()
+        VDB viewDataBinding = DataBindingUtil.inflate(layoutInflater, getLayoutId(viewType)
                 , parent, false);
-        return onCreateViewHolderBinding(viewDataBinding);
+        VH viewHolder = onCreateViewHolderBinding(viewDataBinding, viewType);
+        viewHolder.viewModel.setClickEvent(clickEvent);
+        return viewHolder;
     }
 
     @Override
@@ -53,11 +59,19 @@ public abstract class BaseAdapter<M, VH extends BaseViewHolder, VDB extends View
         return items.size();
     }
 
-    public void updateAdapter(List<M> items) {
+    public void updateItems(List<M> items) {
         if (items != null && items.size() != 0) {
             int positionStart = this.items.size();
             this.items.addAll(items);
             notifyItemRangeInserted(positionStart, items.size());
+        }
+    }
+
+    public void updateItem(M item) {
+        int index = items.indexOf(item);
+        if (index != -1) {
+            items.set(index, item);
+            notifyItemChanged(index);
         }
     }
 

@@ -6,22 +6,19 @@ import androidx.annotation.NonNull;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
 import ru.vital.daily.R;
 import ru.vital.daily.BR;
 import ru.vital.daily.databinding.ActivityMainBinding;
+import ru.vital.daily.fragment.AccountFragment;
+import ru.vital.daily.fragment.FeedFragment;
 import ru.vital.daily.fragment.HomeFragment;
 import ru.vital.daily.view.model.MainViewModel;
 
 import android.view.MenuItem;
-import android.widget.TextView;
 
 public class MainActivity extends BaseActivity<MainViewModel, ActivityMainBinding> implements BottomNavigationView.OnNavigationItemSelectedListener {
-
-    private Fragment homeFragment, accountFragment;
 
     @Override
     public MainViewModel onCreateViewModel() {
@@ -42,34 +39,33 @@ public class MainActivity extends BaseActivity<MainViewModel, ActivityMainBindin
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         dataBinding.navigation.setOnNavigationItemSelectedListener(this);
+        dataBinding.navigation.setSelectedItemId(R.id.navigation_home);
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.navigation_home:
-                if (homeFragment == null)
-                    prepareFragmentTransaction(homeFragment = new HomeFragment())
-                            .commit();
-                else prepareFragmentTransaction(homeFragment)
-                        .addToBackStack("homeFragment")
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.container, new HomeFragment())
                         .commit();
                 return true;
-            case R.id.navigation_history:
-
+            case R.id.navigation_feed:
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.container, new FeedFragment())
+                        .commit();
                 return true;
             case R.id.navigation_account:
-                prepareFragmentTransaction(accountFragment == null ? accountFragment = new HomeFragment() : accountFragment)
-                        .addToBackStack("accountFragment")
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.container, new AccountFragment())
                         .commit();
                 return true;
         }
         return false;
     }
 
-    private FragmentTransaction prepareFragmentTransaction(Fragment fragment) {
-        return getSupportFragmentManager()
-                .beginTransaction()
-                .add(R.id.container, fragment);
-    }
+
 }

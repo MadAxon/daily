@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <import type="ru.vital.daily.R"/>
+        <variable
+            name="viewModel"
+            type="ru.vital.daily.view.model.item.SimpleSheetItemViewModel"/>
+    </data>
+
+        <TextView
+            android:id="@+id/textView"
+            style="@style/TextView.Medium"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:drawableStart="@{viewModel.item.drawableId}"
+            android:drawablePadding="8dp"
+            android:onClick="@{() -> viewModel.onItemClicked()}"
+            android:text="@{viewModel.item.stringId}"
+            android:textColor="@{viewModel.item.drawableId == R.drawable.ic_garbage ? @color/color_text_view_warn : @color/color_text_view_dark}"
+            android:paddingStart="@{viewModel.item.drawableId != 0 ? @dimen/text_view_drawable_start_padding : @dimen/text_view_no_drawable_start_padding}"
+            android:paddingEnd="24dp"
+            android:background="?selectableItemBackground" />
+
+</layout>

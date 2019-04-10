@@ -78,16 +78,12 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
         viewModel.onDestroy();
     }
 
-    protected void setupToolbar(Toolbar toolbar) {
+    protected void setupToolbar(Toolbar toolbar, boolean includeBackButton) {
         setSupportActionBar(toolbar);
         assert getSupportActionBar() != null;
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-    }
-
-    protected void setupToolbar(Toolbar toolbar, String title) {
-        setTitle(title);
-        setupToolbar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(includeBackButton);
+        getSupportActionBar().setDisplayShowHomeEnabled(includeBackButton);
     }
 
 }

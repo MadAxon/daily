@@ -5,14 +5,4 @@
         <color android:color="@android:color/white"/>
     </item>
 
-    <item>
-        <bitmap android:src="@drawable/ic_launcher_background"
-            android:gravity="center"/>
-    </item>
-
-    <item>
-        <bitmap android:src="@drawable/ic_launcher_foreground"
-            android:gravity="center"/>
-    </item>
-
 </layer-list>

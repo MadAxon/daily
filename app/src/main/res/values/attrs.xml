@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="EditView">
+        <attr name="android:hint"/>
+        <attr name="android:text"/>
+        <attr name="android:inputType"/>
+        <attr name="android:focusable"/>
+        <attr name="android:maxLength"/>
+        <attr name="showSearchIcon" format="boolean"/>
+    </declare-styleable>
+</resources>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="ru.vital.daily.view.model.LocationViewModel"/>
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:id="@+id/frameLayout2"
+            android:layout_width="match_parent"
+            android:layout_height="128dp"
+            android:background="@color/design_default_color_primary_variant"
+            app:layout_constraintBottom_toTopOf="@+id/constraintLayout8"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_chainStyle="packed"></FrameLayout>
+
+        <include
+            android:id="@+id/constraintLayout8"
+            layout="@layout/layout_row_with_image"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:clickListener="@{() -> viewModel.onShareLiveClicked()}"
+            app:icon="@{@drawable/ic_location}"
+            app:layout_constraintBottom_toTopOf="@+id/include"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/frameLayout2"
+            app:summary="@{@string/sheet_location_share_summary}"
+            app:title="@{@string/sheet_location_share_title}" />
+
+        <include
+            android:id="@+id/include"
+            layout="@layout/layout_row_with_image"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:clickListener="@{() -> viewModel.onSendCurrentClicked()}"
+            app:icon="@{@drawable/ic_gps_fixed}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout8"
+            app:summary="@{@string/sheet_location_send_summary}"
+            app:title="@{@string/sheet_location_send_title}" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

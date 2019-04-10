@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#191829</color>
+    <color name="colorAccent">#49AAFF</color>
+
+    <color name="color_ripple">#2049AAFF</color>
     
     <color name="color_menu">#EBE9FF</color>
     <color name="color_menu_pressed">#49AAFF</color>
@@ -10,4 +12,24 @@
     <color name="color_edit_text_background">#F4F3FF</color>
     <color name="color_edit_text_hint">#BDBBD6</color>
     <color name="color_edit_text_text">#191829</color>
+
+    <color name="color_button">#49AAFF</color>
+    <color name="color_button_account">#F4F3FF</color>
+
+    <color name="color_text_view_light">#BDBBD6</color>
+    <color name="color_text_view_dark">#3F3E50</color>
+    <color name="color_text_view_warn">#FF6161</color>
+
+    <color name="color_image_view_selected">#49AAFF</color>
+
+    <color name="color_separator">#F4F3FF</color>
+    <color name="color_sheet_unselected">#F4F3FF</color>
+    <color name="color_sheet_selected">#49AAFF</color>
+    <color name="color_sheet_icon_unselected">#191829</color>
+    <color name="color_sheet_icon_selected">#FFFFFF</color>
+
+    <color name="color_card_view_background">#F4F3FF</color>
+
+    <color name="color_extension_border">#BDBBD6</color>
+
 </resources>

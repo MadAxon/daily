@@ -1,6 +1,130 @@
 <resources>
     <string name="app_name">Daily</string>
-    <string name="title_home">Home</string>
-    <string name="title_history">History</string>
-    <string name="title_account">Account</string>
+    <string name="title_messages">Сообщения</string>
+    <string name="title_feed">Лента</string>
+    <string name="title_account">Аккаунт</string>
+
+    <string name="common_accept">Подтвердить</string>
+    <string name="common_search">Поиск</string>
+    <string name="common_copy">Скопировать</string>
+    <string name="common_change">Изменить</string>
+    <string name="common_version">v. %s</string>
+
+    <string name="sign_in">Авторизация</string>
+    <string name="sign_in_email">Вход через E-mail</string>
+    <string name="sign_in_phone">Вход через тел. номер</string>
+    <string name="sign_in_no_account">У меня еще нет аккаунта</string>
+    <string name="sign_in_hint_email">Укажите E-mail</string>
+    <string name="sign_in_hint_phone">Укажите номер телефона</string>
+    <string name="sign_in_hint_password">Укажите пароль</string>
+
+    <string name="registration">Регистрация</string>
+    <string name="registration_hint_first_name">Укажите имя</string>
+    <string name="registration_hint_last_name">Укажите фамилию</string>
+    <string name="registration_hint_country">Укажите страну</string>
+    <string name="registration_there_is_account">У меня уже есть аккаунт</string>
+    <string name="registration_hint_username">Укажите свой никнейм</string>
+
+    <string name="sign_out">Выйти</string>
+
+    <string name="messages_menu_add_title">Новый диалог</string>
+
+    <string name="country_code_title">Выберите страну</string>
+
+    <string name="business_title">Бизнес-аккаунт</string>
+    <string name="business_category_title">Категория</string>
+    <string name="business_category_summary">Товары и продукты</string>
+    <string name="business_hint">Укажите величину скидки</string>
+    <string name="business_edit_text_info">Укажите величину скидки для покупателя, оплатившего заказ через приложение</string>
+    <string name="business_profile">Информация</string>
+    <string name="business_email">E-mail</string>
+    <string name="business_phone">Номер телефона</string>
+    <string name="business_company_address">Адрес компании</string>
+
+    <string name="notification_off">Отключено</string>
+    <string name="notification_subscribers">Только от подписчиков</string>
+    <string name="notification_all">От всех</string>
+
+    <string name="confirmation_title">Код подтверждения</string>
+    <string name="confirmation_info">Мы отправили сообщение с кодом активации на ваш %s %s</string>
+    <string name="confirmation_email">E-mail</string>
+    <string name="confirmation_phone">тел.</string>
+    <string name="confirmation_code">Код из сообщения</string>
+
+    <string name="account_write">Написать</string>
+    <string name="account_edit">Редактировать</string>
+    <string name="account_subscribers">Подписчики</string>
+    <string name="account_subscriptions">Подписки</string>
+
+    <string name="settings">Настройки</string>
+    <string name="settings_general">Общая информация</string>
+    <string name="settings_phone">Номер телефона</string>
+    <string name="settings_login">Логин</string>
+    <string name="settings_profile_description">Описание профиля</string>
+    <string name="settings_email">E-mail</string>
+    <string name="settings_account">Аккаунт</string>
+    <string name="settings_liked_posts">Понравившиеся посты</string>
+    <string name="settings_search_history">История поиска</string>
+    <string name="settings_original_files">Первоначальные файлы</string>
+    <string name="settings_options">Опции</string>
+    <string name="settings_language">Язык</string>
+    <string name="settings_notifications">Уведомления</string>
+    <string name="settings_security_privacy">Безопасность и конфиденциальность</string>
+    <string name="settings_support">Поддержка</string>
+    <string name="settings_faq">Вопросы и ответы</string>
+    <string name="settings_security_policy">Политика безопасности</string>
+    <string name="settings_conditions">Условия пользования</string>
+
+    <string name="posts_my">Мои посты</string>
+    <string name="posts">Посты</string>
+    <string name="posts_comment">Показать комментирии</string>
+    <string name="posts_likes">likes</string>
+    <string name="posts_refresh">Обновить</string>
+    <string name="posts_favorite">Сохраненные посты</string>
+    <string name="posts_comment_hint">Добавить комментарий</string>
+
+    <string name="notifications">Уведомления</string>
+    <string name="notifications_following">Избранные</string>
+    <string name="notifications_you">Ваши</string>
+    
+    <string name="media_photo">Фото</string>
+    <string name="media_video">Видео</string>
+    <string name="media_audio">Аудио</string>
+    <string name="media_files">Файлы</string>
+    <string name="media_links">Ссылки</string>
+    <string name="media_shared">Shared media</string>
+
+    <string name="sheet_report">Пожаловаться</string>
+    <string name="sheet_notifications_on">Включить уведомления</string>
+    <string name="sheet_notifications_off">Выключить уведомления</string>
+    <string name="sheet_notifications_follow">Добавить в избранное</string>
+    <string name="sheet_notifications_unfollow">Удалить из избранного</string>
+    <string name="sheet_notifications_mute_on">Отключить уведомления</string>
+    <string name="sheet_notifications_mute_off">Включить уведомления</string>
+    <string name="sheet_profile">Профиль</string>
+    <string name="sheet_chat">Чат</string>
+    <string name="sheet_story_mute_on">Mute story</string>
+    <string name="sheet_story_mute_off">Unmute story</string>
+    <string name="sheet_post_title">Пост %s</string>
+    <string name="sheet_story_title">История %s</string>
+    <string name="sheet_camera">Камера</string>
+    <string name="sheet_camera_15_min">15 минут</string>
+    <string name="sheet_camera_1_hour">1 час</string>
+    <string name="sheet_media">Медиа</string>
+    <string name="sheet_contacts">Контакты</string>
+    <string name="sheet_files">Файлы</string>
+    <string name="sheet_money">Деньги</string>
+    <string name="sheet_location">Место</string>
+    <string name="sheet_location_share_title">Показывать online местоположение</string>
+    <string name="sheet_location_share_summary">Изменяется в режиме реального времени</string>
+    <string name="sheet_location_send_title">Отправить текущее местоположение</string>
+    <string name="sheet_location_send_summary">Скорректируйте положение на карте выше при необходимости</string>
+    <string name="sheet_money_amount_hint">Укажите кол-во в руб.</string>
+    <string name="sheet_money_comment_hint">Комментарий</string>
+    <string name="sheet_location_radio_15_min">15 минут</string>
+    <string name="sheet_location_radio_1_hour">1 час</string>
+    <string name="sheet_location_radio_8_hour">8 часов</string>
+    <string name="sheet_change_number">Изменить номер</string>
+    <string name="sheet_clean_search">Очистить историю поиска</string>
+
 </resources>

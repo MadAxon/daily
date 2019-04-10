@@ -3,13 +3,14 @@ package ru.vital.daily.adapter.viewholder;
 import androidx.annotation.IdRes;
 import androidx.databinding.ViewDataBinding;
 import androidx.recyclerview.widget.RecyclerView;
-import ru.vital.daily.view.model.ItemViewModel;
+import ru.vital.daily.listener.SingleLiveEvent;
+import ru.vital.daily.view.model.item.ItemViewModel;
 
 public abstract class BaseViewHolder<VM extends ItemViewModel<M>, M> extends RecyclerView.ViewHolder {
 
     private final ViewDataBinding viewDataBinding;
 
-    private final VM viewModel;
+    public final VM viewModel;
 
     public abstract @IdRes
     int getVariable();

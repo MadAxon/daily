@@ -1,15 +1,131 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="android:windowBackground">@android:color/white</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorControlHighlight">@color/color_ripple</item>
+        <item name="android:textViewStyle">@style/TextView</item>
+        <item name="homeAsUpIndicator">@drawable/ic_arrow_left</item>
+        <item name="actionMenuTextColor">@color/colorPrimaryDark</item>
+        <item name="actionMenuTextAppearance">?attr/textAppearanceSmallPopupMenu</item>
+        <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
+        <item name="android:radioButtonStyle">@style/RadioButton</item>
     </style>
 
-    <style name="AppTheme.SplashScreen" parent="AppTheme">
+    <style name="AppTheme.SplashScreen">
         <item name="android:windowBackground">@drawable/background_splash_screen</item>
+    </style>
+
+    <style name="EditText" parent="Widget.AppCompat.EditText">
+        <item name="android:textColor">@color/color_edit_text_text</item>
+        <item name="android:textColorHint">@color/color_edit_text_hint</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
+    </style>
+
+    <style name="TextView" parent="TextAppearance.AppCompat.Small">
+
+    </style>
+
+    <style name="TextView.Light">
+        <item name="android:textColor">@color/color_text_view_light</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
+    </style>
+
+    <style name="TextView.Medium">
+        <item name="android:textColor">@color/color_text_view_dark</item>
+        <item name="android:fontFamily">@font/roboto_medium</item>
+    </style>
+
+    <style name="TextView.Title" parent="TextView.Medium">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="RoundedImageView">
+        <item name="riv_border_width">2dp</item>
+        <item name="riv_border_color">@android:color/white</item>
+        <item name="riv_mutate_background">false</item>
+        <item name="riv_oval">false</item>
+    </style>
+
+    <style name="RoundedImageView.Medium">
+        <item name="android:layout_width">50dp</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="riv_corner_radius">21dp</item>
+    </style>
+
+    <style name="RoundedImageView.Big">
+        <item name="android:layout_width">60dp</item>
+        <item name="android:layout_height">60dp</item>
+        <item name="riv_corner_radius">25dp</item>
+    </style>
+
+    <style name="RoundedImageView.Large">
+        <item name="android:layout_width">74dp</item>
+        <item name="android:layout_height">74dp</item>
+        <item name="riv_corner_radius">24dp</item>
+    </style>
+
+    <style name="RoundedImageView.Small">
+        <item name="android:layout_width">34dp</item>
+        <item name="android:layout_height">34dp</item>
+        <item name="riv_corner_radius">14dp</item>
+    </style>
+
+    <style name="RoundedImageView.Circle">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="riv_corner_radius">12dp</item>
+    </style>
+
+    <style name="RoundedButton" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:layout_height">40dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/roboto_medium</item>
+    </style>
+
+    <style name="RoundedButton.Filled">
+        <item name="android:background">@drawable/background_rounded_button_filled</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="RoundedButton.Outlined">
+        <item name="android:background">@drawable/background_rounded_button_outlined</item>
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+
+    <style name="Separator">
+        <item name="android:layout_width">88dp</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/color_separator</item>
+    </style>
+
+    <style name="AppBottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/AppModalStyle</item>
+        <item name="colorControlHighlight">@color/color_ripple</item>
+    </style>
+
+    <style name="AppModalStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/background_rounded_fragment_sheet</item>
+    </style>
+
+    <style name="RadioButton" parent="Widget.AppCompat.CompoundButton.RadioButton">
+        <item name="android:buttonTint">@color/radio_button_color_selector</item>
+        <item name="android:textColor">@color/color_text_view_dark</item>
+        <item name="android:fontFamily">@font/roboto_medium</item>
+    </style>
+    
+    <style name="Dialog" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">@android:color/white</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@color/colorPrimaryDark</item>
+        <item name="colorControlHighlight">@color/color_ripple</item>
     </style>
 
 </resources>
