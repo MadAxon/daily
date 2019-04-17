@@ -5,11 +5,11 @@
 
     <data>
         <variable
-            name="feedAdapter"
-            type="ru.vital.daily.adapter.FeedAdapter"/>
+            name="adapter"
+            type="ru.vital.daily.adapter.ContactAdapter"/>
         <variable
             name="viewModel"
-            type="ru.vital.daily.view.model.PostsViewModel"/>
+            type="ru.vital.daily.view.model.GroupCreateViewModel"/>
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -32,39 +32,57 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="?actionBarSize"
-                    android:paddingBottom="32dp">
+                    android:layout_marginTop="?actionBarSize">
 
-                    <View
-                        android:id="@+id/view3"
-                        style="@style/Separator"
+                    <com.makeramen.roundedimageview.RoundedImageView
+                        android:id="@+id/roundedImageView17"
+                        style="@style/RoundedImageView.Big"
+                        android:layout_marginStart="16dp"
                         android:layout_marginTop="24dp"
+                        android:layout_marginBottom="24dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
-                        android:id="@+id/imageView11"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="16dp"
-                        android:onClick="@{() -> viewModel.onGridTypeClicked(viewModel.gridViewType)}"
-                        android:tint="@{viewModel.currentViewType == viewModel.gridViewType ? @color/colorAccent : @color/color_separator}"
-                        app:layout_constraintBottom_toBottomOf="@+id/view3"
+                    <View
+                        android:id="@+id/view15"
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:background="@color/color_separator"
+                        app:layout_collapseMode="pin"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="@+id/view3"
-                        app:srcCompat="@drawable/ic_view_grid" />
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toStartOf="parent" />
 
-                    <ImageView
-                        android:id="@+id/imageView12"
+                    <TextView
+                        android:id="@+id/textView92"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:fontFamily="@font/roboto_medium"
+                        android:text="TextView"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:textColor="@color/color_text_view_light"
+                        android:textSize="16sp"
+                        app:layout_constraintBottom_toTopOf="@+id/textView93"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView17"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_chainStyle="packed" />
+
+                    <TextView
+                        android:id="@+id/textView93"
+                        style="@style/TextView.Light"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:onClick="@{() -> viewModel.onListTypeClicked(viewModel.listViewType)}"
-                        android:tint="@{viewModel.currentViewType == viewModel.listViewType ? @color/colorAccent : @color/color_separator}"
-                        app:layout_constraintBottom_toBottomOf="@+id/imageView11"
-                        app:layout_constraintEnd_toStartOf="@+id/imageView11"
-                        app:layout_constraintTop_toTopOf="@+id/imageView11"
-                        app:srcCompat="@drawable/ic_view_list" />
+                        android:layout_marginStart="8dp"
+                        android:text="TextView"
+                        app:layout_constraintBottom_toTopOf="@+id/view15"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView17"
+                        app:layout_constraintTop_toBottomOf="@+id/textView92" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -78,33 +96,22 @@
 
                     <TextView
                         android:id="@+id/title"
-                        style="@style/TextView.Title"
-                        android:text="@string/posts_my" />
+                        style="@style/TextView.Title" />
 
                 </androidx.appcompat.widget.Toolbar>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/color_separator"
-                    app:layout_collapseMode="pin"
-                    android:layout_marginTop="?actionBarSize"/>
 
             </com.google.android.material.appbar.CollapsingToolbarLayout>
 
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view_feed"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingTop="16dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
             android:clipToPadding="false"
-            android:paddingBottom="?actionBarSize"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:adapter="@{feedAdapter}"/>
+            android:adapter="@{adapter}"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

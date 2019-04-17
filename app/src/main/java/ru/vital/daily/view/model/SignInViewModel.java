@@ -8,9 +8,4 @@ public class SignInViewModel extends ViewModel {
 
     public boolean isPhoneSignIn;
 
-    public SignInViewModel(@NonNull Application application) {
-        super(application);
-    }
-
-
 }

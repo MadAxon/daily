@@ -22,7 +22,7 @@ public class MainActivity extends BaseActivity<MainViewModel, ActivityMainBindin
 
     @Override
     public MainViewModel onCreateViewModel() {
-        return ViewModelProviders.of(this).get(MainViewModel.class);
+        return ViewModelProviders.of(this, viewModelFactory).get(MainViewModel.class);
     }
 
     @Override

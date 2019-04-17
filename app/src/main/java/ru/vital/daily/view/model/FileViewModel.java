@@ -6,7 +6,4 @@ import androidx.annotation.NonNull;
 
 public class FileViewModel extends ViewModel {
 
-    public FileViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

@@ -33,7 +33,7 @@ public class AccountFragment extends BaseFragment<AccountViewModel, FragmentAcco
 
     @Override
     protected AccountViewModel onCreateViewModel() {
-        return ViewModelProviders.of(this).get(AccountViewModel.class);
+        return ViewModelProviders.of(this, viewModelFactory).get(AccountViewModel.class);
     }
 
     @Override

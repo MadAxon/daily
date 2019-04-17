@@ -9,6 +9,12 @@
     <string name="common_copy">Скопировать</string>
     <string name="common_change">Изменить</string>
     <string name="common_version">v. %s</string>
+    <string name="common_copy_link">Скопировать ссылку веб-сайта</string>
+    <string name="common_more">Дополнительно</string>
+    <string name="common_on">Да</string>
+    <string name="common_off">Нет</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_resend">Переслать</string>
 
     <string name="sign_in">Авторизация</string>
     <string name="sign_in_email">Вход через E-mail</string>
@@ -44,6 +50,16 @@
     <string name="notification_off">Отключено</string>
     <string name="notification_subscribers">Только от подписчиков</string>
     <string name="notification_all">От всех</string>
+    <string name="notification_likes">Лайки</string>
+    <string name="notification_comments">Комментарии</string>
+    <string name="notification_likes_comments">Лайки к комментариям</string>
+    <string name="notification_likes_commend">Лайки и рекомендации к фото с вами</string>
+    <string name="notification_subscriber">Новый подписчик</string>
+    <string name="notification_subscription">Принятие запроса на подписку</string>
+    <string name="notification_friend">Запрос на дружбу</string>
+    <string name="notification_message">Сообщения</string>
+    <string name="notification_photo">Фото о вас</string>
+    <string name="notification_reminder">Напоминания</string>
 
     <string name="confirmation_title">Код подтверждения</string>
     <string name="confirmation_info">Мы отправили сообщение с кодом активации на ваш %s %s</string>
@@ -74,6 +90,9 @@
     <string name="settings_faq">Вопросы и ответы</string>
     <string name="settings_security_policy">Политика безопасности</string>
     <string name="settings_conditions">Условия пользования</string>
+    <string name="settings_login_info">Инфо о логине</string>
+    <string name="settings_description_hint">Текст к описанию</string>
+    <string name="settings_website">Веб-сайт</string>
 
     <string name="posts_my">Мои посты</string>
     <string name="posts">Посты</string>
@@ -86,7 +105,7 @@
     <string name="notifications">Уведомления</string>
     <string name="notifications_following">Избранные</string>
     <string name="notifications_you">Ваши</string>
-    
+
     <string name="media_photo">Фото</string>
     <string name="media_video">Видео</string>
     <string name="media_audio">Аудио</string>
@@ -126,5 +145,24 @@
     <string name="sheet_location_radio_8_hour">8 часов</string>
     <string name="sheet_change_number">Изменить номер</string>
     <string name="sheet_clean_search">Очистить историю поиска</string>
+
+    <string name="chat_call">Звонок собеседнику</string>
+    <string name="chat_empty">Здесь еще нет сообщений</string>
+    <string name="chat_hint">Сообщение</string>
+    <string name="chat_group_name_hint">Название канала</string>
+    <string name="chat_group_description_hint">Описание к каналу</string>
+    <string name="chat_group_public_title">Публичный канал</string>
+    <string name="chat_group_public_info">Публичный канал отображается в списке поиска, любой может присоединиться к нему</string>
+    <string name="chat_group_link_hint">Укажите уникальную ссылку для вашего канала</string>
+    <string name="chat_group_link_free">Эта ссылка доступна</string>
+    <string name="chat_group_link_warn">Эта ссылка уже используется</string>
+    <string name="chat_group_add_participants">Добавить участников</string>
+    <string name="chat_group_invites">Отправить приглашения…</string>
+
+    <string name="paint_text_classic">Классический</string>
+    <string name="paint_text_bold">Жирный</string>
+    <string name="paint_text_bold_italic">Жирный курсив</string>
+    <string name="paint_text_italic">Курсив</string>
+    <string name="paint_text_neon">Неон</string>
 
 </resources>

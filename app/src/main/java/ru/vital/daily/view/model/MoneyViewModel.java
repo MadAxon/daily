@@ -9,10 +9,6 @@ public class MoneyViewModel extends ViewModel {
 
     public SingleLiveEvent<Void> sendMoneyClickedEvent = new SingleLiveEvent<>();
 
-    public MoneyViewModel(@NonNull Application application) {
-        super(application);
-    }
-
     public void onSendMoneyClicked() {
         sendMoneyClickedEvent.call();
     }

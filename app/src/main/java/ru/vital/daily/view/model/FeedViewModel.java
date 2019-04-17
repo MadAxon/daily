@@ -2,6 +2,8 @@ package ru.vital.daily.view.model;
 
 import android.app.Application;
 
+import javax.inject.Inject;
+
 import androidx.annotation.NonNull;
 import ru.vital.daily.adapter.FeedAdapter;
 import ru.vital.daily.adapter.UserStoryAdapter;
@@ -11,8 +13,8 @@ public class FeedViewModel extends ViewModel {
 
     public SingleLiveEvent<Void> cameraClickedEvent = new SingleLiveEvent<>();
 
-    public FeedViewModel(@NonNull Application application) {
-        super(application);
+    @Inject
+    public FeedViewModel() {
     }
 
     public void onCameraClicked() {

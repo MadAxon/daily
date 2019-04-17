@@ -3,7 +3,10 @@ package ru.vital.daily.view.model;
 import android.app.Application;
 import android.util.Log;
 
+import javax.inject.Inject;
+
 import androidx.annotation.NonNull;
+import androidx.lifecycle.MutableLiveData;
 import ru.vital.daily.listener.SingleLiveEvent;
 
 public class AuthViewModel extends ViewModel {
@@ -12,8 +15,11 @@ public class AuthViewModel extends ViewModel {
             openSignPhoneEvent = new SingleLiveEvent<>(),
             openRegisterEvent = new SingleLiveEvent<>();
 
-    public AuthViewModel(@NonNull Application application) {
-        super(application);
+    public MutableLiveData<String> mutableLiveData = new MutableLiveData<>();
+
+    @Inject
+    public AuthViewModel() {
+
     }
 
     public void openSignInEmail() {

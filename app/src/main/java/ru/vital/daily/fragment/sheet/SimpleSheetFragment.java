@@ -84,9 +84,8 @@ public class SimpleSheetFragment extends BaseSheetFragment<SimpleSheetViewModel,
         dataBinding.setAdapter(new SimpleSheetAdapter());
 
         dataBinding.getAdapter().clickEvent.observe(this, fragmentSheetModel -> {
-            switch (fragmentSheetModel.getStringId()) {
-
-            }
+            if (getActivity() != null && getActivity() instanceof BaseSheetFragment.OnDismissListener)
+                ((BaseSheetFragment.OnDismissListener) getActivity()).onDismiss(getTag(), fragmentSheetModel.getStringId());
             dismiss();
         });
 

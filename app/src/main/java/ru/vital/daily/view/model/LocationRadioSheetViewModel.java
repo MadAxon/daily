@@ -6,7 +6,4 @@ import androidx.annotation.NonNull;
 
 public class LocationRadioSheetViewModel extends ViewModel {
 
-    public LocationRadioSheetViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

@@ -6,7 +6,4 @@ import androidx.annotation.NonNull;
 
 public class ConfirmationViewModel extends ViewModel {
 
-    public ConfirmationViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

@@ -6,7 +6,4 @@ import androidx.annotation.NonNull;
 
 public class AudioViewModel extends ViewModel {
 
-    public AudioViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

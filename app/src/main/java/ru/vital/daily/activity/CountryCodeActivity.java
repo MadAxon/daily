@@ -24,7 +24,8 @@ import ru.vital.daily.view.model.CountryCodeViewModel;
 
 public class CountryCodeActivity extends BaseActivity<CountryCodeViewModel, ActivityCountryCodeBinding> {
 
-    public static final String COUNTRY_CODE = "COUNTRY_CODE";
+    public static final String COUNTRY_CODE = "COUNTRY_CODE",
+                            COUNTRY_NAME = "COUNTRY_NAME";
 
     @Override
     protected CountryCodeViewModel onCreateViewModel() {
@@ -66,6 +67,7 @@ public class CountryCodeActivity extends BaseActivity<CountryCodeViewModel, Acti
         dataBinding.getAdapter().clickEvent.observe(this, countryCodeModel -> {
             Intent intent = new Intent();
             intent.putExtra(COUNTRY_CODE, countryCodeModel.getPhoneCode());
+            intent.putExtra(COUNTRY_NAME, countryCodeModel.getCountryName());
             setResult(Activity.RESULT_OK, intent);
             finish();
         });

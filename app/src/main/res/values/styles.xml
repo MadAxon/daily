@@ -12,6 +12,8 @@
         <item name="actionMenuTextAppearance">?attr/textAppearanceSmallPopupMenu</item>
         <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
         <item name="android:radioButtonStyle">@style/RadioButton</item>
+        <item name="actionModeCloseDrawable">@drawable/ic_close</item>
+        <item name="actionModeCloseButtonStyle">@style/CloseButton</item>
     </style>
 
     <style name="AppTheme.SplashScreen">
@@ -91,12 +93,12 @@
     </style>
 
     <style name="RoundedButton.Filled">
-        <item name="android:background">@drawable/background_rounded_button_filled</item>
+        <item name="android:background">@drawable/background_button_filled</item>
         <item name="android:textColor">@android:color/white</item>
     </style>
 
     <style name="RoundedButton.Outlined">
-        <item name="android:background">@drawable/background_rounded_button_outlined</item>
+        <item name="android:background">@drawable/background_button_outlined</item>
         <item name="android:textColor">@android:color/black</item>
     </style>
 
@@ -112,7 +114,7 @@
     </style>
 
     <style name="AppModalStyle" parent="Widget.Design.BottomSheet.Modal">
-        <item name="android:background">@drawable/background_rounded_fragment_sheet</item>
+        <item name="android:background">@drawable/background_fragment_sheet</item>
     </style>
 
     <style name="RadioButton" parent="Widget.AppCompat.CompoundButton.RadioButton">
@@ -126,6 +128,10 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColorPrimary">@color/colorPrimaryDark</item>
         <item name="colorControlHighlight">@color/color_ripple</item>
+    </style>
+
+    <style name="CloseButton" parent="Widget.AppCompat.Light.ActionButton.CloseMode">
+        <item name="android:tint">@color/colorPrimaryDark</item>
     </style>
 
 </resources>

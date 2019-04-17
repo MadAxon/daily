@@ -37,7 +37,6 @@
                 android:id="@+id/radioButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:checked="true"
                 android:text="@string/sheet_location_radio_15_min" />
 
             <RadioButton

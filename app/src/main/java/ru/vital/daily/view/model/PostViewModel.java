@@ -14,11 +14,6 @@ public class PostViewModel extends ViewModel {
                                 emoClickedEvent = new SingleLiveEvent<>(),
                                 sendClickedEvent = new SingleLiveEvent<>();
 
-    public PostViewModel(@NonNull Application application) {
-        super(application);
-    }
-
-
     public void onAttachClicked() {
         attachClickedEvent.call();
     }

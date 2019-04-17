@@ -21,13 +21,14 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:background="@drawable/background_edit_text">
 
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
             android:visibility="@{!showSearchIcon || containsText ? View.GONE : View.VISIBLE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -43,9 +44,10 @@
             android:background="@null"
             android:focusable="@{focusable}"
             android:inputType="text"
-            android:maxLines="1"
             android:onClick="@{clickListener}"
             android:scrollHorizontally="true"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
             style="@style/EditText"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/imageView2"
@@ -56,6 +58,7 @@
             android:id="@+id/imageView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
             android:visibility="@{containsText ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

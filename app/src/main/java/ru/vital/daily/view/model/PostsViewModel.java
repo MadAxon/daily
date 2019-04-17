@@ -22,10 +22,6 @@ public class PostsViewModel extends ViewModel implements Observable {
 
     private PropertyChangeRegistry callbacks = new PropertyChangeRegistry();
 
-    public PostsViewModel(@NonNull Application application) {
-        super(application);
-    }
-
     @Override
     public void addOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
         callbacks.add(callback);

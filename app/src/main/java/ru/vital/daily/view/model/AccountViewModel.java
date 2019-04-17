@@ -2,6 +2,8 @@ package ru.vital.daily.view.model;
 
 import android.app.Application;
 
+import javax.inject.Inject;
+
 import androidx.annotation.NonNull;
 import androidx.databinding.Bindable;
 import androidx.databinding.Observable;
@@ -32,8 +34,9 @@ public class AccountViewModel extends ViewModel implements Observable {
 
     private PropertyChangeRegistry callbacks = new PropertyChangeRegistry();
 
-    public AccountViewModel(@NonNull Application application) {
-        super(application);
+    @Inject
+    public AccountViewModel() {
+
     }
 
     public void onFocusClicked() {

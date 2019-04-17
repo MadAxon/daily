@@ -21,7 +21,7 @@ public class HomeFragment extends BaseFragment<HomeViewModel, FragmentHomeBindin
 
     @Override
     protected HomeViewModel onCreateViewModel() {
-        return ViewModelProviders.of(this).get(HomeViewModel.class);
+        return ViewModelProviders.of(this, viewModelFactory).get(HomeViewModel.class);
     }
 
     @Override

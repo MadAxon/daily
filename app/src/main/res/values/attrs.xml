@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="EditView">
-        <attr name="android:hint"/>
-        <attr name="android:text"/>
-        <attr name="android:inputType"/>
-        <attr name="android:focusable"/>
-        <attr name="android:maxLength"/>
-        <attr name="showSearchIcon" format="boolean"/>
+        <attr name="android:hint" />
+        <attr name="android:text" />
+        <attr name="android:inputType" />
+        <attr name="android:focusable" />
+        <attr name="android:maxLength" />
+        <attr name="android:maxLines" />
+        <attr name="showSearchIcon" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="ProgressView">
+        <attr name="progressCount" format="integer|reference" />
+        <attr name="transparentColor" format="color" />
+        <attr name="solidColor" format="color" />
+    </declare-styleable>
+    <declare-styleable name="PhotoEditorView">
+        <!-- {@deprecated Use photo_src instead.} -->
+        <attr name="photo_src" format="integer" />
+    </declare-styleable>
+    <declare-styleable name="VerticalSeekBar">
+        <attr name="seekBarRotation">
+            <!-- Clock wise - 90 deg; top = min, bottom = max -->
+            <enum name="CW90" value="90" />
+            <!-- Clock wise - 270 deg; bottom = min, top = max -->
+            <enum name="CW270" value="270" />
+        </attr>
     </declare-styleable>
 </resources>

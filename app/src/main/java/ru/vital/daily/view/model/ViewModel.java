@@ -6,15 +6,7 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 
-public abstract class ViewModel extends AndroidViewModel implements IViewModel {
-
-    protected final String token;
-
-    public ViewModel(@NonNull Application application) {
-        super(application);
-        token = "";
-        //token = SharedPrefs.getInstance().getToken(application.getApplicationContext());
-    }
+public abstract class ViewModel extends androidx.lifecycle.ViewModel implements IViewModel {
 
     @Override
     public void onCreate() {

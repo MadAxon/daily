@@ -14,7 +14,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="16dp"
-            android:background="@drawable/background_rounded_extension"
+            android:background="@drawable/background_extension"
             android:fontFamily="@font/roboto_medium"
             android:gravity="center"
             android:text="BMP"

@@ -6,7 +6,4 @@ import androidx.annotation.NonNull;
 
 public class BusinessViewModel extends ViewModel {
 
-    public BusinessViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

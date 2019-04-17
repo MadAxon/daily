@@ -16,6 +16,7 @@ import ru.vital.daily.view.model.SettingsViewModel;
 import ru.vital.daily.view.model.SimpleSheetViewModel;
 
 public class SettingsFragment extends BaseFragment<SettingsViewModel, FragmentSettingsBinding> {
+
     @Override
     protected SettingsViewModel onCreateViewModel() {
         return ViewModelProviders.of(getActivity()).get(SettingsViewModel.class);
@@ -41,16 +42,16 @@ public class SettingsFragment extends BaseFragment<SettingsViewModel, FragmentSe
             openFragment(new SettingsNotificationFragment());
         });
         viewModel.phoneClickedEvent.observe(this, aVoid -> {
-            SimpleSheetFragment.newInstance("+7 (985) 822-81-18", new int[]{R.string.sheet_change_number, R.string.common_copy}).show(getChildFragmentManager(), null);
+            SimpleSheetFragment.newInstance("+7 (985) 822-81-18", new int[]{R.string.sheet_change_number, R.string.common_copy}).show(getChildFragmentManager(), viewModel.fragmentPhoneTag);
         });
         viewModel.historyClickedEvent.observe(this, aVoid -> {
-            SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_garbage}, new int[]{R.string.sheet_clean_search}).show(getChildFragmentManager(), null);
+            SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_garbage}, new int[]{R.string.sheet_clean_search}).show(getChildFragmentManager(), viewModel.fragmentHistoryTag);
         });
         viewModel.loginClickedEvent.observe(this, aVoid -> {
-            SimpleSheetFragment.newInstance("qwery123", new int[]{R.string.common_change, R.string.common_copy}).show(getChildFragmentManager(), null);
+            SimpleSheetFragment.newInstance("qwery123", new int[]{R.string.common_change, R.string.common_copy}).show(getChildFragmentManager(), viewModel.fragmentLoginTag);
         });
         viewModel.descriptionClickedEvent.observe(this, aVoid -> {
-
+            SimpleSheetFragment.newInstance(new int[]{R.string.common_change, R.string.common_copy_link}).show(getChildFragmentManager(), viewModel.fragmentDescriptionTag);
         });
         viewModel.conditionClickedEvent.observe(this, aVoid -> {});
         viewModel.policyClickedEvent.observe(this, aVoid -> {});
@@ -58,6 +59,9 @@ public class SettingsFragment extends BaseFragment<SettingsViewModel, FragmentSe
         viewModel.privacyClickedEvent.observe(this, aVoid -> {});
         viewModel.originalClickedEvent.observe(this, aVoid -> {});
         viewModel.likedClickedEvent.observe(this, aVoid -> {});
+        viewModel.emailClickedEvent.observe(this, aVoid -> {
+            SimpleSheetFragment.newInstance("qwery123@awef.ru", new int[]{R.string.common_change, R.string.common_copy}).show(getChildFragmentManager(), viewModel.fragmentEmailTag);
+        });
     }
 
     @Override

@@ -6,7 +6,4 @@ import androidx.annotation.NonNull;
 
 public class LinkViewModel extends ViewModel {
 
-    public LinkViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

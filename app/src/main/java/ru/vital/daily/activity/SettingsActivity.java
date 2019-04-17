@@ -8,10 +8,13 @@ import androidx.lifecycle.ViewModelProviders;
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
 import ru.vital.daily.databinding.ActivitySettingsBinding;
+import ru.vital.daily.enums.SettingsPersonalType;
 import ru.vital.daily.fragment.SettingsFragment;
+import ru.vital.daily.fragment.SettingsPersonalFragment;
+import ru.vital.daily.fragment.sheet.BaseSheetFragment;
 import ru.vital.daily.view.model.SettingsViewModel;
 
-public class SettingsActivity extends BaseActivity<SettingsViewModel, ActivitySettingsBinding> {
+public class SettingsActivity extends BaseActivity<SettingsViewModel, ActivitySettingsBinding> implements BaseSheetFragment.OnDismissListener {
 
     @Override
     protected SettingsViewModel onCreateViewModel() {
@@ -38,4 +41,54 @@ public class SettingsActivity extends BaseActivity<SettingsViewModel, ActivitySe
                 .commitNow();
     }
 
+    @Override
+    public void onDismiss(String tag, int stringId) {
+        if (tag.equals(viewModel.fragmentDescriptionTag)) {
+            switch (stringId) {
+                case R.string.common_change:
+                    openFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.description));
+                    break;
+                case R.string.common_copy_link:
+
+                    break;
+            }
+        } else if (tag.equals(viewModel.fragmentEmailTag)) {
+            switch (stringId) {
+                case R.string.common_change:
+                    openFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.email));
+                    break;
+                case R.string.common_copy:
+
+                    break;
+            }
+        } else if (tag.equals(viewModel.fragmentHistoryTag)) {
+            switch (stringId) {
+                case R.string.sheet_clean_search:
+
+                    break;
+            }
+        } else if (tag.equals(viewModel.fragmentLoginTag)) {
+            switch (stringId) {
+                case R.string.common_change:
+                    openFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.login));
+                    break;
+                case R.string.common_copy:
+
+                    break;
+            }
+        } else if (tag.equals(viewModel.fragmentPhoneTag)) {
+            switch (stringId) {
+                case R.string.sheet_change_number:
+                    openFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.phone));
+                    break;
+                case R.string.common_copy:
+
+                    break;
+            }
+        }
+    }
+
+    private void copy(String text) {
+
+    }
 }

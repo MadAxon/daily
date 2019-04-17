@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import javax.inject.Inject;
+
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
@@ -14,13 +16,18 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import dagger.android.support.AndroidSupportInjection;
 import ru.vital.daily.R;
 import ru.vital.daily.view.model.ViewModel;
 
 public abstract class BaseFragment<VM extends ViewModel, B extends ViewDataBinding>
         extends Fragment {
 
-    protected VM viewModel;
+    @Inject
+    ViewModelProvider.Factory viewModelFactory;
+
+    VM viewModel;
 
     protected B dataBinding;
 

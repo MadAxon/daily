@@ -8,7 +8,4 @@ public class SimpleSheetViewModel extends ViewModel {
 
     public String title;
 
-    public SimpleSheetViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

@@ -6,7 +6,4 @@ import androidx.annotation.NonNull;
 
 public class SocialSheetViewModel extends ViewModel {
 
-    public SocialSheetViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

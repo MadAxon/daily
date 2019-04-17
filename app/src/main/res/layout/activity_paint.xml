@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="playerViewListener"
+            type="android.view.View.OnClickListener" />
+
+        <!-- main -->
+        <variable
+            name="closeListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="volumeListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="textListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="paintListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="sendListener"
+            type="android.view.View.OnClickListener" />
+
+        <!-- paint -->
+        <variable
+            name="undoListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="eraserListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="doneListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="pencilListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="neonListener"
+            type="android.view.View.OnClickListener" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"><!--
+
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:id="@+id/player_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:resize_mode="zoom"
+            app:surface_type="texture_view"
+            app:use_controller="false" />
+
+        <FrameLayout
+            android:id="@+id/photoEditorViewContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+            <ru.vitalapp.photoeditor.PhotoEditorView
+                android:id="@+id/photoEditorView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            </ru.vitalapp.photoeditor.PhotoEditorView>
+
+        </FrameLayout>
+
+        <Button
+            android:id="@+id/button_send"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="end|bottom"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/rounded_stroke_paint_button"
+            android:elevation="1dp"
+            android:onClick="@{sendListener}"
+            android:text="@string/submit"
+            android:textAllCaps="false"
+            android:shadowRadius="1"
+            android:shadowDy="1"
+            android:shadowDx="1"
+            android:shadowColor="@color/warm_grey"
+            android:textColor="@color/white" />
+
+        <FrameLayout
+            android:id="@+id/deleteView"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/imageView19"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_delete_circle_outline" />
+
+        </FrameLayout>
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/main_toolbar"
+            android:background="@drawable/toolbar_gradient"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/imageView11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{closeListener}"
+                android:padding="16dp"
+                android:src="@drawable/ic_close_white_24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/imageView12"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{textListener}"
+                android:padding="16dp"
+                android:src="@drawable/ic_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <ImageView
+                android:id="@+id/imageView14"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{paintListener}"
+                android:padding="16dp"
+                android:src="@drawable/ic_brush"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageView12"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/imageView15"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{volumeListener}"
+                android:padding="16dp"
+                android:src="@drawable/ic_volume_up"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageView14"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </android.support.constraint.ConstraintLayout>
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/paint_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/toolbar_gradient"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/imageView17"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{eraserListener}"
+                android:padding="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageView16"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_eraser" />
+
+            <ImageView
+                android:id="@+id/imageView16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:onClick="@{doneListener}"
+                android:padding="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_check" />
+
+            <ImageView
+                android:id="@+id/imageView13"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{undoListener}"
+                android:padding="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_undo" />
+
+            <ImageView
+                android:id="@+id/imageView18"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:onClick="@{pencilListener}"
+                android:padding="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageView17"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_pencil" />
+
+            &lt;!&ndash;<ImageView
+                android:id="@+id/imageView20"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="@{neonListener}"
+                android:padding="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageView18"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_fountain_pen" />&ndash;&gt;
+
+        </android.support.constraint.ConstraintLayout>
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/color_seekbar_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:visibility="gone">
+
+            <com.rtugeek.android.colorseekbar.ColorSeekBar
+                android:id="@+id/color_seekbar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:barHeight="12dp"
+                app:colorBarPosition="90"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:maxPosition="100"
+                app:thumbHeight="8dp" />
+
+        </android.support.constraint.ConstraintLayout>
+
+        <ru.vitalapp.photoeditor.VerticalSeekBarWrapper
+            android:id="@+id/size_seekbar_container"
+            android:layout_width="wrap_content"
+            android:layout_height="256dp"
+            android:layout_gravity="center_vertical"
+            android:visibility="gone">
+
+            <ru.vitalapp.photoeditor.VerticalSeekBar
+                android:id="@+id/size_seekbar"
+                style="@style/AppTheme.Paint.Seekbar"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:progress="15"
+                android:splitTrack="false"
+                android:thumbTint="@color/white"
+                app:seekBarRotation="CW270" />
+
+        </ru.vitalapp.photoeditor.VerticalSeekBarWrapper>
+
+    --></FrameLayout>
+
+</layout>

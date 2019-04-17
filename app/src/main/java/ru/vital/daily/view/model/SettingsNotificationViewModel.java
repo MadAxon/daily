@@ -6,7 +6,4 @@ import androidx.annotation.NonNull;
 
 public class SettingsNotificationViewModel extends ViewModel {
 
-    public SettingsNotificationViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

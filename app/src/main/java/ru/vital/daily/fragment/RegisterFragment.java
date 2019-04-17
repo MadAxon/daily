@@ -24,7 +24,7 @@ public class RegisterFragment extends BaseFragment<RegisterViewModel, FragmentRe
 
     @Override
     protected RegisterViewModel onCreateViewModel() {
-        return ViewModelProviders.of(this).get(RegisterViewModel.class);
+        return ViewModelProviders.of(this, viewModelFactory).get(RegisterViewModel.class);
     }
 
     @Override
@@ -59,6 +59,7 @@ public class RegisterFragment extends BaseFragment<RegisterViewModel, FragmentRe
             switch (requestCode) {
                 case REQUEST_COUNTRY_CODE:
                     Log.i("my_logs", data.getStringExtra(CountryCodeActivity.COUNTRY_CODE));
+                    Log.i("my_logs", data.getStringExtra(CountryCodeActivity.COUNTRY_NAME));
                     break;
             }
         super.onActivityResult(requestCode, resultCode, data);

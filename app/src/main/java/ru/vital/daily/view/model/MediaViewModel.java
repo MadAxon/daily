@@ -6,7 +6,4 @@ import androidx.annotation.NonNull;
 
 public class MediaViewModel extends ViewModel {
 
-    public MediaViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

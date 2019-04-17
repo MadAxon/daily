@@ -45,12 +45,7 @@ public abstract class BaseSheetFragment<VM extends ViewModel, B extends ViewData
         return dataBinding.getRoot();
     }
 
-    @Override
-    public void onDismiss(@NonNull DialogInterface dialog) {
-        super.onDismiss(dialog);
-        final Activity activity = getActivity();
-        if (activity instanceof DialogInterface.OnDismissListener) {
-            ((DialogInterface.OnDismissListener) activity).onDismiss(dialog);
-        }
+    public interface OnDismissListener {
+        public void onDismiss(String tag, int stringId);
     }
 }

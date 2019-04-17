@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.inputmethod.InputMethodManager;
 
+import javax.inject.Inject;
+
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
@@ -12,12 +14,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import dagger.android.AndroidInjection;
+import dagger.android.AndroidInjector;
+import dagger.android.DispatchingAndroidInjector;
+import dagger.android.support.HasSupportFragmentInjector;
 import ru.vital.daily.R;
 import ru.vital.daily.view.model.ViewModel;
 
 
 public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBinding>
-        extends AppCompatActivity {
+        extends AppCompatActivity implements HasSupportFragmentInjector {
+
+    @Inject
+    ViewModelProvider.Factory viewModelFactory;
+
+    @Inject
+    DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;
 
     private InputMethodManager inputMethodManager;
 
@@ -36,6 +50,11 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
 
     protected abstract @IdRes
     int getVariable();
+
+    @Override
+    public AndroidInjector<Fragment> supportFragmentInjector() {
+        return fragmentDispatchingAndroidInjector;
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -84,6 +103,14 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(includeBackButton);
         getSupportActionBar().setDisplayShowHomeEnabled(includeBackButton);
+    }
+
+    protected void openFragment(Fragment fragment) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.container, fragment)
+                    .addToBackStack(null)
+                    .commit();
     }
 
 }

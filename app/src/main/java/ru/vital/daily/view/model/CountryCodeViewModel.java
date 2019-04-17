@@ -6,7 +6,4 @@ import androidx.annotation.NonNull;
 
 public class CountryCodeViewModel extends ViewModel {
 
-    public CountryCodeViewModel(@NonNull Application application) {
-        super(application);
-    }
 }

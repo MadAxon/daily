@@ -23,9 +23,11 @@ public class SettingsViewModel extends ViewModel {
 
     public String versionName;
 
-    public SettingsViewModel(@NonNull Application application) {
-        super(application);
-    }
+    public final String fragmentPhoneTag = "fragmentPhoneTag",
+            fragmentLoginTag = "fragmentLoginTag",
+            fragmentDescriptionTag = "fragmentDescriptionTag",
+            fragmentEmailTag = "fragmentEmailTag",
+            fragmentHistoryTag = "fragmentHistoryTag";
 
     public void onConditionClicked() {
         conditionClickedEvent.call();

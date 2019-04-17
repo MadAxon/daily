@@ -19,7 +19,7 @@ public class EditView extends ConstraintLayout {
 
     private String text, hint;
 
-    private Integer inputType, maxLength;
+    private Integer inputType, maxLength, maxLines;
 
     private boolean showSearchIcon, focusable;
 
@@ -47,6 +47,7 @@ public class EditView extends ConstraintLayout {
         showSearchIcon = typedArray.getBoolean(R.styleable.EditView_showSearchIcon, true);
         focusable = typedArray.getBoolean(R.styleable.EditView_android_focusable, true);
         maxLength = typedArray.getInteger(R.styleable.EditView_android_maxLength, 0);
+        maxLines = typedArray.getInteger(R.styleable.EditView_android_maxLines, 0);
         typedArray.recycle();
         init(context);
     }
@@ -58,6 +59,7 @@ public class EditView extends ConstraintLayout {
         binding.editText.setText(text);
         binding.editText.setHint(hint);
         binding.editText.setTypeface(Typeface.create("roboto_regular", Typeface.NORMAL));
+
         binding.setShowSearchIcon(showSearchIcon);
         binding.setFocusable(focusable);
         binding.setClickListener(v -> this.performClick());
@@ -65,6 +67,8 @@ public class EditView extends ConstraintLayout {
             binding.editText.setFilters(new InputFilter[]{
                     new InputFilter.LengthFilter(maxLength)
             });
+        if (maxLines != 0)
+            binding.editText.setMaxLines(maxLines);
     }
 
     public String getText() {

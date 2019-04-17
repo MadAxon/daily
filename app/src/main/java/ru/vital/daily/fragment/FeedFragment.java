@@ -26,7 +26,7 @@ public class FeedFragment extends BaseFragment<FeedViewModel, FragmentFeedBindin
 
     @Override
     protected FeedViewModel onCreateViewModel() {
-        return ViewModelProviders.of(this).get(FeedViewModel.class);
+        return ViewModelProviders.of(this, viewModelFactory).get(FeedViewModel.class);
     }
 
     @Override

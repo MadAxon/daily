@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'Daily'
+            keyPassword 'J4k4+Oz@'
+            storeFile file('D:/workspace/androidstudio/daily/keystore.jks')
+            storePassword '^fj43!f_'
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "ru.vital.daily"
@@ -14,6 +22,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
     dataBinding {
@@ -34,15 +43,25 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.8'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0-alpha03'
-
+    implementation 'com.google.dagger:dagger:2.21'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.21'
+    implementation 'com.google.dagger:dagger-android:2.21'
+    annotationProcessor 'com.google.dagger:dagger-android-processor:2.21'
+    implementation 'com.google.dagger:dagger-android-support:2.21'
+    annotationProcessor 'com.bluelinelabs:logansquare-compiler:1.3.7'
+    implementation 'com.bluelinelabs:logansquare:1.3.7'
+    implementation 'com.github.aurae.retrofit2:converter-logansquare:1.4.1'
+    implementation 'androidx.room:room-runtime:2.1.0-alpha04'
+    annotationProcessor "androidx.room:room-compiler:2.1.0-alpha04"
+    implementation 'androidx.room:room-rxjava2:2.1.0-alpha04'
     implementation 'com.makeramen:roundedimageview:2.3.0'
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
     implementation 'io.michaelrocks:libphonenumber-android:8.10.7'
-
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
 }

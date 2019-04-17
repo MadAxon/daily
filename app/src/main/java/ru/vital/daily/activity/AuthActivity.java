@@ -15,7 +15,7 @@ public class AuthActivity extends BaseActivity<AuthViewModel, ActivityAuthBindin
 
     @Override
     protected AuthViewModel onCreateViewModel() {
-        return ViewModelProviders.of(this).get(AuthViewModel.class);
+        return ViewModelProviders.of(this, viewModelFactory).get(AuthViewModel.class);
     }
 
     @Override
@@ -31,6 +31,7 @@ public class AuthActivity extends BaseActivity<AuthViewModel, ActivityAuthBindin
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        viewModel.mutableLiveData.setValue("activity is here");
         if (savedInstanceState == null)
             getSupportFragmentManager()
                     .beginTransaction()

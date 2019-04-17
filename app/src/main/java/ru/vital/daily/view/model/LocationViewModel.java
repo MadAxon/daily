@@ -10,10 +10,6 @@ public class LocationViewModel extends ViewModel {
     public SingleLiveEvent<Void> shareLiveClickEvent = new SingleLiveEvent<>(),
                                 sendCurrentClickEvent = new SingleLiveEvent<>();
 
-    public LocationViewModel(@NonNull Application application) {
-        super(application);
-    }
-
     public void onShareLiveClicked() {
         shareLiveClickEvent.call();
     }
