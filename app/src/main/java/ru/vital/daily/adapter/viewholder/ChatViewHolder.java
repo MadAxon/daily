@@ -1,12 +1,12 @@
 package ru.vital.daily.adapter.viewholder;
 
-import androidx.databinding.ViewDataBinding;
 import ru.vital.daily.BR;
+import ru.vital.daily.databinding.ItemChatBinding;
 import ru.vital.daily.view.model.item.ChatItemViewModel;
 
-public class ChatViewHolder extends BaseViewHolder<ChatItemViewModel, Object> {
+public class ChatViewHolder extends BaseViewHolder<ChatItemViewModel, String> {
 
-    public ChatViewHolder(ViewDataBinding viewDataBinding) {
+    public ChatViewHolder(ItemChatBinding viewDataBinding) {
         super(viewDataBinding);
     }
 

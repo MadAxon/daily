@@ -6,7 +6,7 @@
     <data>
         <variable
             name="adapter"
-            type="ru.vital.daily.adapter.ChatAdapter"/>
+            type="ru.vital.daily.adapter.MessageAdapter"/>
         <variable
             name="viewModel"
             type="ru.vital.daily.view.model.ChatViewModel"/>

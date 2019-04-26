@@ -8,14 +8,16 @@ import javax.inject.Inject;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 import ru.vital.daily.listener.SingleLiveEvent;
+import ru.vital.daily.repository.KeyRepository;
 
 public class AuthViewModel extends ViewModel {
+
+    public final String signInFragmentTag = "signInFragmentTag",
+                    registerFragmentTag = "registerFragmentTag";
 
     public SingleLiveEvent<Void> openSignEmailEvent = new SingleLiveEvent<>(),
             openSignPhoneEvent = new SingleLiveEvent<>(),
             openRegisterEvent = new SingleLiveEvent<>();
-
-    public MutableLiveData<String> mutableLiveData = new MutableLiveData<>();
 
     @Inject
     public AuthViewModel() {

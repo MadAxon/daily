@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -28,7 +28,7 @@
     </style>
 
     <style name="TextView" parent="TextAppearance.AppCompat.Small">
-
+        <item name="android:textColor">@android:color/white</item>
     </style>
 
     <style name="TextView.Light">
@@ -132,6 +132,23 @@
 
     <style name="CloseButton" parent="Widget.AppCompat.Light.ActionButton.CloseMode">
         <item name="android:tint">@color/colorPrimaryDark</item>
+    </style>
+
+    <style name="ProgressBarHorizontal" parent="Widget.AppCompat.ProgressBar.Horizontal">
+        <item name="android:progressTint">@color/colorAccent</item>
+        <item name="android:indeterminate">true</item>
+    </style>
+    
+    <style name="ProgressWheel">
+        <item name="matProg_progressIndeterminate">true</item>
+        <item name="matProg_barWidth">2dp</item>
+        <item name="matProg_barColor">@color/colorPrimaryDark</item>
+        <item name="matProg_fillRadius">true</item>
+    </style>
+
+    <style name="ProgressWheel.Large">
+        <item name="android:layout_width">88dp</item>
+        <item name="android:layout_height">88dp</item>
     </style>
 
 </resources>

@@ -1,5 +1,7 @@
 package ru.vital.daily.fragment.sheet;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 
 import java.util.ArrayList;
@@ -86,6 +88,11 @@ public class SimpleSheetFragment extends BaseSheetFragment<SimpleSheetViewModel,
         dataBinding.getAdapter().clickEvent.observe(this, fragmentSheetModel -> {
             if (getActivity() != null && getActivity() instanceof BaseSheetFragment.OnDismissListener)
                 ((BaseSheetFragment.OnDismissListener) getActivity()).onDismiss(getTag(), fragmentSheetModel.getStringId());
+            else if (getTargetFragment() != null) {
+                Intent intent = new Intent();
+                intent.putExtra(Intent.EXTRA_TEXT, fragmentSheetModel.getStringId());
+                getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
+            }
             dismiss();
         });
 

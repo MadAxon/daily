@@ -6,4 +6,6 @@ import androidx.annotation.NonNull;
 
 public class GroupViewModel extends ViewModel {
 
+    public final String groupCreateFragmentTag = "groupCreateFragmentTag";
+
 }

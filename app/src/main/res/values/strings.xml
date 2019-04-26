@@ -30,6 +30,7 @@
     <string name="registration_hint_country">Укажите страну</string>
     <string name="registration_there_is_account">У меня уже есть аккаунт</string>
     <string name="registration_hint_username">Укажите свой никнейм</string>
+    <string name="registration_avatar">Укажите фото</string>
 
     <string name="sign_out">Выйти</string>
 
@@ -145,24 +146,51 @@
     <string name="sheet_location_radio_8_hour">8 часов</string>
     <string name="sheet_change_number">Изменить номер</string>
     <string name="sheet_clean_search">Очистить историю поиска</string>
+    <string name="sheet_avatar_photo">Фото</string>
+    <string name="sheet_avatar_gallery">Галерея</string>
 
     <string name="chat_call">Звонок собеседнику</string>
     <string name="chat_empty">Здесь еще нет сообщений</string>
     <string name="chat_hint">Сообщение</string>
-    <string name="chat_group_name_hint">Название канала</string>
-    <string name="chat_group_description_hint">Описание к каналу</string>
-    <string name="chat_group_public_title">Публичный канал</string>
-    <string name="chat_group_public_info">Публичный канал отображается в списке поиска, любой может присоединиться к нему</string>
-    <string name="chat_group_link_hint">Укажите уникальную ссылку для вашего канала</string>
-    <string name="chat_group_link_free">Эта ссылка доступна</string>
-    <string name="chat_group_link_warn">Эта ссылка уже используется</string>
+    <string name="chat_channel_name_hint">Название канала</string>
+    <string name="chat_channel_description_hint">Описание к каналу</string>
+    <string name="chat_channel_public_title">Публичный канал</string>
+    <string name="chat_channel_public_info">Публичный канал отображается в списке поиска, любой может присоединиться к нему</string>
+    <string name="chat_channel_link_hint">Уникальная ссылка для канала</string>
+    <string name="chat_channel_link_free">Эта ссылка доступна</string>
+    <string name="chat_channel_link_warn">Эта ссылка уже используется</string>
     <string name="chat_group_add_participants">Добавить участников</string>
     <string name="chat_group_invites">Отправить приглашения…</string>
+    <string name="chat_group_name_hint">Название группы</string>
+    <string name="chat_new_channel">Создать канал</string>
+    <string name="chat_new_group">Создать группу</string>
+    <string name="chat_new_title">Новый чат</string>
+    <string name="chat_new_settings">Настройки канала</string>
+    <string name="chat_status_last_online">Был(а) %s</string>
+    <plurals name="members">
+        <item quantity="zero">Нет участников</item>
+        <item quantity="one">%d участник</item>
+        <item quantity="two">%d участника</item>
+        <item quantity="few">%d участника</item>
+        <item quantity="many">%d участников</item>
+        <item quantity="other">%d участников</item>
+    </plurals>
+    <string name="chat_add_members">Добавить участников</string>
+
+    <string name="users_empty">Список пользователей пуст</string>
+    <string name="contacts_empty">У вас нет контактов</string>
 
     <string name="paint_text_classic">Классический</string>
     <string name="paint_text_bold">Жирный</string>
     <string name="paint_text_bold_italic">Жирный курсив</string>
     <string name="paint_text_italic">Курсив</string>
     <string name="paint_text_neon">Неон</string>
+
+    <string name="connectivity_lost">Отсутствует интернет соединение</string>
+    <string name="connectivity_alive">Интернет соединение восстановлено</string>
+    <string name="connectivity_timeout">Сервер не отвечает</string>
+
+    <string name="permission_camera_denied">Вы запретили доступ к камере телефона</string>
+    <string name="permission_users_denied">Вы запретили доступ к своим контактам</string>
 
 </resources>

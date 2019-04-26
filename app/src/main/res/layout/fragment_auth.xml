@@ -17,6 +17,7 @@
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:stateListAnimator="@animator/appbar_elevation"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -33,6 +34,12 @@
 
             </androidx.appcompat.widget.Toolbar>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_gravity="bottom"
+                android:background="@color/color_separator" />
+
         </com.google.android.material.appbar.AppBarLayout>
 
         <Button
@@ -44,26 +51,10 @@
             android:layout_marginEnd="16dp"
             android:onClick="@{() -> viewModel.openSignInPhone()}"
             android:text="@string/sign_in_phone"
-            app:layout_constraintBottom_toTopOf="@+id/button6"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/button4" />
-
-        <Button
-            android:id="@+id/button6"
-            style="@style/RoundedButton.Outlined"
-            android:layout_width="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:onClick="@{() -> viewModel.openRegister()}"
-            android:text="@string/sign_in_no_account"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button5" />
 
         <Button
             android:id="@+id/button4"

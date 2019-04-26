@@ -9,7 +9,7 @@
             type="ru.vital.daily.adapter.ContactAdapter"/>
         <variable
             name="viewModel"
-            type="ru.vital.daily.view.model.GroupCreateViewModel"/>
+            type="ru.vital.daily.view.model.ChannelCreateViewModel"/>
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

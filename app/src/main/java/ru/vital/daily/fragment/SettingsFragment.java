@@ -39,7 +39,7 @@ public class SettingsFragment extends BaseFragment<SettingsViewModel, FragmentSe
         viewModel.versionName = BuildConfig.VERSION_NAME;
 
         viewModel.notificationClickedEvent.observe(this, aVoid -> {
-            openFragment(new SettingsNotificationFragment());
+            openFragment(new SettingsNotificationFragment(), viewModel.settingsNotificationFragmentTag);
         });
         viewModel.phoneClickedEvent.observe(this, aVoid -> {
             SimpleSheetFragment.newInstance("+7 (985) 822-81-18", new int[]{R.string.sheet_change_number, R.string.common_copy}).show(getChildFragmentManager(), viewModel.fragmentPhoneTag);

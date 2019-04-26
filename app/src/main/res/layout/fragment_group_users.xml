@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View"/>
         <variable
             name="adapter"
             type="ru.vital.daily.adapter.ContactAdapter"/>
@@ -15,6 +16,8 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clickable="true"
+        android:background="@android:color/white"
         android:focusable="true"
         android:focusableInTouchMode="true">
 
@@ -36,25 +39,62 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="?actionBarSize">
 
-                    <ru.vital.daily.view.EditView
+                    <ProgressBar
+                        style="@style/ProgressBarHorizontal"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="32dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginBottom="32dp"
-                        android:hint="@string/common_search"
-                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <View
-                        android:id="@+id/view"
-                        style="@style/Separator"
+                    <com.makeramen.roundedimageview.RoundedImageView
+                        android:id="@+id/roundedImageView17"
+                        style="@style/RoundedImageView.Big"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="24dp"
+                        android:layout_marginBottom="24dp"
+                        android:background="@color/color_group_avatar_background"
+                        android:onClick="@{() -> viewModel.onCoverClicked()}"
+                        android:padding="@{viewModel.avatar != null ? @dimen/image_view_padding_avatar : @dimen/image_view_padding_no_avatar}"
+                        android:scaleType="centerCrop"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent" />
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:placeholder="@{@drawable/ic_add_white}"
+                        app:riv_border_color="@android:color/transparent"
+                        app:riv_mutate_background="true"
+                        app:uri="@{viewModel.avatar}" />
+
+                    <EditText
+                        android:id="@+id/editText3"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="@null"
+                        android:fontFamily="@font/roboto_medium"
+                        android:hint="@string/chat_group_name_hint"
+                        android:inputType="textPersonName|textCapSentences"
+                        android:textColor="@color/color_edit_text_hint"
+                        android:textColorHint="@color/color_edit_text_hint"
+                        app:layout_constraintBottom_toTopOf="@+id/textView87"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView17"
+                        app:layout_constraintTop_toTopOf="@+id/roundedImageView17"
+                        app:layout_constraintVertical_chainStyle="packed" />
+
+                    <TextView
+                        android:id="@+id/textView87"
+                        style="@style/TextView.Light"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@{@plurals/members(viewModel.users.size(), viewModel.users.size())}"
+                        app:layout_constraintBottom_toBottomOf="@+id/roundedImageView17"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView17"
+                        app:layout_constraintTop_toBottomOf="@+id/editText3" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.appcompat.widget.Toolbar
@@ -76,6 +116,7 @@
                     android:layout_height="1dp"
                     android:background="@color/color_separator"
                     app:layout_collapseMode="pin"
+                    android:layout_gravity="bottom"
                     android:layout_marginTop="?actionBarSize"/>
 
             </com.google.android.material.appbar.CollapsingToolbarLayout>
@@ -83,6 +124,7 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:adapter="@{adapter}"

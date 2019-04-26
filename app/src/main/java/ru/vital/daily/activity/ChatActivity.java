@@ -9,7 +9,7 @@ import androidx.appcompat.view.ActionMode;
 import androidx.lifecycle.ViewModelProviders;
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
-import ru.vital.daily.adapter.ChatAdapter;
+import ru.vital.daily.adapter.MessageAdapter;
 import ru.vital.daily.databinding.ActivityChatBinding;
 import ru.vital.daily.view.model.ChatViewModel;
 
@@ -37,7 +37,7 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
         super.onCreate(savedInstanceState);
         setupToolbar(dataBinding.toolbar, true);
 
-        dataBinding.setAdapter(new ChatAdapter());
+        dataBinding.setAdapter(new MessageAdapter());
         dataBinding.getAdapter().clickEvent.observe(this, o -> {
 
         });

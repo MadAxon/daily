@@ -11,11 +11,11 @@ import androidx.databinding.InverseBindingMethods;
 import ru.vital.daily.view.EditView;
 
 @InverseBindingMethods({
-        @InverseBindingMethod(type = EditView.class, attribute = "text")
+        @InverseBindingMethod(type = EditView.class, attribute = "android:text")
 })
 public class EditViewBinding {
 
-    @BindingAdapter(value = "textAttrChanged")
+    @BindingAdapter(value = "android:textAttrChanged")
     public static void setListener(EditView editView, final InverseBindingListener inverseBindingListener) {
         if (inverseBindingListener != null)
             editView.binding.editText.addTextChangedListener(new TextWatcher() {
@@ -36,12 +36,12 @@ public class EditViewBinding {
             });
     }
 
-    @BindingAdapter("text")
+    @BindingAdapter("android:text")
     public static void setText(EditView editView, String text) {
         if (text != null && !text.equals(editView.getText())) editView.setText(text);
     }
 
-    @InverseBindingAdapter(attribute = "text")
+    @InverseBindingAdapter(attribute = "android:text")
     public static String getText(EditView editView) {
         return editView.getText();
     }

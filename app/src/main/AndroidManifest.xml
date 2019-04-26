@@ -5,6 +5,11 @@
 
     <dist:module dist:instant="true" />
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
     <application
         android:name=".DailyApplication"
         android:allowBackup="true"
@@ -17,25 +22,39 @@
         <activity android:name=".activity.NotificationActivity" />
         <activity
             android:name=".activity.MainActivity"
-            android:theme="@style/AppTheme.SplashScreen" />
+            android:windowSoftInputMode="adjustNothing"
+            android:theme="@style/AppTheme.SplashScreen">
 
-        <meta-data
-            android:name="preloaded_fonts"
-            android:resource="@array/preloaded_fonts" />
-
-        <activity android:name=".activity.AuthActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+
         <activity android:name=".activity.SettingsActivity" />
         <activity android:name=".activity.PostActivity" />
         <activity android:name=".activity.SharedMediaActivity" />
         <activity android:name=".activity.CountryCodeActivity" />
         <activity android:name=".activity.ChatActivity" />
         <activity android:name=".activity.GroupInfoActivity"/>
+        <activity android:name=".activity.ChatCreateActivity"
+            android:windowSoftInputMode="adjustNothing"/>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="ru.vital.daily.fileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+        <import type="android.view.View"/>
         <variable
             name="viewModel"
             type="ru.vital.daily.view.model.ConfirmationViewModel"/>
@@ -34,7 +35,24 @@
 
             </androidx.appcompat.widget.Toolbar>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_gravity="bottom"
+                android:background="@color/color_separator" />
+
         </com.google.android.material.appbar.AppBarLayout>
+
+        <ProgressBar
+            style="@style/ProgressBarHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/appBarLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
 
         <ru.vital.daily.view.EditView
             android:id="@+id/editView4"
@@ -45,6 +63,9 @@
             android:layout_marginEnd="16dp"
             android:hint="@string/confirmation_code"
             android:maxLines="1"
+            android:inputType="number"
+            android:text="@={viewModel.code}"
+            app:showSearchIcon="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -58,7 +79,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
-            android:text="TextView"
+            android:text="@{@string/confirmation_info(viewModel.isPhoneSignIn ? @string/confirmation_phone : @string/confirmation_email, viewModel.isPhoneSignIn ? viewModel.phoneRequest.phone : viewModel.emailRequest.email)}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"

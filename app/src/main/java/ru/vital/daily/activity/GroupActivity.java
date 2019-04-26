@@ -1,13 +1,11 @@
 package ru.vital.daily.activity;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
 import ru.vital.daily.databinding.ActivityGroupBinding;
-import ru.vital.daily.fragment.AuthFragment;
-import ru.vital.daily.fragment.GroupCreateFragment;
+import ru.vital.daily.fragment.ChannelCreateFragment;
 import ru.vital.daily.view.model.GroupViewModel;
 
 import android.os.Bundle;
@@ -33,9 +31,6 @@ public class GroupActivity extends BaseActivity<GroupViewModel, ActivityGroupBin
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null)
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.container, new GroupCreateFragment())
-                    .commitNow();
+            replaceFragment(new ChannelCreateFragment(), viewModel.groupCreateFragmentTag);
     }
 }

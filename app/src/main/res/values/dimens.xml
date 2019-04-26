@@ -9,4 +9,7 @@
     <dimen name="image_view_padding_simple_icon">12dp</dimen>
     <dimen name="image_view_padding_circle_image">0dp</dimen>
 
+    <dimen name="image_view_padding_no_avatar">16dp</dimen>
+    <dimen name="image_view_padding_avatar">0dp</dimen>
+
 </resources>

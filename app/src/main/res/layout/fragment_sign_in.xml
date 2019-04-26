@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <import type="android.text.InputType"/>
+        <import type="android.view.View"/>
         <variable
             name="viewModel"
             type="ru.vital.daily.view.model.SignInViewModel"/>
@@ -20,6 +20,7 @@
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:stateListAnimator="@animator/appbar_elevation"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -36,7 +37,24 @@
 
             </androidx.appcompat.widget.Toolbar>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_gravity="bottom"
+                android:background="@color/color_separator" />
+
         </com.google.android.material.appbar.AppBarLayout>
+
+        <ProgressBar
+            style="@style/ProgressBarHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/appBarLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
 
         <ru.vital.daily.view.EditView
             android:id="@+id/editView"
@@ -45,29 +63,34 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:inputType="@{viewModel.isPhoneSignIn ? InputType.TYPE_CLASS_PHONE : InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS}"
-            android:hint="@{viewModel.isPhoneSignIn ? @string/sign_in_hint_phone : @string/sign_in_hint_email}"
+            android:hint="@string/sign_in_hint_phone"
+            android:inputType="phone"
             android:maxLines="1"
-            app:showSearchIcon="false"
+            android:text="@={viewModel.phoneRequest.phone}"
+            android:visibility="@{viewModel.isPhoneSignIn ? View.VISIBLE : View.GONE}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
+            app:layout_constraintTop_toBottomOf="@+id/appBarLayout"
+            app:showSearchIcon="false" />
 
         <ru.vital.daily.view.EditView
+            android:id="@+id/editView1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:inputType="textPassword"
-            android:hint="@string/sign_in_hint_password"
+            android:hint="@string/sign_in_hint_email"
+            android:inputType="textEmailAddress"
             android:maxLines="1"
-            app:showSearchIcon="false"
+            android:text="@={viewModel.emailRequest.email}"
+            android:visibility="@{viewModel.isPhoneSignIn ? View.GONE : View.VISIBLE}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editView" />
+            app:layout_constraintTop_toBottomOf="@+id/appBarLayout"
+            app:showSearchIcon="false" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

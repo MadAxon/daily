@@ -7,6 +7,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 import io.reactivex.Single;
 import ru.vital.daily.repository.data.Key;
 
@@ -16,15 +17,18 @@ public interface KeyDao {
     @Query("SELECT * from keys")
     Single<List<Key>> getKeys();
 
-    @Query("SELECT * from keys where accessKey = :accessKey")
-    Single<List<Key>> getKey(String accessKey);
+    @Query("SELECT * from keys where isCurrent = 1")
+    Single<Key> getCurrentKey();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Key key);
 
-    @Delete
-    void delete(Key key);
+    @Query("UPDATE keys SET userId = :userId where isCurrent = 1")
+    void updateCurrentUserId(long userId);
 
-    @Delete
-    void delete(List<Key> keys);
+    @Query("DELETE from keys")
+    void deleteAll();
+
+    @Query("DELETE from keys where userId = :userId")
+    void delete(long userId);
 }

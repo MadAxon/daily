@@ -20,6 +20,7 @@ public class ItemsResponseHandler<M> implements Consumer<ItemsResponse<M>> {
     @Override
     public void accept(ItemsResponse<M> itemResponse) throws Exception {
         switch (itemResponse.getStatusCode()) {
+            case 0:
             case 200:
                 successConsumer.accept(itemResponse.getItems());
                 break;

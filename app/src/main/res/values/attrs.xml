@@ -8,6 +8,7 @@
         <attr name="android:maxLength" />
         <attr name="android:maxLines" />
         <attr name="showSearchIcon" format="boolean" />
+        <attr name="android:enabled" format="boolean"/>
     </declare-styleable>
     <declare-styleable name="ProgressView">
         <attr name="progressCount" format="integer|reference" />

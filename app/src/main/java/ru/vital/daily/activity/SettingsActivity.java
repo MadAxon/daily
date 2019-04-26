@@ -1,7 +1,6 @@
 package ru.vital.daily.activity;
 
 import android.os.Bundle;
-import android.view.Menu;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
@@ -35,10 +34,8 @@ public class SettingsActivity extends BaseActivity<SettingsViewModel, ActivitySe
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.container, new SettingsFragment())
-                .commitNow();
+        if (savedInstanceState == null)
+            replaceFragment(new SettingsFragment(), viewModel.settingsFragmentTag);
     }
 
     @Override
@@ -46,7 +43,7 @@ public class SettingsActivity extends BaseActivity<SettingsViewModel, ActivitySe
         if (tag.equals(viewModel.fragmentDescriptionTag)) {
             switch (stringId) {
                 case R.string.common_change:
-                    openFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.description));
+                    addFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.description), viewModel.settingsPersonalFragmentTag);
                     break;
                 case R.string.common_copy_link:
 
@@ -55,7 +52,7 @@ public class SettingsActivity extends BaseActivity<SettingsViewModel, ActivitySe
         } else if (tag.equals(viewModel.fragmentEmailTag)) {
             switch (stringId) {
                 case R.string.common_change:
-                    openFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.email));
+                    addFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.email), viewModel.settingsPersonalFragmentTag);
                     break;
                 case R.string.common_copy:
 
@@ -70,7 +67,7 @@ public class SettingsActivity extends BaseActivity<SettingsViewModel, ActivitySe
         } else if (tag.equals(viewModel.fragmentLoginTag)) {
             switch (stringId) {
                 case R.string.common_change:
-                    openFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.login));
+                    addFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.login), viewModel.settingsPersonalFragmentTag);
                     break;
                 case R.string.common_copy:
 
@@ -79,7 +76,7 @@ public class SettingsActivity extends BaseActivity<SettingsViewModel, ActivitySe
         } else if (tag.equals(viewModel.fragmentPhoneTag)) {
             switch (stringId) {
                 case R.string.sheet_change_number:
-                    openFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.phone));
+                    addFragment(SettingsPersonalFragment.newInstance(SettingsPersonalType.phone), viewModel.settingsPersonalFragmentTag);
                     break;
                 case R.string.common_copy:
 

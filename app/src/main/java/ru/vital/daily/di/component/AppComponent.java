@@ -18,7 +18,7 @@ import ru.vital.daily.di.module.RoomModule;
         AndroidSupportInjectionModule.class,
         AppModule.class,
         RoomModule.class,
-        ActivityBuilderModule.class
+        ActivityBuilderModule.class,
 })
 public interface AppComponent {
 

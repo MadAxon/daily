@@ -1,9 +1,15 @@
 package ru.vital.daily.repository.api.response;
 
-public class BaseResponse {
+import com.bluelinelabs.logansquare.annotation.JsonField;
+import com.bluelinelabs.logansquare.annotation.JsonObject;
 
+@JsonObject
+public class BaseResponse<M> {
+
+    @JsonField
     private int statusCode;
 
+    @JsonField
     private String message;
 
     public int getStatusCode() {

@@ -1,9 +1,12 @@
 package ru.vital.daily.activity;
 
-import android.app.Activity;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.inputmethod.InputMethodManager;
+
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 import javax.inject.Inject;
 
@@ -15,17 +18,19 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import dagger.android.AndroidInjection;
 import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.support.HasSupportFragmentInjector;
 import ru.vital.daily.R;
+import ru.vital.daily.broadcast.ConnectivityBroadcast;
+import ru.vital.daily.util.SnackbarProvider;
 import ru.vital.daily.view.model.ViewModel;
 
 
 public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBinding>
-        extends AppCompatActivity implements HasSupportFragmentInjector {
+        extends AppCompatActivity implements HasSupportFragmentInjector, Observer<Throwable> {
 
     @Inject
     ViewModelProvider.Factory viewModelFactory;
@@ -33,15 +38,18 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
     @Inject
     DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;
 
-    private InputMethodManager inputMethodManager;
+    @Inject
+    ConnectivityBroadcast connectivityBroadcast;
+
+    @Inject
+    InputMethodManager inputMethodManager;
+
+    @Inject
+    IntentFilter connectivityIntentFilter;
 
     protected VM viewModel;
 
     protected B dataBinding;
-
-    protected static final int STATUS_REQUEST = 0;
-
-    protected static final String STATUS_MESSAGE = "STATUS_MESSAGE";
 
     protected abstract VM onCreateViewModel();
 
@@ -60,6 +68,11 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        connectivityBroadcast.isOnline.observe(this, isOnline -> {
+            if (isOnline)
+                SnackbarProvider.getSuccessSnackbar(dataBinding.getRoot(), getString(R.string.connectivity_alive)).show();
+            else SnackbarProvider.getWarnSnackbar(dataBinding.getRoot(), getString(R.string.connectivity_lost)).show();
+        });
 
         dataBinding = DataBindingUtil.setContentView(this, getLayoutId());
         dataBinding.setLifecycleOwner(this);
@@ -68,21 +81,20 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
         dataBinding.setVariable(getVariable(), viewModel);
         dataBinding.executePendingBindings();
 
-        //viewModel.getStatusLiveEvent().observe(this, this);
+        viewModel.errorEvent.observe(this, this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         viewModel.onResume();
+        registerReceiver(connectivityBroadcast, connectivityIntentFilter);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         viewModel.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == STATUS_REQUEST && resultCode == Activity.RESULT_OK);
-            //showSuccessSnackbar(data.getStringExtra(STATUS_MESSAGE));
     }
 
     @Override
@@ -97,6 +109,12 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
         viewModel.onDestroy();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(connectivityBroadcast);
+    }
+
     protected void setupToolbar(Toolbar toolbar, boolean includeBackButton) {
         setSupportActionBar(toolbar);
         assert getSupportActionBar() != null;
@@ -105,12 +123,34 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
         getSupportActionBar().setDisplayShowHomeEnabled(includeBackButton);
     }
 
-    protected void openFragment(Fragment fragment) {
+    protected void addFragment(Fragment fragment, String tag) {
+        if (getSupportFragmentManager().findFragmentByTag(tag) == null)
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.container, fragment)
+                    .add(R.id.container, fragment, tag)
                     .addToBackStack(null)
                     .commit();
     }
 
+    protected void replaceFragment(Fragment fragment, String tag) {
+        if (getSupportFragmentManager().findFragmentByTag(tag) == null)
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.container, fragment, tag)
+                    .commit();
+    }
+
+    @Override
+    public void onChanged(Throwable error) {
+        if (error instanceof UnknownHostException && connectivityBroadcast.isOnline.getValue() != null
+                && !connectivityBroadcast.isOnline.getValue())
+            SnackbarProvider.getWarnSnackbar(dataBinding.getRoot(), getString(R.string.connectivity_lost)).show();
+        else if (error instanceof SocketTimeoutException)
+            SnackbarProvider.getWarnSnackbar(dataBinding.getRoot(), getString(R.string.connectivity_timeout)).show();
+        else SnackbarProvider.getWarnSnackbar(dataBinding.getRoot(), error.getMessage()).show();
+    }
+
+    protected void hideSoftKeyboard() {
+        inputMethodManager.hideSoftInputFromWindow(dataBinding.getRoot().getWindowToken(), 0);
+    }
 }

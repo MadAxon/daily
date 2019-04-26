@@ -10,17 +10,17 @@ public class ErrorResponse extends Throwable {
     }
 
     public ErrorResponse(String message) {
-        super(message);
+        //super(message);
         this.message = message;
     }
 
     public ErrorResponse(String message, int statusCode) {
-        super(message);
+        //super(message);
         this.message = message;
         this.statusCode = statusCode;
     }
 
-    @Override
+    //@Override
     public String getMessage() {
         return message;
     }

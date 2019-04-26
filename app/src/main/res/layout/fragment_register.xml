@@ -4,6 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+        <import type="android.view.View"/>
         <variable
             name="viewModel"
             type="ru.vital.daily.view.model.RegisterViewModel"/>
@@ -19,6 +20,7 @@
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:stateListAnimator="@animator/appbar_elevation"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -35,44 +37,54 @@
 
             </androidx.appcompat.widget.Toolbar>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_gravity="bottom"
+                android:background="@color/color_separator" />
+
         </com.google.android.material.appbar.AppBarLayout>
 
-        <ru.vital.daily.view.EditView
-            android:id="@+id/editView19"
+        <ProgressBar
+            style="@style/ProgressBarHorizontal"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:focusable="false"
-            app:showSearchIcon="false"
-            android:maxLines="1"
-            android:onClick="@{() -> viewModel.onCountryClick()}"
-            android:hint="@string/registration_hint_country"
-            app:layout_constraintBottom_toTopOf="@+id/editView18"
+            android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/appBarLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/appBarLayout"
-            app:layout_constraintVertical_bias="0.0"
-            app:layout_constraintVertical_chainStyle="packed" />
+            app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
 
-        <ru.vital.daily.view.EditView
-            android:id="@+id/editView18"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+
+        <com.makeramen.roundedimageview.RoundedImageView
+            android:id="@+id/roundedImageView17"
+            style="@style/RoundedImageView.Big"
             android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            app:showSearchIcon="false"
-            android:hint="@string/sign_in_hint_phone"
-            android:inputType="phone"
-            android:maxLines="1"
-            app:layout_constraintBottom_toTopOf="@+id/editView20"
+            android:background="@color/color_group_avatar_background"
+            android:padding="@{viewModel.avatar != null ? @dimen/image_view_padding_avatar : @dimen/image_view_padding_no_avatar}"
+            app:placeholder="@{@drawable/ic_add_white}"
+            app:uri="@{viewModel.avatar}"
+            android:onClick="@{() -> viewModel.onAvatarClick()}"
+            android:scaleType="centerCrop"
+            app:riv_mutate_background="true"
+            app:riv_border_color="@android:color/transparent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/textView"
-            app:layout_constraintTop_toBottomOf="@+id/editView19" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
+
+        <TextView
+            android:id="@+id/textView95"
+            style="@style/TextView.Light"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/registration_avatar"
+            android:onClick="@{() -> viewModel.onAvatarClick()}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/roundedImageView17" />
 
         <ru.vital.daily.view.EditView
             android:id="@+id/editView20"
@@ -81,14 +93,16 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            app:showSearchIcon="false"
-            android:hint="@string/sign_in_hint_email"
+            android:hint="@string/registration_hint_username"
             android:maxLines="1"
-            app:layout_constraintBottom_toTopOf="@+id/editView21"
+            android:text="@={viewModel.profileModel.uname}"
+            app:layout_constraintBottom_toTopOf="@+id/editView22"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editView18" />
+            app:layout_constraintTop_toBottomOf="@+id/textView95"
+            app:layout_constraintVertical_bias="0.0"
+            app:showSearchIcon="false" />
 
         <ru.vital.daily.view.EditView
             android:id="@+id/editView21"
@@ -97,14 +111,16 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            app:showSearchIcon="false"
             android:hint="@string/registration_hint_first_name"
             android:maxLines="1"
+            android:text="@={viewModel.profileModel.firstname}"
             app:layout_constraintBottom_toTopOf="@+id/editView22"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editView20" />
+            app:layout_constraintTop_toBottomOf="@+id/editView20"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:showSearchIcon="false" />
 
         <ru.vital.daily.view.EditView
             android:id="@+id/editView22"
@@ -113,40 +129,15 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            app:showSearchIcon="false"
             android:hint="@string/registration_hint_last_name"
             android:maxLines="1"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:text="@={viewModel.profileModel.lastname}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editView21" />
+            app:layout_constraintTop_toBottomOf="@+id/editView21"
+            app:showSearchIcon="false" />
 
-        <TextView
-            android:id="@+id/textView"
-            style="@style/TextView.Medium"
-            android:layout_width="48dp"
-            android:layout_height="wrap_content"
-            android:text="+"
-            android:textAlignment="textEnd"
-            android:textSize="18sp"
-            app:layout_constraintBottom_toBottomOf="@+id/editView18"
-            app:layout_constraintStart_toStartOf="@+id/editView19"
-            app:layout_constraintTop_toTopOf="@+id/editView18" />
-
-        <Button
-            android:id="@+id/button"
-            style="@style/RoundedButton.Outlined"
-            android:layout_width="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="24dp"
-            android:text="@string/registration_there_is_account"
-            android:onClick="@{() -> viewModel.goBack()}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

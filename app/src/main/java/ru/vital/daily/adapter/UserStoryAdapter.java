@@ -3,10 +3,8 @@ package ru.vital.daily.adapter;
 import androidx.annotation.NonNull;
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
-import ru.vital.daily.adapter.viewholder.UserMessageViewHolder;
 import ru.vital.daily.adapter.viewholder.UserStoryViewHolder;
 import ru.vital.daily.databinding.ItemUserStoryBinding;
-import ru.vital.daily.listener.SingleLiveEvent;
 
 public class UserStoryAdapter extends BaseAdapter<Object, UserStoryViewHolder, ItemUserStoryBinding> {
 

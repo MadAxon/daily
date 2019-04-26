@@ -1,6 +1,9 @@
 package ru.vital.daily.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -13,7 +16,8 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
-import ru.vital.daily.adapter.UserMessageAdapter;
+import ru.vital.daily.activity.ChatCreateActivity;
+import ru.vital.daily.adapter.ChatAdapter;
 import ru.vital.daily.databinding.FragmentHomeBinding;
 import ru.vital.daily.view.model.HomeViewModel;
 
@@ -38,7 +42,7 @@ public class HomeFragment extends BaseFragment<HomeViewModel, FragmentHomeBindin
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setupToolbar(dataBinding.toolbar, false);
-        dataBinding.setAdapter(new UserMessageAdapter());
+        dataBinding.setAdapter(new ChatAdapter());
         dataBinding.getAdapter().clickEvent.observe(this, aVoid -> {
         });
         viewModel.toolbarClickedEvent.observe(this, aVoid -> {
@@ -49,6 +53,30 @@ public class HomeFragment extends BaseFragment<HomeViewModel, FragmentHomeBindin
         arrayList.add("second");
         arrayList.add("third");
         dataBinding.getAdapter().updateItems(arrayList);
+
+        dataBinding.textInputEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 5) {
+                    dataBinding.textInputLayout.setError("Limit is reached");
+                    dataBinding.textInputEditText.setCompoundDrawablesWithIntrinsicBounds(getResources().getDrawable(R.drawable.ic_search), null, null, null);
+                }
+                else {
+                    dataBinding.textInputLayout.setErrorEnabled(false);
+                    dataBinding.textInputEditText.setCompoundDrawables(null, null, null, null);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
 
     @Override
@@ -61,7 +89,7 @@ public class HomeFragment extends BaseFragment<HomeViewModel, FragmentHomeBindin
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_add:
-                Log.i("my_logs", "menu_add");
+                startActivity(new Intent(getContext(), ChatCreateActivity.class));
                 break;
         }
         return super.onOptionsItemSelected(item);

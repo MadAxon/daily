@@ -19,6 +19,7 @@
     <color name="color_text_view_light">#BDBBD6</color>
     <color name="color_text_view_dark">#3F3E50</color>
     <color name="color_text_view_warn">#FF6161</color>
+    <color name="color_text_view_light_whiter">#EBE9FF</color>
 
     <color name="color_image_view_selected">#49AAFF</color>
 
@@ -43,5 +44,8 @@
     <color name="color_progress_view_background">#80fbfbfb</color>
     <color name="color_progress_view_audio_dark">#3F3E50</color>
     <color name="color_progress_view_audio_light">#F4F3FF</color>
+
+    <color name="color_snackbar_background_warn">#FF6161</color>
+    <color name="color_snackbar_background_success">#40C4FF</color>
 
 </resources>

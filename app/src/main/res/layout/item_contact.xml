@@ -3,9 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <data>
+        <variable
+            name="viewModel"
+            type="ru.vital.daily.view.model.item.ContactItemViewModel"/>
+    </data>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="@{() -> viewModel.onItemClicked()}"
         android:paddingTop="4dp"
         android:paddingBottom="4dp">
 
@@ -14,7 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:background="@drawable/background_contact_selected"
+            android:background="@{viewModel.selected ? @drawable/background_contact_selected : null}"
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -27,6 +34,7 @@
                 android:id="@+id/roundedImageView13"
                 style="@style/RoundedImageView.Medium"
                 android:layout_marginStart="4dp"
+                android:src="@{viewModel.item}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -34,31 +42,33 @@
 
             <TextView
                 android:id="@+id/textView51"
-                style="@style/TextView.Medium"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
+                android:fontFamily="@font/roboto_medium"
                 android:maxLines="1"
-                android:text="TextView"
+                android:text="@{viewModel.item.uname}"
+                android:textColor="@{viewModel.selected ? @android:color/white : @color/color_text_view_dark}"
                 app:layout_constraintEnd_toStartOf="@+id/textView53"
                 app:layout_constraintStart_toEndOf="@+id/roundedImageView13"
                 app:layout_constraintTop_toTopOf="@+id/roundedImageView13" />
 
             <TextView
                 android:id="@+id/textView52"
-                style="@style/TextView.Light"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
+                android:fontFamily="@font/roboto_regular"
                 android:maxLines="1"
-                android:text="TextView"
+                android:textColor="@{viewModel.selected ? @color/color_text_view_light_whiter : @color/color_text_view_light}"
                 app:layout_constraintBottom_toBottomOf="@+id/roundedImageView13"
                 app:layout_constraintEnd_toStartOf="@+id/textView53"
-                app:layout_constraintStart_toEndOf="@+id/roundedImageView13" />
+                app:layout_constraintStart_toEndOf="@+id/roundedImageView13"
+                app:statusText="@{viewModel.item.onlineAt}" />
 
             <TextView
                 android:id="@+id/textView53"
@@ -68,6 +78,7 @@
                 android:layout_marginEnd="24dp"
                 android:text="TextView"
                 android:textSize="20sp"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

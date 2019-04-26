@@ -7,6 +7,10 @@ import ru.vital.daily.listener.SingleLiveEvent;
 
 public class SettingsViewModel extends ViewModel {
 
+    public final String settingsNotificationFragmentTag = "settingsNotificationFragmentTag",
+                    settingsFragmentTag = "settingsFragmentTag",
+                    settingsPersonalFragmentTag = "settingsPersonalFragmentTag";
+
     public SingleLiveEvent<Void> languageClickedEvent = new SingleLiveEvent<>(),
                                 notificationClickedEvent = new SingleLiveEvent<>(),
                                 phoneClickedEvent = new SingleLiveEvent<>(),
