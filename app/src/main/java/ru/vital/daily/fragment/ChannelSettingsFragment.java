@@ -8,6 +8,7 @@ import android.view.MenuItem;
 
 import com.bluelinelabs.logansquare.LoganSquare;
 
+import java.io.File;
 import java.io.IOException;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ import ru.vital.daily.BR;
 import ru.vital.daily.R;
 import ru.vital.daily.databinding.FragmentChannelSettingsBinding;
 import ru.vital.daily.repository.model.ChatSaveModel;
+import ru.vital.daily.util.FileUtil;
 import ru.vital.daily.view.model.ChannelSettingsViewModel;
 
 public class ChannelSettingsFragment extends BaseFragment<ChannelSettingsViewModel, FragmentChannelSettingsBinding> {
@@ -79,10 +81,9 @@ public class ChannelSettingsFragment extends BaseFragment<ChannelSettingsViewMod
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_check_1:
-               /* viewModel.createChannel(chatId -> {
-                    openFragment(GroupUsersFragment.newInstance(chatId), viewModel.groupUsersFragmentTag);
-                });*/
-                openFragment(ContactFragment.newInstance(0), viewModel.contactFragmentTag);
+                viewModel.createChannel(viewModel.getAvatar() != null ? new File(viewModel.getAvatar().getPath()) : null, FileUtil.getMimeType(getActivity(), viewModel.getAvatar()), chatId -> {
+                    openFragment(ContactFragment.newInstance(chatId), viewModel.contactFragmentTag);
+                });
                 return true;
         }
         return super.onOptionsItemSelected(item);

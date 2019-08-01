@@ -11,4 +11,6 @@ public interface IViewModel {
     void onActivityResult(int requestCode, int resultCode, Intent data);
 
     void onDestroy();
+
+    void onStop();
 }

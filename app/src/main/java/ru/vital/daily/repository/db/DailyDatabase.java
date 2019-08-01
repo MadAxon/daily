@@ -7,23 +7,29 @@ import ru.vital.daily.repository.converter.DateConverter;
 import ru.vital.daily.repository.converter.MediaConverter;
 import ru.vital.daily.repository.converter.MediaListConverter;
 import ru.vital.daily.repository.converter.MediaModelListConverter;
+import ru.vital.daily.repository.converter.MessageContentConverter;
+import ru.vital.daily.repository.converter.MessageConverter;
 import ru.vital.daily.repository.converter.MessageInfoConverter;
 import ru.vital.daily.repository.converter.RelationConverter;
 import ru.vital.daily.repository.converter.SocialConverter;
 import ru.vital.daily.repository.converter.UserConverter;
 import ru.vital.daily.repository.converter.UserListConverter;
+import ru.vital.daily.repository.data.Action;
 import ru.vital.daily.repository.data.Chat;
+import ru.vital.daily.repository.data.Draft;
 import ru.vital.daily.repository.data.Key;
 import ru.vital.daily.repository.data.Media;
 import ru.vital.daily.repository.data.Message;
 import ru.vital.daily.repository.data.User;
+import ru.vital.daily.repository.model.MessageContentModel;
 
 @androidx.room.Database(entities = {
         User.class,
         Key.class,
         Chat.class,
-        Media.class,
-        Message.class
+        Message.class,
+        Action.class,
+        Draft.class
 },
         version = 1,
         exportSchema = false)
@@ -37,7 +43,9 @@ import ru.vital.daily.repository.data.User;
         MediaModelListConverter.class,
         MediaListConverter.class,
         MessageInfoConverter.class,
-        UserConverter.class
+        UserConverter.class,
+        MessageConverter.class,
+        MessageContentConverter.class
 })
 public abstract class DailyDatabase extends RoomDatabase {
 
@@ -47,8 +55,10 @@ public abstract class DailyDatabase extends RoomDatabase {
 
     public abstract ChatDao chatDao();
 
-    public abstract MediaDao mediaDao();
-
     public abstract MessageDao messageDao();
+
+    public abstract ActionDao actionDao();
+
+    public abstract DraftDao draftDao();
 
 }

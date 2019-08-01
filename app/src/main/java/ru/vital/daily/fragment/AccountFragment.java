@@ -13,7 +13,6 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import ru.vital.daily.BR;
@@ -22,14 +21,12 @@ import ru.vital.daily.activity.SettingsActivity;
 import ru.vital.daily.adapter.FeedAdapter;
 import ru.vital.daily.adapter.UserStoryAdapter;
 import ru.vital.daily.databinding.FragmentAccountBinding;
-import ru.vital.daily.enums.ItemViewType;
-import ru.vital.daily.util.GridItemDecoration;
+import ru.vital.daily.util.GridItemDoubleDecoration;
 import ru.vital.daily.view.model.AccountViewModel;
-import ru.vital.daily.view.model.MainViewModel;
 
 public class AccountFragment extends BaseFragment<AccountViewModel, FragmentAccountBinding> {
 
-    private final GridItemDecoration gridItemDecoration = new GridItemDecoration();
+    private final GridItemDoubleDecoration gridItemDecoration = new GridItemDoubleDecoration();
 
     @Override
     protected AccountViewModel onCreateViewModel() {

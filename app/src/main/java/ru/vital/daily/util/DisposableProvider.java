@@ -11,6 +11,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
+import ru.vital.daily.repository.api.request.EmptyJson;
 import ru.vital.daily.repository.api.response.BaseResponse;
 import ru.vital.daily.repository.api.response.ItemResponse;
 import ru.vital.daily.repository.api.response.ItemsResponse;
@@ -28,13 +29,20 @@ public final class DisposableProvider {
         return single.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(new ItemResponseHandler<>(onSuccess, onError), onError);
     }
 
-    public static Disposable getDisposableBase(Single<BaseResponse> single, Consumer<String> onSuccess, Consumer<Throwable> onError) {
+    public static Disposable getDisposableBase(Single<BaseResponse<EmptyJson>> single, Consumer<String> onSuccess, Consumer<Throwable> onError) {
         return single.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(new BaseResponseHandler(onSuccess, onError), onError);
     }
 
-
     public static void doCallable(Callable callable) {
-        Maybe.fromCallable(callable).toObservable().observeOn(Schedulers.io()).subscribeOn(Schedulers.io()).subscribe();
+        Observable.fromCallable(callable).observeOn(Schedulers.io()).subscribeOn(Schedulers.io()).subscribe();
+    }
+
+    public static <M> Observable<M> getCallable(Callable<M> callable) {
+        return Observable.fromCallable(callable).observeOn(Schedulers.io()).subscribeOn(Schedulers.io());
+    }
+
+    public static <M> Observable<M> getUICallable(Callable<M> callable) {
+        return Observable.fromCallable(callable).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io());
     }
 
 }

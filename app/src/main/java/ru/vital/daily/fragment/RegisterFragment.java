@@ -14,7 +14,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.inject.Inject;
@@ -28,12 +27,13 @@ import androidx.lifecycle.ViewModelProviders;
 import ru.vital.daily.R;
 import ru.vital.daily.BR;
 import ru.vital.daily.activity.CountryCodeActivity;
-import ru.vital.daily.activity.MainActivity;
 import ru.vital.daily.databinding.FragmentRegisterBinding;
 import ru.vital.daily.fragment.sheet.SimpleSheetFragment;
+import ru.vital.daily.repository.api.DailySocket;
 import ru.vital.daily.util.BitmapHandler;
 import ru.vital.daily.util.ContactsProvider;
 import ru.vital.daily.util.FileUtil;
+import ru.vital.daily.util.StaticData;
 import ru.vital.daily.view.model.MainViewModel;
 import ru.vital.daily.view.model.RegisterViewModel;
 
@@ -48,6 +48,9 @@ public class RegisterFragment extends BaseFragment<RegisterViewModel, FragmentRe
 
     @Inject
     PackageManager packageManager;
+
+    @Inject
+    DailySocket dailySocket;
 
     private File file;
 
@@ -75,7 +78,7 @@ public class RegisterFragment extends BaseFragment<RegisterViewModel, FragmentRe
             startActivityForResult(new Intent(getContext(), CountryCodeActivity.class), REQUEST_COUNTRY_CODE);
         });*/
         viewModel.avatarClickedEvent.observe(this, aVoid -> {
-            openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_camera, R.drawable.ic_media}, new int[]{R.string.sheet_avatar_photo, R.string.sheet_avatar_gallery}), viewModel.avatarSheetFragmentTag, REQUEST_AVATAR_CODE);
+            openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_camera, R.drawable.ic_media}, new int[]{R.string.sheet_photo, R.string.sheet_avatar_gallery}), viewModel.avatarSheetFragmentTag, REQUEST_AVATAR_CODE);
         });
     }
 
@@ -89,7 +92,7 @@ public class RegisterFragment extends BaseFragment<RegisterViewModel, FragmentRe
                     break;
                 case REQUEST_AVATAR_CODE:
                     switch (data.getIntExtra(Intent.EXTRA_TEXT, R.string.sheet_avatar_gallery)) {
-                        case R.string.sheet_avatar_photo:
+                        case R.string.sheet_photo:
                             if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
                                 ActivityCompat.requestPermissions(getActivity(),
                                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
@@ -118,7 +121,7 @@ public class RegisterFragment extends BaseFragment<RegisterViewModel, FragmentRe
                     if (data != null) {
                         Uri result = data.getData();
                         file = FileUtil.createTempFile(getContext(), "avatar", ".jpeg");
-                        if (FileUtil.copyImageFile(getContext(), result, file))
+                        if (FileUtil.copyFile(getContext(), result, file))
                             try {
                                 Bitmap bitmap = BitmapHandler.handleSamplingAndRotationBitmap(getContext(), Uri.fromFile(file));
                                 BitmapHandler.compress(bitmap, file);
@@ -146,6 +149,7 @@ public class RegisterFragment extends BaseFragment<RegisterViewModel, FragmentRe
                 //startActivity(new Intent(getContext(), MainActivity.class));
                 if (file != null)
                     viewModel.registerUser(file, FileUtil.getMimeType(getActivity(), viewModel.getAvatar()), user -> {
+                        dailySocket.connect(StaticData.getData().key.getAccessKey());
                         if (user.getPhone() != null) {
                             if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED)
                                 ActivityCompat.requestPermissions(getActivity(),

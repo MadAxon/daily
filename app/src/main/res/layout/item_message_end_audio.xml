@@ -4,22 +4,30 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+        <import type="ru.vital.daily.util.FileUtil"/>
+        <import type="android.view.View"/>
+        <import type="ru.vital.daily.enums.MessageContentType" />
+        <import type="ru.vital.daily.enums.FileType" />
         <variable
             name="viewModel"
-            type="ru.vital.daily.view.model.item.MessageItemViewModel"/>
+            type="ru.vital.daily.view.model.item.MessageMediaItemViewModel"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:onClick="@{() -> viewModel.onItemClicked()}"
-        android:onLongClick="@{() -> viewModel.onItemLongClicked()}">
+        android:onLongClick="@{() -> viewModel.onItemLongClicked()}"
+        android:layout_marginBottom="8dp"
+        app:chat_voice_item="@{viewModel.item}"
+        app:chat_voice_listener="@{viewModel.mediaClickListener}">
 
         <View
             android:id="@+id/view16"
             android:layout_width="2dp"
             android:layout_height="0dp"
-            android:background="@color/color_chat_border"
+            android:background="@color/colorAccent"
+            android:visibility="@{viewModel.item.selected ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="@+id/cardView"
             app:layout_constraintEnd_toEndOf="@+id/roundedImageView16"
             app:layout_constraintStart_toStartOf="@+id/roundedImageView16"
@@ -27,14 +35,11 @@
 
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/roundedImageView16"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
+            style="@style/RoundedImageView.Medium"
             android:layout_marginEnd="8dp"
+            android:src="@{viewModel.item.author}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:riv_border_color="@android:color/white"
-            app:riv_border_width="8dp"
-            app:riv_corner_radius="14dp"
             tools:src="@tools:sample/avatars" />
 
         <androidx.cardview.widget.CardView
@@ -42,19 +47,103 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="48dp"
-            app:cardBackgroundColor="@color/colorAccent"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:message="@{viewModel.item}"
+            app:replyAnimationEnd="@{viewModel.item.replyAnimationEvent}"
+            app:cardBackgroundColor="?attr/colorAccent"
             app:cardCornerRadius="24dp"
-            app:cardElevation="5dp"
+            app:cardElevation="0dp"
             app:layout_constraintEnd_toStartOf="@+id/roundedImageView16"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/roundedImageView16"
-                app:layout_constraintTop_toTopOf="parent">
+                android:layout_height="match_parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/constraintLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="@{viewModel.item.reply == null ? View.GONE : View.VISIBLE}"
+                    android:onClick="@{() -> viewModel.onReplyClicked()}"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <View
+                        android:id="@+id/view23"
+                        android:layout_width="2dp"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@android:color/white"
+                        app:layout_constraintBottom_toBottomOf="@+id/textView105"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.makeramen.roundedimageview.RoundedImageView
+                        android:id="@+id/roundedImageView24"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="8dp"
+                        android:src="@{viewModel.item.reply.account ?? viewModel.item.reply.author}"
+                        android:visibility="@{(viewModel.item.reply.author != null || viewModel.item.reply.account != null) &amp;&amp; !MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView25"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:riv_border_color="@color/color_chat_avatar_border"
+                        app:riv_border_width="1dp"
+                        app:riv_corner_radius="9dp" />
+
+                    <com.makeramen.roundedimageview.RoundedImageView
+                        android:id="@+id/roundedImageView25"
+                        style="@style/RoundedImageView.Small"
+                        android:layout_marginStart="8dp"
+                        android:visibility="@{viewModel.mediaReply != null &amp;&amp; FileType.image.name().equals(viewModel.mediaReply.type) || FileType.video.name().equals(viewModel.mediaReply.type)? View.VISIBLE : View.GONE}"
+                        app:layout_constraintBottom_toBottomOf="@+id/view23"
+                        app:layout_constraintStart_toEndOf="@+id/view23"
+                        app:layout_constraintTop_toTopOf="@+id/view23"
+                        app:message_image="@{viewModel.mediaReply}" />
+
+                    <TextView
+                        android:id="@+id/textView104"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@{(viewModel.item.reply.author != null || viewModel.item.reply.account != null) &amp;&amp; !MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? @dimen/message_reply_author_padding : @dimen/message_reply_author_gone_padding}"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="12dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/roboto_medium"
+                        android:maxLines="1"
+                        android:text="@{MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? viewModel.item.reply.content.name : (viewModel.item.reply.account != null ? viewModel.item.reply.account.uname : viewModel.item.reply.author.uname)}"
+                        android:textSize="12sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView24"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/textView105"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="12dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/roboto_regular"
+                        android:maxLines="1"
+                        android:textSize="12sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView25"
+                        app:layout_constraintTop_toBottomOf="@+id/textView104"
+                        app:subtitle_string_id="@{viewModel.replyStringId}"
+                        app:subtitle_text="@{MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? viewModel.item.reply.content.phone : viewModel.item.reply.account.phone != null ? viewModel.item.reply.account.phone : viewModel.item.reply.account.email != null ? viewModel.item.reply.account.email : viewModel.item.reply.text != null ? viewModel.item.reply.text : null}" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
 
                 <ImageView
                     android:id="@+id/imageView13"
@@ -63,53 +152,101 @@
                     android:layout_marginStart="12dp"
                     android:layout_marginTop="12dp"
                     android:background="@drawable/background_sheet_unselected"
-                    android:padding="16dp"
+                    android:onClick="@{() -> viewModel.mediaClickListener.onAudioClick(viewModel.item)}"
+                    android:padding="12dp"
+                    android:visibility="@{viewModel.item.medias.valueAt(0).id != 0 ? View.VISIBLE : View.INVISIBLE}"
                     app:clipToOutline="@{true}"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_play_arrow" />
-
-
-                <ru.vital.daily.view.ProgressView
-                    android:id="@+id/progressView"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="12dp"
-                    app:layout_constraintBottom_toBottomOf="@+id/imageView13"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/imageView13"
-                    app:layout_constraintTop_toTopOf="@+id/imageView13"
-                    app:progressCount="1"
-                    app:solidColor="@color/color_progress_view_audio_dark"
-                    app:transparentColor="@color/color_progress_view_audio_light" />
+                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+                    app:srcCompat="@{viewModel.item.medias.valueAt(0).playing ? @drawable/ic_pause : @drawable/ic_play_arrow}" />
 
                 <ImageView
+                    android:id="@+id/imageView14"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/background_sheet_unselected"
+                    android:onClick="@{() -> viewModel.mediaClickListener.startDownload(viewModel.item, viewModel.item.medias.valueAt(0))}"
+                    android:padding="12dp"
+                    android:visibility="@{!FileUtil.exists(viewModel.item.medias.valueAt(0).files.get(0).url) &amp;&amp; viewModel.item.medias.valueAt(0).progress == null ? View.VISIBLE : View.GONE}"
+                    app:clipToOutline="@{true}"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+                    app:srcCompat="@drawable/ic_download" />
+
+                <ImageView
+                    android:id="@+id/imageView15"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/background_sheet_unselected"
+                    android:onClick="@{() -> viewModel.mediaClickListener.cancelUpload(viewModel.item, viewModel.item.medias.valueAt(0))}"
+                    android:padding="12dp"
+                    android:visibility="@{viewModel.item.medias.valueAt(0).progress != null ? View.VISIBLE : View.GONE}"
+                    app:clipToOutline="@{true}"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+                    app:srcCompat="@drawable/ic_close" />
+
+                <ImageView
+                    android:id="@+id/imageView17"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/background_sheet_unselected"
+                    android:onClick="@{() -> viewModel.mediaClickListener.uploadMedia(viewModel.item)}"
+                    android:padding="12dp"
+                    android:visibility="@{viewModel.item.medias.valueAt(0).id == 0 &amp;&amp; viewModel.item.medias.valueAt(0).progress == null ? View.VISIBLE : View.GONE}"
+                    app:clipToOutline="@{true}"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+                    app:srcCompat="@drawable/ic_file_upload" />
+
+                <com.pnikosis.materialishprogress.ProgressWheel
+                    style="@style/ProgressWheelMedia"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:matProg_spinSpeed="0.5"
+                    app:layout_constraintBottom_toBottomOf="@+id/imageView13"
+                    app:layout_constraintEnd_toEndOf="@+id/imageView13"
+                    app:layout_constraintStart_toStartOf="@+id/imageView13"
+                    app:layout_constraintTop_toTopOf="@+id/imageView13"
+                    app:mediaProgress="@{viewModel.item.medias.valueAt(0).progress}" />
+
+                <com.makeramen.roundedimageview.RoundedImageView
+                    android:id="@+id/roundedImageView21"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_marginStart="12dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="16dp"
                     android:layout_marginBottom="12dp"
-                    android:tint="@android:color/white"
+                    android:background="@color/colorAccent"
+                    app:message_readAt="@{viewModel.item.info.readAt}"
+                    app:message_user="@{viewModel.anotherUser}"
+                    app:message_status="@{viewModel.item.sendStatus}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView79"
+                    app:layout_constraintTop_toBottomOf="@+id/imageView13"
                     app:riv_border_color="@color/color_chat_avatar_border"
-                    app:srcCompat="@drawable/ic_check_circle_outline" />
+                    app:riv_corner_radius="9dp" />
 
                 <TextView
                     android:id="@+id/textView80"
-                    style="@style/TextView.Light"
+                    android:fontFamily="@font/roboto_regular"
+                    android:textColor="@android:color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:layout_marginEnd="12dp"
                     android:layout_marginBottom="12dp"
-                    android:text="TextView"
-                    android:textColor="@android:color/white"
+                    app:createdAt="@{viewModel.item.createdAt}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/imageView13" />
+                    app:layout_constraintTop_toBottomOf="@+id/imageView13"
+                    app:updatedAt="@{viewModel.item.updatedAt}" />
 
                 <TextView
                     android:id="@+id/textView91"
@@ -118,10 +255,26 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
                     android:fontFamily="@font/roboto_regular"
-                    android:text="TextView"
                     android:textColor="@android:color/white"
+                    app:audioCurrentSeek="@{viewModel.item.medias.valueAt(0).current}"
                     app:layout_constraintStart_toEndOf="@+id/imageView13"
-                    app:layout_constraintTop_toBottomOf="@+id/progressView" />
+                    app:layout_constraintTop_toBottomOf="@+id/progressBar" />
+
+                <ru.vital.daily.view.ProgressBarAudio
+                    android:id="@+id/progressBar"
+                    style="@style/ProgressBarHorizontalAudio"
+                    android:layout_width="0dp"
+                    android:layout_height="2dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="12dp"
+                    app:current="@={viewModel.item.medias.valueAt(0).current}"
+                    app:audioDuration="@{viewModel.item.medias.valueAt(0).files.get(0).metadata.duration}"
+                    app:layout_constraintBottom_toBottomOf="@+id/imageView13"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/imageView13"
+                    app:layout_constraintTop_toTopOf="@+id/imageView13"
+                    app:playing="@{viewModel.item.medias.valueAt(0).playing}" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>

@@ -4,7 +4,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
-
+        <variable
+            name="viewModel"
+            type="ru.vital.daily.view.model.ChatSheetViewModel" />
     </data>
 
     <LinearLayout
@@ -56,12 +58,12 @@
                 android:layout="@layout/layout_tab_item"
                 android:text="@string/sheet_files" />
 
-            <com.google.android.material.tabs.TabItem
+            <!--<com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:icon="@drawable/ic_money"
                 android:layout="@layout/layout_tab_item"
-                android:text="@string/sheet_money" />
+                android:text="@string/sheet_money" />-->
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -79,10 +81,9 @@
             android:background="@color/color_separator"/>
 
         <androidx.viewpager.widget.ViewPager
-            android:id="@+id/view_pager"
+            android:id="@+id/container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="16dp" />
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

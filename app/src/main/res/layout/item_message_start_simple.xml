@@ -4,6 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+        <import type="android.view.View"/>
         <variable
             name="viewModel"
             type="ru.vital.daily.view.model.item.MessageItemViewModel"/>
@@ -11,7 +12,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:onClick="@{() -> viewModel.onItemClicked()}"
         android:onLongClick="@{() -> viewModel.onItemLongClicked()}">
 
@@ -19,7 +20,8 @@
             android:id="@+id/view16"
             android:layout_width="2dp"
             android:layout_height="0dp"
-            android:background="@color/color_chat_border"
+            android:background="@color/colorAccent"
+            android:visibility="@{viewModel.item.selected ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="@+id/cardView"
             app:layout_constraintEnd_toEndOf="@+id/roundedImageView16"
             app:layout_constraintStart_toStartOf="@+id/roundedImageView16"
@@ -27,24 +29,25 @@
 
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/roundedImageView16"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
+            style="@style/RoundedImageView.Medium"
             android:layout_marginStart="8dp"
+            android:src="@{viewModel.item.author}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:riv_border_color="@android:color/white"
-            app:riv_border_width="8dp"
-            app:riv_corner_radius="14dp"
             tools:src="@tools:sample/avatars" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_marginEnd="48dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="2dp"
             app:cardBackgroundColor="@android:color/white"
             app:cardCornerRadius="24dp"
-            app:cardElevation="5dp"
+            app:cardElevation="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/roundedImageView16"
             app:layout_constraintTop_toTopOf="parent">
@@ -65,21 +68,25 @@
                     android:layout_marginTop="12dp"
                     android:layout_marginEnd="12dp"
                     android:fontFamily="@font/roboto_regular"
-                    android:text="TextView"
+                    android:text="@{viewModel.item.text}"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <com.makeramen.roundedimageview.RoundedImageView
-                    style="@style/RoundedImageView.Circle"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
                     android:layout_marginStart="12dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="12dp"
+                    android:src="@{viewModel.item.author}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView79"
-                    app:riv_border_color="@color/color_chat_avatar_border" />
+                    app:riv_border_color="@color/color_chat_avatar_border"
+                    app:riv_border_width="1dp"
+                    app:riv_corner_radius="9dp" />
 
                 <TextView
                     android:id="@+id/textView80"
@@ -89,7 +96,8 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="12dp"
                     android:layout_marginBottom="12dp"
-                    android:text="TextView"
+                    app:createdAt="@{viewModel.item.createdAt}"
+                    app:updatedAt="@{viewModel.item.updatedAt}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView79" />

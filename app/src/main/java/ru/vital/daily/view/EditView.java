@@ -116,5 +116,6 @@ public class EditView extends ConstraintLayout {
     @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+        binding.editText.setEnabled(enabled);
     }
 }

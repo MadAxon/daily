@@ -11,17 +11,17 @@ import javax.inject.Inject;
 public class AddMembersRequest extends IdRequest {
 
     @JsonField
-    private List<Long> memberIds;
+    private long[] memberIds;
 
     @Inject
     public AddMembersRequest() {
     }
 
-    public List<Long> getMemberIds() {
+    public long[] getMemberIds() {
         return memberIds;
     }
 
-    public void setMemberIds(List<Long> memberIds) {
+    public void setMemberIds(long[] memberIds) {
         this.memberIds = memberIds;
     }
 }

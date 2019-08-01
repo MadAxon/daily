@@ -14,6 +14,8 @@ import ru.vital.daily.BR;
 import ru.vital.daily.R;
 import ru.vital.daily.databinding.FragmentConfirmationBinding;
 import ru.vital.daily.repository.api.AccessInterceptor;
+import ru.vital.daily.repository.api.DailySocket;
+import ru.vital.daily.util.StaticData;
 import ru.vital.daily.view.model.ConfirmationViewModel;
 import ru.vital.daily.view.model.MainViewModel;
 
@@ -21,6 +23,9 @@ public class ConfirmationFragment extends BaseFragment<ConfirmationViewModel, Fr
 
     @Inject
     AccessInterceptor accessInterceptor;
+
+    @Inject
+    DailySocket dailySocket;
 
     private static final String CODE_HASH_EXTRA = "CODE_HASH_EXTRA",
             IS_PHONE_EXTRA = "IS_PHONE_EXTRA",
@@ -80,12 +85,16 @@ public class ConfirmationFragment extends BaseFragment<ConfirmationViewModel, Fr
             case R.id.menu_check_1:
                 hideSoftKeyboard();
                 viewModel.signIn(key -> {
+                    dailySocket.connect(key.getAccessKey());
                     accessInterceptor.setAccessKey(key.getAccessKey());
                     if (key.getIsNewProfile())
                         openFragment(new RegisterFragment(), viewModel.registerFragmentTag);
-                    else if (key.getUserId() == 0)
+                    else viewModel.updateKeyUserId(user -> {
+                        StaticData.init(key, user);
+                        openMainPage();
+                    });/*if (key.getUserId() == 0)
                         viewModel.updateKeyUserId(aVoid -> openMainPage());
-                    else openMainPage();
+                    else openMainPage();*/
                 });
                 return true;
         }

@@ -12,6 +12,11 @@ public class ItemsResponseHandler<M> implements Consumer<ItemsResponse<M>> {
 
     private final Consumer<Throwable> errorConsumer;
 
+    public ItemsResponseHandler() {
+        successConsumer = null;
+        errorConsumer = null;
+    }
+
     public ItemsResponseHandler(Consumer<List<M>> successConsumer, Consumer<Throwable> errorConsumer) {
         this.successConsumer = successConsumer;
         this.errorConsumer = errorConsumer;

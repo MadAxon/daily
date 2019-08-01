@@ -8,7 +8,7 @@ import ru.vital.daily.view.model.item.ItemViewModel;
 
 public abstract class BaseViewHolder<VM extends ItemViewModel<M>, M> extends RecyclerView.ViewHolder {
 
-    private final ViewDataBinding viewDataBinding;
+    protected final ViewDataBinding viewDataBinding;
 
     public final VM viewModel;
 
@@ -30,7 +30,8 @@ public abstract class BaseViewHolder<VM extends ItemViewModel<M>, M> extends Rec
     }
 
     public void unbind() {
-        if (viewDataBinding != null) viewDataBinding.unbind();
+        //viewDataBinding.unbind();
+        viewModel.unbind();
     }
 
 }

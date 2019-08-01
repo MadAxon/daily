@@ -12,7 +12,7 @@ import ru.vital.daily.repository.data.User;
 
 public class ContactAdapter extends BaseAdapter<User, ContactViewHolder, ItemContactBinding> {
 
-    private final LongSparseArray<Boolean> selectedItems = new LongSparseArray<>();
+    private final LongSparseArray<User> selectedItems = new LongSparseArray<>();
 
     @Override
     public int getLayoutId(int viewType) {
@@ -24,24 +24,44 @@ public class ContactAdapter extends BaseAdapter<User, ContactViewHolder, ItemCon
         return new ContactViewHolder(viewDataBinding);
     }
 
-    @Override
+    /*@Override
     public void onBindViewHolder(@NonNull ContactViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         holder.viewModel.setSelected(selectedItems.get(items.get(position).getId(), false));
-    }
+    }*/
 
     public void onItemSelected(User user) {
-        if (selectedItems.get(user.getId(), false))
+        if (selectedItems.get(user.getId(), null) != null) {
             selectedItems.remove(user.getId());
-        else selectedItems.put(user.getId(), true);
-        notifyItemChanged(items.indexOf(user));
+            user.setSelected(false);
+        } else {
+            selectedItems.put(user.getId(), user);
+            user.setSelected(true);
+        }
+    }
+
+    public long[] getSelectedIds() {
+        long[] ids = new long[selectedItems.size()];
+        for (int i = selectedItems.size() - 1; i >= 0; i--) {
+            ids[i] = selectedItems.keyAt(i);
+            selectedItems.removeAt(i);
+        }
+        return ids;
     }
 
     public List<User> getSelectedUsers() {
         List<User> users = new ArrayList<>();
-        for (User user: items)
-            if (selectedItems.get(user.getId(), false))
-                users.add(user);
+        for (int i = selectedItems.size() - 1; i >= 0; i--) {
+            users.add(selectedItems.valueAt(i));
+        }
         return users;
+    }
+
+    public LongSparseArray<User> getSelectedItems() {
+        return selectedItems;
+    }
+
+    public boolean hasNoSelections() {
+        return selectedItems.isEmpty();
     }
 }

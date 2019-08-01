@@ -79,6 +79,7 @@
                         android:inputType="textPersonName|textCapSentences"
                         android:textColor="@color/color_edit_text_hint"
                         android:textColorHint="@color/color_edit_text_hint"
+                        android:text="@={viewModel.chatSaveModel.name}"
                         app:layout_constraintBottom_toTopOf="@+id/textView87"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/roundedImageView17"

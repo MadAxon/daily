@@ -9,7 +9,7 @@ import ru.vital.daily.view.model.LocationViewModel;
 public class LocationFragment extends BaseFragment<LocationViewModel, FragmentLocationBinding> {
     @Override
     protected LocationViewModel onCreateViewModel() {
-        return ViewModelProviders.of(this).get(LocationViewModel.class);
+        return ViewModelProviders.of(this, viewModelFactory).get(LocationViewModel.class);
     }
 
     @Override

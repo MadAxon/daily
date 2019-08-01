@@ -1,20 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
-
+    <item
+        android:id="@+id/menu_message_change"
+        android:icon="@drawable/ic_pencil"
+        android:title="@string/common_change"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/menu_message_reply"
+        android:icon="@drawable/ic_share_outline"
+        android:title="@string/sheet_message_reply"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_message_resend"
+        android:icon="@drawable/ic_arrow_left"
+        android:title="@string/common_resend"
+        app:showAsAction="always" />
     <item
         android:id="@+id/menu_message_copy"
         android:icon="@drawable/ic_copy"
         android:title="@string/common_copy"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/menu_message_delete"
         android:icon="@drawable/ic_garbage_dark"
         android:title="@string/common_delete"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/menu_message_resend"
-        android:icon="@drawable/ic_share_outline"
-        android:title="@string/common_resend"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 </menu>

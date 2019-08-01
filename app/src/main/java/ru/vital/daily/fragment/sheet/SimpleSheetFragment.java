@@ -86,13 +86,12 @@ public class SimpleSheetFragment extends BaseSheetFragment<SimpleSheetViewModel,
         dataBinding.setAdapter(new SimpleSheetAdapter());
 
         dataBinding.getAdapter().clickEvent.observe(this, fragmentSheetModel -> {
-            if (getActivity() != null && getActivity() instanceof BaseSheetFragment.OnDismissListener)
-                ((BaseSheetFragment.OnDismissListener) getActivity()).onDismiss(getTag(), fragmentSheetModel.getStringId());
-            else if (getTargetFragment() != null) {
+            if (getTargetFragment() != null) {
                 Intent intent = new Intent();
                 intent.putExtra(Intent.EXTRA_TEXT, fragmentSheetModel.getStringId());
                 getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
-            }
+            } else if (getActivity() != null && getActivity() instanceof BaseSheetFragment.OnDismissListener)
+                ((BaseSheetFragment.OnDismissListener) getActivity()).onDismiss(getTag(), fragmentSheetModel.getStringId());
             dismiss();
         });
 

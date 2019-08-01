@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,7 +28,7 @@ import androidx.core.content.FileProvider;
 import androidx.lifecycle.ViewModelProviders;
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
-import ru.vital.daily.activity.CountryCodeActivity;
+import ru.vital.daily.activity.ChatActivity;
 import ru.vital.daily.adapter.ContactAdapter;
 import ru.vital.daily.databinding.FragmentGroupUsersBinding;
 import ru.vital.daily.fragment.sheet.SimpleSheetFragment;
@@ -89,7 +88,7 @@ public class GroupUsersFragment extends BaseFragment<GroupUsersViewModel, Fragme
         dataBinding.setAdapter(new ContactAdapter());
         viewModel.users.observe(this, users -> dataBinding.getAdapter().updateItems(users));
         viewModel.coverClickEvent.observe(this, aVoid -> {
-            openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_camera, R.drawable.ic_media}, new int[]{R.string.sheet_avatar_photo, R.string.sheet_avatar_gallery}), viewModel.avatarSheetFragmentTag, REQUEST_AVATAR_CODE);
+            openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_camera, R.drawable.ic_media}, new int[]{R.string.sheet_photo, R.string.sheet_avatar_gallery}), viewModel.avatarSheetFragmentTag, REQUEST_AVATAR_CODE);
         });
 
         if (getArguments() != null)
@@ -106,7 +105,7 @@ public class GroupUsersFragment extends BaseFragment<GroupUsersViewModel, Fragme
             switch (requestCode) {
                 case REQUEST_AVATAR_CODE:
                     switch (data.getIntExtra(Intent.EXTRA_TEXT, R.string.sheet_avatar_gallery)) {
-                        case R.string.sheet_avatar_photo:
+                        case R.string.sheet_photo:
                             if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
                                 ActivityCompat.requestPermissions(getActivity(),
                                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
@@ -135,7 +134,7 @@ public class GroupUsersFragment extends BaseFragment<GroupUsersViewModel, Fragme
                     if (data != null) {
                         Uri result = data.getData();
                         file = FileUtil.createTempFile(getContext(), "cover", ".jpeg");
-                        if (FileUtil.copyImageFile(getContext(), result, file))
+                        if (FileUtil.copyFile(getContext(), result, file))
                             try {
                                 Bitmap bitmap = BitmapHandler.handleSamplingAndRotationBitmap(getContext(), Uri.fromFile(file));
                                 BitmapHandler.compress(bitmap, file);
@@ -153,14 +152,18 @@ public class GroupUsersFragment extends BaseFragment<GroupUsersViewModel, Fragme
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         menu.clear();
-        inflater.inflate(R.menu.menu_check_2, menu);
+        inflater.inflate(R.menu.menu_check, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_check_2:
-
+            case R.id.menu_check:
+                viewModel.createGroup(file,  FileUtil.getMimeType(getActivity(), viewModel.getAvatar()), chatId -> {
+                    Intent intent = new Intent(getContext(), ChatActivity.class);
+                    intent.putExtra(ChatActivity.CHAT_ID_EXTRA, chatId);
+                    startActivity(intent);
+                });
                 return true;
         }
         return super.onOptionsItemSelected(item);

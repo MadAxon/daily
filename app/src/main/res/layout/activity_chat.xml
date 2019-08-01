@@ -4,6 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+        <import type="android.view.View"/>
+        <import type="ru.vital.daily.enums.ChatType"/>
         <variable
             name="adapter"
             type="ru.vital.daily.adapter.MessageAdapter"/>
@@ -18,7 +20,7 @@
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarLayout"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:stateListAnimator="@animator/appbar_elevation"
             app:layout_constraintEnd_toEndOf="parent"
@@ -37,7 +39,9 @@
 
                     <com.makeramen.roundedimageview.RoundedImageView
                         android:id="@+id/roundedImageView15"
-                        style="@style/RoundedImageView.Small"
+                        style="@style/RoundedImageView.Medium"
+                        app:chat_avatar_cover="@{viewModel.chat}"
+                        app:chat_avatar_member="@{viewModel.anotherUser}"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -48,10 +52,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:text="TextView"
+                        android:text="@{viewModel.chat.name == null ? `` : @plurals/members(viewModel.chat.members.size(), viewModel.chat.members.size())}"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/roundedImageView15"
-                        app:layout_constraintTop_toBottomOf="@+id/textView77" />
+                        app:layout_constraintTop_toBottomOf="@+id/textView77"
+                        app:relativeOnlineTime="@{viewModel.anotherUser.onlineAt}"
+                        app:typing="@{viewModel.typing}"/>
 
                     <TextView
                         android:id="@+id/textView77"
@@ -61,7 +67,7 @@
                         android:layout_marginStart="8dp"
                         android:ellipsize="end"
                         android:maxLength="20"
-                        android:text="TextView"
+                        android:text="@{viewModel.chat.name ?? viewModel.anotherUser.uname}"
                         android:textSize="16sp"
                         app:layout_constraintBottom_toTopOf="@+id/textView76"
                         app:layout_constraintStart_toEndOf="@+id/roundedImageView15"
@@ -79,7 +85,6 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:adapter="@{adapter}"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toTopOf="@+id/constraintLayout9"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -87,15 +92,21 @@
             app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginBottom="16dp"
-            android:src="@drawable/ic_arrow_down"
+            android:onClick="@{() -> viewModel.onFabClicked()}"
+            android:scaleType="center"
+            android:visibility="gone"
             app:backgroundTint="@android:color/white"
-            app:elevation="5dp"
+            app:elevation="10dp"
+            app:fabSize="mini"
             app:layout_constraintBottom_toTopOf="@+id/constraintLayout9"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:maxImageSize="16dp"
+            app:srcCompat="@drawable/ic_arrow_down" />
 
         <TextView
             android:id="@+id/textView78"
@@ -103,11 +114,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/chat_empty"
+            android:visibility="@{viewModel.isLoading || viewModel.initialListSize > 0 ? View.GONE : View.VISIBLE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/view20"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_gravity="bottom"
+            android:background="@color/color_separator"
+            app:layout_constraintBottom_toTopOf="@+id/recyclerView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/recyclerView" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout9"
@@ -123,6 +147,7 @@
             app:layout_constraintStart_toStartOf="parent">
 
             <View
+                android:id="@+id/view21"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/color_separator"
@@ -140,17 +165,21 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="@drawable/background_edit_text"
-                android:hint="@string/chat_hint"
-                android:inputType="textMultiLine"
+                android:background="@{viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration == 0 ? @drawable/background_edit_text_chat : @drawable/background_edit_text_audio}"
+                android:enabled="@{viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration == 0 ? true : false}"
+                android:hint="@{viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration == 0 ? @string/chat_hint : ``}"
+                android:imeOptions="actionSend|flagNoEnterAction"
+                android:inputType="textMultiLine|textShortMessage|textAutoCorrect|textCapSentences"
+                android:maxHeight="128dp"
                 android:minHeight="40dp"
                 android:paddingStart="16dp"
-                android:paddingEnd="40dp"
-                android:maxHeight="128dp"
+                android:paddingEnd="16dp"
+                android:text="@={viewModel.sendMessageModel.text}"
+                android:selection="@{viewModel.sendMessageModel.text.length()}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/imageButton4"
                 app:layout_constraintStart_toEndOf="@+id/imageButton3"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/messageTab"
                 app:layout_constraintVertical_bias="0.0" />
 
             <ImageButton
@@ -160,10 +189,24 @@
                 android:layout_marginStart="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:onClick="@{() -> viewModel.onAttachClicked()}"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:visibility="@{viewModel.sendMessageModel.id != null &amp;&amp; viewModel.sendMessageModel.id > 0 &amp;&amp; viewModel.sendMessageModel.medias.size() == 0 || viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration != 0  ? View.INVISIBLE : View.VISIBLE}"
+                app:layout_constraintBottom_toBottomOf="@+id/editText2"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/editText2"
                 app:srcCompat="@drawable/ic_attach" />
+
+            <ImageButton
+                android:id="@+id/imageButton8"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:onClick="@{() -> viewModel.onAudioCancelClicked()}"
+                android:visibility="@{viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration != 0 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="@+id/editText2"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/editText2"
+                app:srcCompat="@drawable/ic_close_dark" />
 
             <ImageButton
                 android:id="@+id/imageButton4"
@@ -172,22 +215,228 @@
                 android:layout_marginEnd="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:onClick="@{() -> viewModel.onSendClicked()}"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:onLongClick="@{() -> viewModel.onMicroLongClicked()}"
+                app:layout_constraintBottom_toBottomOf="@+id/editText2"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_send" />
+                app:layout_constraintTop_toTopOf="@+id/editText2"
+                app:srcCompat="@{(viewModel.sendMessageModel.text != null &amp;&amp; viewModel.sendMessageModel.text.length() > 0 || viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration != 0 || viewModel.sendMessageModel.id == -1L) ? @drawable/ic_send : @drawable/ic_microphone}" />
 
-            <ImageButton
+            <!--<ImageButton
                 android:id="@+id/imageButton5"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_marginEnd="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:onClick="@{() -> viewModel.onEmoClicked()}"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toBottomOf="@+id/editText2"
                 app:layout_constraintEnd_toEndOf="@+id/editText2"
+                app:layout_constraintTop_toTopOf="@+id/editText2"
+                app:srcCompat="@drawable/ic_emotion" />-->
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/messageTab"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:paddingTop="8dp"
+                android:visibility="@{viewModel.sendMessageModel.id != null || viewModel.sendMessageModel.replyId != null || (viewModel.sendMessageModel.medias != null &amp;&amp; !viewModel.sendMessageModel.medias.isEmpty())? View.VISIBLE : View.GONE}"
+                app:layout_constraintEnd_toEndOf="@+id/imageButton4"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageButton
+                    android:id="@+id/imageButton6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:onClick="@{() -> viewModel.onMessageCloseTabClicked()}"
+                    android:padding="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_close_dark" />
+
+                <com.makeramen.roundedimageview.RoundedImageView
+                    android:id="@+id/roundedImageView23"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="8dp"
+                    android:visibility="@{viewModel.sendMessageModel.id &lt;= -1 ? View.VISIBLE : View.GONE}"
+                    app:riv_mutate_background="false"
+                    app:riv_oval="false"
+                    android:src="@{viewModel.sendMessageModel.reply.account}"
+                    app:message_image="@{viewModel.sendMessageModel.id &lt;= -1 ? viewModel.sendMessageModel.mediaForChanging : null}"
+                    app:riv_corner_radius="8dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/imageButton6"
+                    app:layout_constraintDimensionRatio="1:1"
+                    app:layout_constraintStart_toEndOf="@+id/imageButton6"
+                    app:layout_constraintTop_toTopOf="@+id/imageButton6" />
+
+                <TextView
+                    android:id="@+id/textView97"
+                    style="@style/TextView.Medium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@{viewModel.sendMessageModel.tabTitle ?? @string/chat_message_edit}"
+                    app:layout_constraintBottom_toTopOf="@+id/textView98"
+                    app:layout_constraintStart_toEndOf="@+id/roundedImageView23"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_chainStyle="packed" />
+
+                <TextView
+                    android:id="@+id/textView98"
+                    style="@style/TextView.Light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    app:subtitle_text="@{viewModel.sendMessageModel.tabSubtitle}"
+                    app:subtitle_string_id="@{viewModel.sendMessageModel.stringId}"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/roundedImageView23"
+                    app:layout_constraintTop_toBottomOf="@+id/textView97" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <ImageView
+                android:id="@+id/imageView21"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:onClick="@{() -> viewModel.onPlayPauseBottomTabClicked()}"
+                android:padding="8dp"
+                android:visibility="@{viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration == 0 ? View.GONE : View.VISIBLE}"
+                app:layout_constraintBottom_toBottomOf="@+id/editText2"
+                app:layout_constraintStart_toEndOf="@+id/imageButton3"
+                app:layout_constraintTop_toTopOf="@+id/editText2"
+                app:srcCompat="@{viewModel.sendMessageModel.audioFile.playing ? @drawable/ic_pause : @drawable/ic_play_arrow}" />
+
+            <ru.vital.daily.view.ProgressBarAudio
+                android:id="@+id/progressBarAudio"
+                style="@style/ProgressBarHorizontalAudio"
+                android:layout_width="0dp"
+                android:layout_height="2dp"
+                android:layout_marginEnd="8dp"
+                android:visibility="@{viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration == 0 ? View.GONE : View.VISIBLE}"
+                app:audioDuration="@{viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration}"
+                app:current="@={viewModel.sendMessageModel.audioFile.current}"
+                app:layout_constraintBottom_toBottomOf="@+id/editText2"
+                app:layout_constraintEnd_toStartOf="@+id/textView90"
+                app:layout_constraintStart_toEndOf="@+id/imageView21"
+                app:layout_constraintTop_toTopOf="@+id/editText2"
+                app:playing="@{viewModel.sendMessageModel.audioFile.playing}" />
+
+            <TextView
+                android:id="@+id/textView90"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="2dp"
+                android:fontFamily="@font/roboto_regular"
+                android:visibility="@{viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration == 0 ? View.GONE : View.VISIBLE}"
+                app:audioCurrentSeek="@{viewModel.sendMessageModel.audioFile.current &lt;= 0 ? viewModel.sendMessageModel.audioFile.files.get(0).metadata.duration : viewModel.sendMessageModel.audioFile.current}"
+                app:layout_constraintBottom_toBottomOf="@+id/editText2"
+                app:layout_constraintEnd_toEndOf="@+id/editText2"
+                app:layout_constraintTop_toTopOf="@+id/editText2" />
+
+            <ImageView
+                android:id="@+id/imageView22"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:onClick="@{() -> viewModel.onStopRecordingClicked()}"
+                android:padding="8dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/editText2"
+                app:layout_constraintEnd_toEndOf="@+id/editText2"
+                app:layout_constraintTop_toTopOf="@+id/editText2"
+                app:srcCompat="@drawable/ic_stop" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.pnikosis.materialishprogress.ProgressWheel
+            style="@style/ProgressWheel.Large"
+            android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:visibility="@{viewModel.currentAudioMessage == null ? View.GONE : View.VISIBLE}"
+            android:background="@android:color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
+
+            <ImageView
+                android:id="@+id/imageView23"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:padding="8dp"
+                android:tint="@color/colorAccent"
+                android:onClick="@{() -> viewModel.onPlayPauseTopTabClicked()}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_emotion" />
+                app:srcCompat="@{viewModel.currentAudio.playing ? @drawable/ic_pause : @drawable/ic_play_arrow}"/>
+
+            <TextView
+                android:id="@+id/textView99"
+                style="@style/TextView.Medium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:ellipsize="end"
+                android:maxLength="15"
+                android:text="@{viewModel.currentAudioMessage.author.uname}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/imageView23"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textView100"
+                style="@style/TextView.Light"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                app:relativeSimpleTime="@{viewModel.currentAudioMessage.createdAt}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageView24"
+                app:layout_constraintStart_toEndOf="@+id/textView99"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/imageView24"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:padding="8dp"
+                android:onClick="@{() -> viewModel.onPlayPauseTopCloseClicked()}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_close_dark" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="@color/color_separator"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

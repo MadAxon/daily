@@ -1,17 +1,22 @@
 package ru.vital.daily.repository.data;
 
 import com.bluelinelabs.logansquare.annotation.JsonField;
+import com.bluelinelabs.logansquare.annotation.JsonIgnore;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
 
 import java.util.Date;
 
 import androidx.annotation.Nullable;
+import androidx.databinding.BaseObservable;
+import androidx.databinding.Bindable;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+import ru.vital.daily.BR;
 
 @Entity(tableName = "users")
 @JsonObject
-public class User {
+public class User extends BaseObservable {
 
     @PrimaryKey
     @JsonField
@@ -32,6 +37,10 @@ public class User {
     @Nullable
     @JsonField
     private Media avatar;
+
+    @JsonIgnore
+    @Ignore
+    private boolean selected;
 
     public long getId() {
         return id;
@@ -183,5 +192,15 @@ public class User {
 
     public void setUname(@Nullable String uname) {
         this.uname = uname;
+    }
+
+    @Bindable
+    public boolean getSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+        notifyPropertyChanged(BR.selected);
     }
 }

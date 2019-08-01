@@ -47,8 +47,5 @@ public class AuthFragment extends BaseFragment<AuthViewModel, FragmentAuthBindin
             openFragment(SignInFragment.newInstance(true), viewModel.signInFragmentTag);
             //openFragment(new RegisterFragment(), viewModel.registerFragmentTag);
         });
-        viewModel.openRegisterEvent.observe(this, aVoid -> {
-            openFragment(new RegisterFragment(), viewModel.registerFragmentTag);
-        });
     }
 }

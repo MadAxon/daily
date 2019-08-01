@@ -1,5 +1,6 @@
 package ru.vital.daily.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -8,10 +9,9 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
+import ru.vital.daily.activity.ChatActivity;
 import ru.vital.daily.adapter.ContactAdapter;
 import ru.vital.daily.databinding.FragmentContactBinding;
 import ru.vital.daily.view.model.ContactViewModel;
@@ -65,8 +65,10 @@ public class ContactFragment extends BaseFragment<ContactViewModel, FragmentCont
         setupToolbar(dataBinding.toolbar, true);
 
         if (getArguments() != null) {
-            if (getArguments().getLong(CHAT_ID_EXTRA) == 0)
+            viewModel.getRequest().setId(getArguments().getLong(CHAT_ID_EXTRA));
+            if (viewModel.getRequest().getId() != 0) {
                 dataBinding.title.setText(R.string.chat_add_members);
+            }
             if (shouldCreateGroup = getArguments().getBoolean(GROUP_CREATING_EXTRA))
                 dataBinding.title.setText(R.string.chat_add_members);
         }
@@ -78,9 +80,9 @@ public class ContactFragment extends BaseFragment<ContactViewModel, FragmentCont
         dataBinding.getAdapter().clickEvent.observe(this, user -> {
             dataBinding.getAdapter().onItemSelected(user);
             if (checkMenuItem != null) {
-                if (dataBinding.getAdapter().getSelectedUsers().size() > 0)
-                    checkMenuItem.setVisible(true);
-                else checkMenuItem.setVisible(false);
+                if (dataBinding.getAdapter().hasNoSelections())
+                    checkMenuItem.setVisible(false);
+                else checkMenuItem.setVisible(true);
             }
         });
     }
@@ -106,9 +108,11 @@ public class ContactFragment extends BaseFragment<ContactViewModel, FragmentCont
                 openFragment(GroupUsersFragment.newInstance(dataBinding.getAdapter().getSelectedUsers()), viewModel.groupUsersFragmentTag);
                 return true;
             case R.id.menu_check_2:
-                /*viewModel.addMembersToChat(aVoid -> {
-                    getActivity().finish();
-                });*/
+                viewModel.addMembersToChat(aVoid -> {
+                    Intent intent = new Intent(getContext(), ChatActivity.class);
+                    intent.putExtra(ChatActivity.CHAT_ID_EXTRA, viewModel.getRequest().getId());
+                    startActivity(intent);
+                }, dataBinding.getAdapter().getSelectedIds());
                 return true;
         }
         return super.onOptionsItemSelected(item);

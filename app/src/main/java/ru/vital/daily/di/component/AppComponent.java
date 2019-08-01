@@ -10,6 +10,8 @@ import dagger.android.AndroidInjectionModule;
 import dagger.android.support.AndroidSupportInjectionModule;
 import ru.vital.daily.DailyApplication;
 import ru.vital.daily.di.builder.ActivityBuilderModule;
+import ru.vital.daily.di.builder.BroadcastBuilderModule;
+import ru.vital.daily.di.builder.ServiceBuilderModule;
 import ru.vital.daily.di.module.AppModule;
 import ru.vital.daily.di.module.RoomModule;
 
@@ -19,6 +21,8 @@ import ru.vital.daily.di.module.RoomModule;
         AppModule.class,
         RoomModule.class,
         ActivityBuilderModule.class,
+        ServiceBuilderModule.class,
+        BroadcastBuilderModule.class
 })
 public interface AppComponent {
 

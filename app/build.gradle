@@ -1,4 +1,21 @@
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+apply plugin: 'com.google.gms.google-services'
+
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        // These docs use an open ended version so that our plugin
+        // can be updated quickly in response to Android tooling updates
+
+        // We recommend changing it to the latest version from our changelog:
+        // https://docs.fabric.io/android/changelog.html#fabric-gradle-plugin
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
 
 android {
     signingConfigs {
@@ -34,10 +51,13 @@ android {
     }
 }
 
-repositories{
+repositories {
     maven {
         url 'http://dl.bintray.com/amulyakhare/maven'
     }
+    maven { url "https://raw.github.com/laenger/maven-releases/master/releases" }
+    maven { url 'https://maven.fabric.io/public' }
+    maven { url "https://raw.github.com/laenger/maven-releases/master/releases" }
 }
 
 
@@ -77,6 +97,24 @@ dependencies {
     implementation 'com.pnikosis:materialish-progress:1.7'
     implementation 'jp.wasabeef:glide-transformations:4.0.1'
     implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
+    implementation 'com.tonicartos:superslim:0.4.13'
+    implementation 'com.github.nkzawa:socket.io-client:0.6.0'
+
+
+/*implementation('io.socket:socket.io-client:1.0.0') {
+    // excluding org.json which is provided by Android
+    exclude group: 'org.json', module: 'json'
+}*/
+    implementation 'com.writingminds:FFmpegAndroid:0.3.2'
+    implementation 'com.google.android.exoplayer:exoplayer:2.10.1'
+    //implementation 'com.facebook.android:facebook-android-sdk:[5,6)'
+    implementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
+        transitive = true;
+    }
+    implementation "biz.laenger.android:vpbs:0.0.5"
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+    implementation 'com.google.firebase:firebase-core:17.0.0'
+    implementation 'com.google.firebase:firebase-messaging:19.0.1'
 
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'
 }

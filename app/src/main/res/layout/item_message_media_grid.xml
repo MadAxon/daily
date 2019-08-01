@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View"/>
+        <import type="ru.vital.daily.util.FileUtil" />
+        <variable
+            name="viewModel"
+            type="ru.vital.daily.view.model.item.MessageMediaItemViewModel" />
+        <variable
+            name="message"
+            type="ru.vital.daily.repository.data.Message"/>
+        <variable
+            name="mediaClickListener"
+            type="ru.vital.daily.listener.MessageMediaClickListener"/>
+        <variable
+            name="cancelUploadListener"
+            type="ru.vital.daily.listener.CancelMediaListener"/>
+        <variable
+            name="video"
+            type="ru.vital.daily.repository.data.Media"/>
+        <variable
+            name="image"
+            type="ru.vital.daily.repository.data.Media"/>
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="1dp"
+        android:onClick="@{() -> mediaClickListener.onImageOrVideoClick(message, video ?? image)}"
+        android:onLongClick="@{() -> mediaClickListener.onImageOrVideoLongClick(message, video ?? image)}">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:visibility="@{video.description != null &amp;&amp; !video.description.isEmpty() || image.description != null &amp;&amp; !image.description.isEmpty() ? View.VISIBLE : View.GONE}"
+            android:onClick="@{() -> viewModel.onItemClicked()}"
+            app:cardBackgroundColor="@color/colorAccent"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/space2">
+
+            <TextView
+                android:id="@+id/textView79"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_regular"
+                android:paddingStart="12dp"
+                android:paddingTop="48dp"
+                android:paddingEnd="12dp"
+                android:text="@{video.description ?? image.description}"
+                android:autoLink="all"
+                android:textColorLink="@android:color/white"
+                android:textColor="@android:color/white" />
+
+        </androidx.cardview.widget.CardView>
+
+        <com.makeramen.roundedimageview.RoundedImageView
+            android:id="@+id/roundedImageView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:mediaReplyAnimation="@{message.replyAnimationEvent}"
+            app:message="@{message}"
+            app:message_image="@{image}"
+            app:message_media_uploaded="@{image != null ? FileUtil.exists(image.files.get(0).url) : FileUtil.exists(video.files.get(0).url)}"
+            app:message_video="@{video}"
+            app:selected="@{video != null ? video.selected : image.selected}"
+            app:riv_border_width="2dp"
+            app:riv_corner_radius="24dp"
+            tools:src="@tools:sample/avatars">
+
+        </com.makeramen.roundedimageview.RoundedImageView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/video_container"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.exoplayer2.ui.PlayerView
+                android:id="@+id/player_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:resize_mode="zoom"
+                app:surface_type="texture_view"
+                app:use_controller="false" />
+
+        </androidx.cardview.widget.CardView>
+
+        <ImageView
+            android:id="@+id/imageView30"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:tint="@android:color/white"
+            android:visibility="@{video != null &amp;&amp; video.progress == null &amp;&amp; !video.hasIconForProgress &amp;&amp; video.playing == null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_play_arrow" />
+
+        <TextView
+            android:id="@+id/textView54"
+            style="@style/TextView.Medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:shadowColor="@android:color/darker_gray"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:textColor="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.pnikosis.materialishprogress.ProgressWheel
+            style="@style/ProgressWheelMediaWhite"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:mediaProgress="@{image.progress ?? video.progress}" />
+
+        <ImageView
+            android:id="@+id/imageView19"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:onClick="@{() -> cancelUploadListener.cancel(message, image ?? video)}"
+            android:padding="8dp"
+            android:tint="@android:color/white"
+            android:visibility="@{image.progress != null || video.progress != null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_close" />
+
+        <ImageView
+            android:id="@+id/imageView20"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:onClick="@{() -> mediaClickListener.startDownload(message, image ?? video)}"
+            android:padding="8dp"
+            android:tint="@android:color/white"
+            android:visibility="@{image != null &amp;&amp; image.hasIconForProgress || video != null &amp;&amp; video.hasIconForProgress ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_download" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/background_message_media_failed"
+            android:fontFamily="@font/roboto_regular"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:text="@string/chat_message_image_upload_failed"
+            android:textColor="@color/color_text_view_warn"
+            android:visibility="@{image != null &amp;&amp; image.id &lt; 0 &amp;&amp; image.progress == null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textView103"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/background_message_media_failed"
+            android:fontFamily="@font/roboto_regular"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:text="@string/chat_message_video_upload_failed"
+            android:textColor="@color/color_text_view_warn"
+            android:visibility="@{video != null &amp;&amp; video.id &lt; 0 &amp;&amp; video.progress == null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Space
+            android:id="@+id/space2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="40dp"
+            app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

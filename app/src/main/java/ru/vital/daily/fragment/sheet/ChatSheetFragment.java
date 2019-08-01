@@ -1,5 +1,7 @@
 package ru.vital.daily.fragment.sheet;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,44 +11,70 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.collection.LongSparseArray;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.lifecycle.ViewModelProviders;
+
+import biz.laenger.android.vpbs.BottomSheetUtils;
+import biz.laenger.android.vpbs.ViewPagerBottomSheetDialogFragment;
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
 import ru.vital.daily.databinding.FragmentChatSheetBinding;
-import ru.vital.daily.fragment.ContactFragment;
+import ru.vital.daily.fragment.AlbumFragment;
+import ru.vital.daily.fragment.CameraFragment;
+import ru.vital.daily.fragment.ContactFragmentList;
 import ru.vital.daily.fragment.FileFragment;
 import ru.vital.daily.fragment.LocationFragment;
-import ru.vital.daily.fragment.MediaFragment;
-import ru.vital.daily.fragment.MoneyFragment;
+import ru.vital.daily.repository.data.Media;
+import ru.vital.daily.repository.data.User;
 import ru.vital.daily.view.model.ChatSheetViewModel;
+import ru.vital.daily.view.model.ChatViewModel;
 
-public class ChatSheetFragment extends BaseSheetFragment<ChatSheetViewModel, FragmentChatSheetBinding> {
+public class ChatSheetFragment extends ViewPagerBottomSheetDialogFragment {
 
+    private final int REQUEST_MEDIA_CODE = 101;
+
+    private ChatSheetViewModel viewModel;
+
+    @Nullable
     @Override
-    protected ChatSheetViewModel onCreateViewModel() {
-        return ViewModelProviders.of(this).get(ChatSheetViewModel.class);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        FragmentChatSheetBinding binding = DataBindingUtil.inflate(inflater, R.layout.fragment_chat_sheet, container, false);
+        binding.setVariable(BR.viewModel, viewModel = ViewModelProviders.of(this).get(ChatSheetViewModel.class));
+        binding.container.setAdapter(new PagerAdapter(getChildFragmentManager()));
+        binding.container.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tabLayout));
+        binding.tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(binding.container));
+
+        BottomSheetUtils.setupViewPager(binding.container);
+        return binding.getRoot();
+    }
+
+    public void sendSelectedMedias(LongSparseArray<Media> medias) {
+        ChatViewModel chatViewModel = ViewModelProviders.of(getActivity()).get(ChatViewModel.class);
+        final int size = medias.size();
+        for (int i = 0; i < size; i++)
+            medias.valueAt(i).setSelected(false);
+        chatViewModel.sendMessage(medias);
+        dismiss();
+    }
+
+    public void sendSelectedContacts(LongSparseArray<User> users) {
+        ChatViewModel chatViewModel = ViewModelProviders.of(getActivity()).get(ChatViewModel.class);
+        chatViewModel.sendAccounts(users);
+        dismiss();
     }
 
     @Override
-    protected int getLayoutId() {
-        return R.layout.fragment_chat_sheet;
-    }
-
-    @Override
-    protected int getVariable() {
-        return BR.viewModel;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        dataBinding.viewPager.setAdapter(new PagerAdapter(getChildFragmentManager()));
-        dataBinding.viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(dataBinding.tabLayout));
-        dataBinding.tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(dataBinding.viewPager));
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (resultCode == Activity.RESULT_OK)
+            switch (requestCode) {
+                case REQUEST_MEDIA_CODE:
+                    viewModel.cameraSheetClickEvent.setValue(data.getIntExtra(Intent.EXTRA_TEXT, R.string.sheet_avatar_gallery));
+                    break;
+            }
     }
 
     private class PagerAdapter extends FragmentPagerAdapter {
@@ -59,15 +87,17 @@ public class ChatSheetFragment extends BaseSheetFragment<ChatSheetViewModel, Fra
         @Override
         public Fragment getItem(int position) {
             switch (position) {
+                case 0:
+                    return new CameraFragment();
                 case 1:
-                    return new MediaFragment();
+                    return new AlbumFragment();
                 case 2:
-                    return new ContactFragment();
+                    return new ContactFragmentList();
                 case 3:
                     return new FileFragment();
+                /*case 4:
+                    return new MoneyFragment();*/
                 case 4:
-                    return new MoneyFragment();
-                case 5:
                 default:
                     return new LocationFragment();
             }
@@ -75,7 +105,7 @@ public class ChatSheetFragment extends BaseSheetFragment<ChatSheetViewModel, Fra
 
         @Override
         public int getCount() {
-            return 6;
+            return 5;
         }
     }
 

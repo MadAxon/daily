@@ -2,9 +2,10 @@ package ru.vital.daily.adapter.viewholder;
 
 import androidx.databinding.ViewDataBinding;
 import ru.vital.daily.BR;
+import ru.vital.daily.repository.data.Media;
 import ru.vital.daily.view.model.item.MediaItemViewModel;
 
-public class MediaViewHolder extends BaseViewHolder<MediaItemViewModel, Object> {
+public class MediaViewHolder extends BaseViewHolder<MediaItemViewModel, Media> {
 
     public MediaViewHolder(ViewDataBinding viewDataBinding) {
         super(viewDataBinding);

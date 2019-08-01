@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View"/>
         <variable
             name="adapter"
             type="ru.vital.daily.adapter.ChatAdapter"/>
@@ -24,99 +25,52 @@
             android:layout_height="wrap_content"
             android:stateListAnimator="@animator/appbar_elevation">
 
-            <com.google.android.material.appbar.CollapsingToolbarLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:contentScrim="@android:color/transparent"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed"
-                app:titleEnabled="false">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="?actionBarSize">
-
-                    <ru.vital.daily.view.EditView
-                        android:id="@+id/editView10"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="32dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginBottom="32dp"
-                        android:hint="@string/common_search"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.5"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/text_input_layout"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.5"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/editView10">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/text_input_edit_text"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:drawableStart="@drawable/ic_search"
-                            android:background="@drawable/background_edit_text"
-                            android:textColor="@color/colorPrimaryDark" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <View
-                        android:id="@+id/view"
-                        style="@style/Separator"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?actionBarSize"
-                    android:background="@android:color/white"
-                    app:layout_collapseMode="pin">
+                    android:theme="@style/SearchView"
+                    android:background="@android:color/white">
+
+                    <com.pnikosis.materialishprogress.ProgressWheel
+                        style="@style/ProgressWheel"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_gravity="center"
+                        app:matProg_rimWidth="8dp"
+                        android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"/>
 
                     <TextView
                         android:id="@+id/title"
                         style="@style/TextView.Title"
-                        android:onClick="@{() -> viewModel.onToolbarClicked()}"
-                        android:text="@string/title_messages" />
-
-                    <ImageView
-                        android:id="@+id/imageView3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:onClick="@{() -> viewModel.onToolbarClicked()}"
-                        app:srcCompat="@drawable/ic_arrow_down" />
+                        android:text="@{viewModel.isLoading ? @string/common_updating : @string/title_messages}" />
 
                 </androidx.appcompat.widget.Toolbar>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/color_separator"
-                    app:layout_collapseMode="pin"
-                    android:layout_marginTop="?actionBarSize"/>
 
-            </com.google.android.material.appbar.CollapsingToolbarLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/color_separator"
+                android:layout_gravity="bottom"/>
 
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:adapter="@{adapter}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/TextView.Light"
+            android:text="@string/chats_empty"
+            android:visibility="@{viewModel.isLoading || viewModel.chats.size() > 0 ? View.GONE : View.VISIBLE}"
+            android:layout_gravity="center"/>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

@@ -47,4 +47,9 @@ public abstract class ViewModel extends androidx.lifecycle.ViewModel implements 
     public void onDestroy() {
         compositeDisposable.dispose();
     }
+
+    @Override
+    public void onStop() {
+
+    }
 }

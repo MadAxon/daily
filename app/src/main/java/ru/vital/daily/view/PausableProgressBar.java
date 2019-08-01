@@ -46,13 +46,13 @@ final class PausableProgressBar extends FrameLayout {
         binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.layout_pausable_progress, this, true);
     }
 
-    public void setTransparentColor(int transparentColor) {
-        binding.backProgress.setBackgroundResource(transparentColor);
+    public void setTransparentColor(Integer transparentColor) {
+        binding.setTransparentColor(transparentColor);
     }
 
-    public void setSolidColor(int solidColor) {
-        binding.frontProgress.setBackgroundColor(solidColor);
-        binding.maxProgress.setBackgroundColor(solidColor);
+    public void setSolidColor(Integer solidColor) {
+        binding.setSolidColor(solidColor);
+        binding.setSolidColor(solidColor);
     }
 
     public void setDuration(long duration) {
@@ -111,7 +111,7 @@ final class PausableProgressBar extends FrameLayout {
     }
 
     public void startProgress() {
-        Log.i("my_logs", "startProgress");
+        Log.i("my_logs", "startDownload");
         binding.maxProgress.setVisibility(GONE);
 
         animation = new PausableScaleAnimation(0, 1, 1, 1, Animation.ABSOLUTE, 0, Animation.RELATIVE_TO_SELF, 0);

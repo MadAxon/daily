@@ -21,10 +21,10 @@ public interface KeyDao {
     Single<Key> getCurrentKey();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Key key);
+    long insert(Key key);
 
     @Query("UPDATE keys SET userId = :userId where isCurrent = 1")
-    void updateCurrentUserId(long userId);
+    int updateCurrentUserId(long userId);
 
     @Query("DELETE from keys")
     void deleteAll();

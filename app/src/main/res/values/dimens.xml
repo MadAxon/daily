@@ -12,4 +12,16 @@
     <dimen name="image_view_padding_no_avatar">16dp</dimen>
     <dimen name="image_view_padding_avatar">0dp</dimen>
 
+    <dimen name="recycler_view_chat_item_spacing">4dp</dimen>
+    <dimen name="message_item_read_status_padding">1dp</dimen>
+    <dimen name="message_item_read_status_no_padding">0dp</dimen>
+
+    <dimen name="message_reply_media_padding">8dp</dimen>
+    <dimen name="message_reply_media_no_padding">0dp</dimen>
+    <dimen name="message_reply_author_padding">4dp</dimen>
+    <dimen name="message_reply_author_gone_padding">8dp</dimen>
+
+    <dimen name="message_media_bottom_padding_16dp">16dp</dimen>
+    <dimen name="message_media_bottom_padding_40dp">40dp</dimen>
+
 </resources>

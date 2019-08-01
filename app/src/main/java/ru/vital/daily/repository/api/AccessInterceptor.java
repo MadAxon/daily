@@ -12,6 +12,7 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import okhttp3.FormBody;
 import okhttp3.Interceptor;
+import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -26,21 +27,32 @@ public class AccessInterceptor implements Interceptor {
     @Override
     public Response intercept(@NonNull Chain chain) throws IOException {
         Request request = chain.request();
-        if (request.body() == null || !request.body().contentType().toString().contains("multipart/form-data")) {
-            Request.Builder requestBuilder = request.newBuilder();
-            String postBody = bodyToString(request.body());
-            if (accessKey != null)
-                try {
-                    JSONObject jsonObject = new JSONObject(postBody);
-                    jsonObject.put("accessKey", accessKey);
-                    postBody = jsonObject.toString();
-                } catch (JSONException e) {
-                    e.printStackTrace();
+        Request.Builder requestBuilder = request.newBuilder();
+        if (request.body() != null) {
+            if (request.body().contentType().toString().contains("multipart/form-data")) {
+                MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+                for (MultipartBody.Part part : ((MultipartBody) request.body()).parts()) {
+                    builder.addPart(part);
                 }
-            request = requestBuilder
-                    .post(RequestBody.create(request.body().contentType(), postBody))
-                    .build();
-            Log.i("my_logs", request.body().contentType() + " | " + request.url().toString() + " | " + postBody);
+                builder.addFormDataPart("accessKey", accessKey);
+                request = requestBuilder
+                        .post(builder.build())
+                        .build();
+            } else {
+                String postBody = bodyToString(request.body());
+                if (accessKey != null)
+                    try {
+                        JSONObject jsonObject = new JSONObject(postBody);
+                        jsonObject.put("accessKey", accessKey);
+                        postBody = jsonObject.toString();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                request = requestBuilder
+                        .post(RequestBody.create(request.body().contentType(), postBody))
+                        .build();
+                Log.i("my_logs", request.body().contentType() + " | " + request.url().toString() + " | " + postBody);
+            }
         }
         return chain.proceed(request);
     }

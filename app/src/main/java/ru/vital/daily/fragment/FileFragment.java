@@ -1,6 +1,9 @@
 package ru.vital.daily.fragment;
 
 import android.os.Bundle;
+import android.os.Environment;
+
+import java.io.File;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
@@ -30,7 +33,7 @@ public class FileFragment extends BaseFragment<FileViewModel, FragmentFileBindin
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
+        //Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).li;
         dataBinding.setAdapter(new FileAdapter(false));
     }
 }

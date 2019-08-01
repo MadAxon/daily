@@ -8,7 +8,7 @@
         <attr name="android:maxLength" />
         <attr name="android:maxLines" />
         <attr name="showSearchIcon" format="boolean" />
-        <attr name="android:enabled" format="boolean"/>
+        <attr name="android:enabled" format="boolean" />
     </declare-styleable>
     <declare-styleable name="ProgressView">
         <attr name="progressCount" format="integer|reference" />
@@ -26,5 +26,14 @@
             <!-- Clock wise - 270 deg; bottom = min, top = max -->
             <enum name="CW270" value="270" />
         </attr>
+    </declare-styleable>
+
+    <!-- Declare custom theme attributes that allow changing which styles are
+         used for button bars depending on the API level.
+         ?android:attr/buttonBarStyle is new as of API 11 so this is
+         necessary to support previous API levels. -->
+    <declare-styleable name="ButtonBarContainerTheme">
+        <attr name="metaButtonBarStyle" format="reference" />
+        <attr name="metaButtonBarButtonStyle" format="reference" />
     </declare-styleable>
 </resources>

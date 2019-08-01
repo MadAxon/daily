@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    
+    <data>
+        <variable
+            name="transparentColor"
+            type="Integer"/>
+        <variable
+            name="solidColor"
+            type="Integer"/>
+    </data>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -10,13 +19,13 @@
             android:id="@+id/back_progress"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:background="@color/color_progress_view_background" />
+            android:background="@{transparentColor ?? @color/color_progress_view_background}" />
 
         <View
             android:id="@+id/front_progress"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:background="@android:color/white"
+            android:background="@{solidColor ?? @android:color/white}"
             android:visibility="invisible"
             tools:visibility="visible" />
 
@@ -24,7 +33,7 @@
             android:id="@+id/max_progress"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:background="@android:color/white"
+            android:background="@{solidColor ?? @android:color/white}"
             android:visibility="gone" />
     </FrameLayout>
 </layout>

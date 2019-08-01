@@ -6,9 +6,12 @@ import com.bluelinelabs.logansquare.annotation.JsonObject;
 import java.util.Date;
 
 import androidx.annotation.Nullable;
+import androidx.databinding.BaseObservable;
+import androidx.databinding.Bindable;
+import ru.vital.daily.BR;
 
 @JsonObject
-public class MessageInfoModel {
+public class MessageInfoModel extends BaseObservable {
 
     @JsonField
     @Nullable
@@ -28,11 +31,13 @@ public class MessageInfoModel {
     }
 
     @Nullable
+    @Bindable
     public Date getReadAt() {
         return readAt;
     }
 
     public void setReadAt(@Nullable Date readAt) {
         this.readAt = readAt;
+        notifyPropertyChanged(BR.readAt);
     }
 }

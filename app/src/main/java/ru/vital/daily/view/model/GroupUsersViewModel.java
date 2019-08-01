@@ -3,7 +3,6 @@ package ru.vital.daily.view.model;
 import android.net.Uri;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -20,8 +19,7 @@ import okhttp3.RequestBody;
 import ru.vital.daily.enums.ChatType;
 import ru.vital.daily.listener.SingleLiveEvent;
 import ru.vital.daily.repository.ChatRepository;
-import ru.vital.daily.repository.KeyRepository;
-import ru.vital.daily.repository.MediaRepository;
+import ru.vital.daily.repository.api.Api;
 import ru.vital.daily.repository.api.request.AddMembersRequest;
 import ru.vital.daily.repository.api.request.ItemRequest;
 import ru.vital.daily.repository.data.User;
@@ -44,53 +42,44 @@ public class GroupUsersViewModel extends ViewModel implements Observable {
 
     private final ChatRepository chatRepository;
 
-    private final MediaRepository mediaRepository;
-
-    private String accessKey;
+    private final Api api;
 
     private Disposable groupDisposable;
 
-    private ChatSaveModel chatSaveModel;
+    private final ChatSaveModel chatSaveModel;
 
     private final AddMembersRequest addingMembersRequest;
 
     @Inject
-    public GroupUsersViewModel(ChatRepository chatRepository, MediaRepository mediaRepository, KeyRepository keyRepository, ChatSaveModel chatSaveModel, AddMembersRequest addingMembersRequest) {
+    public GroupUsersViewModel(ChatRepository chatRepository, ChatSaveModel chatSaveModel, AddMembersRequest addingMembersRequest, Api api) {
         this.chatRepository = chatRepository;
-        this.mediaRepository = mediaRepository;
         this.chatSaveModel = chatSaveModel;
+        this.api = api;
         this.chatSaveModel.setType(ChatType.conversation.name());
         this.addingMembersRequest = addingMembersRequest;
-        DisposableProvider.getDisposableItem(keyRepository.getCurrentKey(),
-                key -> {
-                    accessKey = key.getAccessKey();
-                },
-                throwable -> {
-                    accessKey = "";
-                    //keyRepository.clearKeys();
-                });
     }
 
-    public void createGroup(File cover, String mimeType, Consumer<Void> onContinue) {
+    public void createGroup(File cover, String mimeType, Consumer<Long> onContinue) {
         if (groupDisposable != null && !groupDisposable.isDisposed()) return;
         isLoading.set(true);
         if (chatSaveModel.getCoverId() == null && cover != null)
-            compositeDisposable.add(groupDisposable = DisposableProvider.getDisposableItem(mediaRepository.uploadMedia(MultipartBody.Part.createFormData("file", cover.getName(), RequestBody.create(MediaType.parse(mimeType), cover)),
-                    RequestBody.create(MediaType.parse("application/json; charset=utf-8"), accessKey),
+            compositeDisposable.add(groupDisposable = DisposableProvider.getDisposableItem(api.uploadMedia(MultipartBody.Part.createFormData("file", cover.getName(), RequestBody.create(MediaType.parse(mimeType), cover)),
                     RequestBody.create(MediaType.parse("application/json; charset=utf-8"), FileUtil.getFileType(mimeType))), media -> {
-                        mediaRepository.saveMedia(media);
                         chatSaveModel.setCoverId(media.getId());
-                        createGroup(onContinue);
+                        createGroup(onContinue, cover);
                     },
-                    throwable -> createGroup(onContinue)));
-        else createGroup(onContinue);
+                    throwable -> createGroup(onContinue, cover)));
+        else createGroup(onContinue, cover);
     }
 
-    private void createGroup(Consumer<Void> onContinue) {
+    private void createGroup(Consumer<Long> onContinue, File cover) {
         compositeDisposable.add(groupDisposable = DisposableProvider.getDisposableItem(chatRepository.createChat(new ItemRequest<>(chatSaveModel))
                 , chat -> {
+                    if (chat.getCover() != null && cover != null)
+                        chat.getCover().getFiles().get(0).setUrl(cover.getPath());
+                    addingMembersRequest.setId(chat.getId());
                     chatRepository.saveChat(chat);
-                    addMembersToChat(onContinue);
+                    addMembersToChat(aVoid -> onContinue.accept(chat.getId()));
                 }, throwable -> {
                     isLoading.set(false);
                     errorEvent.setValue(throwable);
@@ -99,9 +88,9 @@ public class GroupUsersViewModel extends ViewModel implements Observable {
 
     private void addMembersToChat(Consumer<Void> onContinue) {
         if (users.getValue() != null && addingMembersRequest.getMemberIds() == null) {
-            List<Long> userIds = new ArrayList<>();
-            for (User user : users.getValue())
-                userIds.add(user.getId());
+            long[] userIds = new long[users.getValue().size()];
+            for (int i = 0; i < userIds.length; i++)
+                userIds[i] = users.getValue().get(i).getId();
             addingMembersRequest.setMemberIds(userIds);
         }
 
@@ -136,5 +125,9 @@ public class GroupUsersViewModel extends ViewModel implements Observable {
 
     public void setAvatar(Uri avatar) {
         this.avatar = avatar;
+    }
+
+    public ChatSaveModel getChatSaveModel() {
+        return chatSaveModel;
     }
 }

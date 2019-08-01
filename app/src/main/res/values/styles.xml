@@ -12,12 +12,34 @@
         <item name="actionMenuTextAppearance">?attr/textAppearanceSmallPopupMenu</item>
         <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
         <item name="android:radioButtonStyle">@style/RadioButton</item>
+        <item name="android:checkboxStyle">@style/Checkbox</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:colorControlNormal">@color/color_checkbox_border</item>
         <item name="actionModeCloseDrawable">@drawable/ic_close</item>
         <item name="actionModeCloseButtonStyle">@style/CloseButton</item>
+        <item name="actionModeBackground">@android:color/white</item>
+        <item name="searchViewStyle">@style/SearchView</item>
+    </style>
+
+    <style name="AppTheme.Transparent">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="homeAsUpIndicator">@drawable/ic_arrow_left_white</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="windowActionBarOverlay">true</item>
+        <item name="colorPrimary">@android:color/transparent</item>
     </style>
 
     <style name="AppTheme.SplashScreen">
         <item name="android:windowBackground">@drawable/background_splash_screen</item>
+    </style>
+
+    <style name="SearchView" parent="Widget.AppCompat.SearchView">
+        <item name="android:textColorHint">@color/color_text_view_light</item>
+        <item name="android:editTextColor">@color/color_text_view_dark</item>
+        <item name="android:iconifiedByDefault">false</item>
+        <item name="searchHintIcon">@null</item>
+        <item name="closeIcon">@drawable/ic_close_dark</item>
     </style>
 
     <style name="EditText" parent="Widget.AppCompat.EditText">
@@ -44,6 +66,8 @@
     <style name="TextView.Title" parent="TextView.Medium">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
         <item name="android:layout_gravity">center</item>
         <item name="android:textSize">20sp</item>
     </style>
@@ -56,9 +80,9 @@
     </style>
 
     <style name="RoundedImageView.Medium">
-        <item name="android:layout_width">50dp</item>
-        <item name="android:layout_height">50dp</item>
-        <item name="riv_corner_radius">21dp</item>
+        <item name="android:layout_width">52dp</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="riv_corner_radius">22dp</item>
     </style>
 
     <style name="RoundedImageView.Big">
@@ -76,7 +100,8 @@
     <style name="RoundedImageView.Small">
         <item name="android:layout_width">34dp</item>
         <item name="android:layout_height">34dp</item>
-        <item name="riv_corner_radius">14dp</item>
+        <item name="riv_corner_radius">12dp</item>
+        <item name="riv_border_width">1dp</item>
     </style>
 
     <style name="RoundedImageView.Circle">
@@ -122,8 +147,14 @@
         <item name="android:textColor">@color/color_text_view_dark</item>
         <item name="android:fontFamily">@font/roboto_medium</item>
     </style>
-    
-    <style name="Dialog" parent="Theme.AppCompat.Dialog.Alert">
+
+    <style name="Checkbox" parent="Base.Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:textColor">@color/color_text_view_light</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="AlertDialog" parent="Theme.AppCompat.Dialog.Alert">
         <item name="android:background">@android:color/white</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColorPrimary">@color/colorPrimaryDark</item>
@@ -138,7 +169,12 @@
         <item name="android:progressTint">@color/colorAccent</item>
         <item name="android:indeterminate">true</item>
     </style>
-    
+
+    <style name="ProgressBarHorizontalAudio" parent="Widget.AppCompat.ProgressBar.Horizontal">
+        <item name="android:progressDrawable">@drawable/progress_drawable</item>
+        <item name="android:indeterminate">false</item>
+    </style>
+
     <style name="ProgressWheel">
         <item name="matProg_progressIndeterminate">true</item>
         <item name="matProg_barWidth">2dp</item>
@@ -149,6 +185,34 @@
     <style name="ProgressWheel.Large">
         <item name="android:layout_width">88dp</item>
         <item name="android:layout_height">88dp</item>
+    </style>
+
+    <style name="ProgressWheelMedia">
+        <item name="matProg_progressIndeterminate">false</item>
+        <item name="matProg_barWidth">3dp</item>
+        <item name="matProg_barColor">@color/color_progress_view_audio_dark</item>
+        <item name="matProg_fillRadius">true</item>
+        <item name="matProg_linearProgress">true</item>
+    </style>
+
+    <style name="ProgressWheelMediaWhite">
+        <item name="matProg_progressIndeterminate">false</item>
+        <item name="matProg_barWidth">3dp</item>
+        <item name="matProg_barColor">@android:color/white</item>
+        <item name="matProg_fillRadius">true</item>
+        <item name="matProg_linearProgress">true</item>
+    </style>
+
+    <style name="FullscreenTheme" parent="AppTheme">
+        <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowBackground">@null</item>
+        <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
+        <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
+    </style>
+
+    <style name="FullscreenActionBarStyle" parent="Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/black_overlay</item>
     </style>
 
 </resources>

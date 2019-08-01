@@ -5,8 +5,10 @@ import dagger.android.ContributesAndroidInjector;
 import ru.vital.daily.activity.ChatActivity;
 import ru.vital.daily.activity.ChatCreateActivity;
 import ru.vital.daily.activity.MainActivity;
+import ru.vital.daily.activity.MediaEditorActivity;
 import ru.vital.daily.activity.SettingsActivity;
 import ru.vital.daily.di.builder.fragment.ChatCreateFragmentsBuilderModule;
+import ru.vital.daily.di.builder.fragment.ChatFragmentBuilderModule;
 import ru.vital.daily.di.builder.fragment.MainFragmentsBuilderModule;
 import ru.vital.daily.di.builder.fragment.SettingsFragmentsBuilderModule;
 
@@ -22,7 +24,10 @@ public abstract class ActivityBuilderModule {
     @ContributesAndroidInjector(modules = ChatCreateFragmentsBuilderModule.class)
     abstract ChatCreateActivity bindChatCreateActivity();
 
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(modules = ChatFragmentBuilderModule.class)
     abstract ChatActivity bindChatActivity();
+
+    @ContributesAndroidInjector
+    abstract MediaEditorActivity bindMediaEditorActivity();
 
 }

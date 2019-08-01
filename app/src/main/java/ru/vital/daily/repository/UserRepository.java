@@ -1,27 +1,19 @@
 package ru.vital.daily.repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import ru.vital.daily.repository.api.Api;
-import ru.vital.daily.repository.api.request.EmptyRequest;
+import ru.vital.daily.repository.api.request.EmptyJson;
 import ru.vital.daily.repository.api.request.ItemRequest;
 import ru.vital.daily.repository.api.request.ItemsRequest;
 import ru.vital.daily.repository.api.response.ItemResponse;
 import ru.vital.daily.repository.api.response.ItemsResponse;
-import ru.vital.daily.repository.api.response.handler.ItemsResponseHandler;
 import ru.vital.daily.repository.data.User;
 import ru.vital.daily.repository.db.UserDao;
 import ru.vital.daily.repository.model.ProfileSaveModel;
@@ -51,17 +43,17 @@ public class UserRepository {
     public Single<ItemResponse<User>> getProfile(long userId) {
         return userDao.getUser(userId)
                 .map(ItemResponse::new)
-                .switchIfEmpty(Maybe.defer(() -> api.getProfile(new EmptyRequest()))).toSingle().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io());
+                .switchIfEmpty(Maybe.defer(() -> api.getProfile(new EmptyJson()))).toSingle().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io());
     }
 
     public Single<ItemResponse<User>> saveProfile(ItemRequest<ProfileSaveModel> request) {
         return api.saveProfile(request);
     }
 
-    public void insertUser(User user) {
+    public void saveUser(User user) {
         DisposableProvider.doCallable(() -> {
             userDao.insert(user);
-            return null;
+            return true;
         });
         /*Observable.fromCallable((Callable<Void>) () -> {
             userDao.insert(user);

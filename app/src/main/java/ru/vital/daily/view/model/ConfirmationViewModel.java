@@ -1,22 +1,16 @@
 package ru.vital.daily.view.model;
 
-import android.app.Application;
-
 import javax.inject.Inject;
 
-import androidx.annotation.NonNull;
-import androidx.databinding.Bindable;
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
-import ru.vital.daily.listener.SingleLiveEvent;
 import ru.vital.daily.repository.KeyRepository;
 import ru.vital.daily.repository.UserRepository;
-import ru.vital.daily.repository.api.Api;
+import ru.vital.daily.repository.api.DailySocket;
 import ru.vital.daily.repository.api.request.EmailRequest;
 import ru.vital.daily.repository.api.request.PhoneRequest;
-import ru.vital.daily.repository.api.response.ErrorResponse;
 import ru.vital.daily.repository.data.Key;
+import ru.vital.daily.repository.data.User;
 import ru.vital.daily.util.DisposableProvider;
 
 public class ConfirmationViewModel extends ViewModel {
@@ -51,20 +45,22 @@ public class ConfirmationViewModel extends ViewModel {
         isLoading.set(true);
         if (confirmationDisposable != null && !compositeDisposable.isDisposed()) return;
         compositeDisposable.add(confirmationDisposable = DisposableProvider.getDisposableItem(isPhoneSignIn ? keyRepository.retrieveNewKey(phoneRequest) : keyRepository.retrieveNewKey(emailRequest), key -> {
-            keyRepository.insertKey(key);
+            keyRepository.saveKey(key);
             onSuccess.accept(key);
+            isLoading.set(false);
         }, throwable -> {
             errorEvent.setValue(throwable);
             isLoading.set(false);
         }));
     }
 
-    public void updateKeyUserId(Consumer<Void> onContinue) {
+    public void updateKeyUserId(Consumer<User> onContinue) {
         compositeDisposable.add(confirmationDisposable = DisposableProvider.getDisposableItem(userRepository.getProfile(0), user -> {
+            userRepository.saveUser(user);
             keyRepository.updateCurrentUserId(user.getId());
-            onContinue.accept(null);
+            onContinue.accept(user);
         }, throwable -> {
-            onContinue.accept(null);
+            onContinue.accept(new User());
         }));
     }
 

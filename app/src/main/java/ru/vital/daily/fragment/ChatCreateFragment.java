@@ -1,5 +1,6 @@
 package ru.vital.daily.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
+import ru.vital.daily.activity.ChatActivity;
 import ru.vital.daily.adapter.ContactAdapter;
 import ru.vital.daily.databinding.FragmentChatCreateBinding;
 import ru.vital.daily.view.model.ChatCreateViewModel;
@@ -39,7 +41,9 @@ public class ChatCreateFragment extends BaseFragment<ChatCreateViewModel, Fragme
         viewModel.users.observe(this, users -> dataBinding.getAdapter().updateItems(users));
         viewModel.clearAdapterEvent.observe(this, aVoid -> dataBinding.getAdapter().clearAdapter());
         dataBinding.getAdapter().clickEvent.observe(this, user -> {
-
+            Intent intent = new Intent(getContext(), ChatActivity.class);
+            intent.putExtra(ChatActivity.MEMBER_ID_EXTRA, user.getId());
+            startActivity(intent);
         });
 
         LinearLayoutManager linearLayoutManager = (LinearLayoutManager) dataBinding.recyclerView.getLayoutManager();

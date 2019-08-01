@@ -30,7 +30,8 @@ public class ContactViewModel extends ViewModel {
 
     public MutableLiveData<List<User>> users = new MutableLiveData<>();
 
-    public SingleLiveEvent<Void> clearAdapterEvent = new SingleLiveEvent<>();
+    public SingleLiveEvent<Void> clearAdapterEvent = new SingleLiveEvent<>(),
+                            sendClickEvent = new SingleLiveEvent<>();
 
     public final ItemsRequest itemsRequest;
 
@@ -63,8 +64,10 @@ public class ContactViewModel extends ViewModel {
         compositeDisposable.add(searchPublish
                 .debounce(1, TimeUnit.SECONDS)
                 .switchMap(string -> {
-                    //itemsRequest.setSearchText(string);
-                    return userRepository.getUsers(myUserId, itemsRequest).toObservable();
+                    isLoading.set(true);
+                    if (string.isEmpty())
+                        return userRepository.getUsers(myUserId, itemsRequest).toObservable();
+                    else return userRepository.getUsersFromApi(itemsRequest).toObservable();
                 })
                 .subscribe(new ItemsResponseHandler<User>(userList -> {
                     users.postValue(userList);
@@ -79,8 +82,6 @@ public class ContactViewModel extends ViewModel {
                             isLoading.set(false);
                     }
                 }));
-
-        isLoading.set(true);
         DisposableProvider.getDisposableItem(keyRepository.getCurrentKey(),
                 key -> {
                     myUserId = key.getUserId();
@@ -90,14 +91,19 @@ public class ContactViewModel extends ViewModel {
                 });
     }
 
-    public void addMembersToChat(Consumer<Void> onContinue) {
+    public void addMembersToChat(Consumer<Void> onContinue, long[] ids) {
         isLoading.set(true);
+        request.setMemberIds(ids);
         compositeDisposable.add(chatRepository.addMembersToChat(request,
                 onContinue,
                 throwable -> {
                     isLoading.set(false);
                     errorEvent.setValue(throwable);
                 }));
+    }
+
+    public void onSendClicked() {
+        sendClickEvent.call();
     }
 
     @Override
@@ -119,4 +125,7 @@ public class ContactViewModel extends ViewModel {
         }
     };
 
+    public AddMembersRequest getRequest() {
+        return request;
+    }
 }

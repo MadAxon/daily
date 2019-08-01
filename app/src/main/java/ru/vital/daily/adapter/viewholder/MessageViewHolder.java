@@ -5,7 +5,7 @@ import ru.vital.daily.BR;
 import ru.vital.daily.repository.data.Message;
 import ru.vital.daily.view.model.item.MessageItemViewModel;
 
-public class MessageViewHolder extends BaseViewHolder<MessageItemViewModel, Message> {
+public class MessageViewHolder<T extends MessageItemViewModel> extends BaseViewHolder<T, Message> {
 
     public MessageViewHolder(ViewDataBinding viewDataBinding) {
         super(viewDataBinding);
@@ -17,7 +17,7 @@ public class MessageViewHolder extends BaseViewHolder<MessageItemViewModel, Mess
     }
 
     @Override
-    public MessageItemViewModel onCreateViewModel() {
-        return new MessageItemViewModel();
+    public T onCreateViewModel() {
+        return (T) new MessageItemViewModel();
     }
 }

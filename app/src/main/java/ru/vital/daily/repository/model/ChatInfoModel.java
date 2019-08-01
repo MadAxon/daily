@@ -1,12 +1,19 @@
 package ru.vital.daily.repository.model;
 
+import android.util.Log;
+
 import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
 
 import java.util.Date;
 
+import androidx.databinding.BaseObservable;
+import androidx.databinding.Bindable;
+import ru.vital.daily.BR;
+import ru.vital.daily.repository.data.Message;
+
 @JsonObject
-public class ChatInfoModel {
+public class ChatInfoModel extends BaseObservable {
 
     @JsonField
     private Long lastMessageId;
@@ -22,6 +29,9 @@ public class ChatInfoModel {
 
     @JsonField
     private int unreadMessagesCount;
+
+    @JsonField
+    private Message lastMessage;
 
     public Long getLastMessageId() {
         return lastMessageId;
@@ -93,5 +103,15 @@ public class ChatInfoModel {
 
     public void setUnreadMessagesCount(int unreadMessagesCount) {
         this.unreadMessagesCount = unreadMessagesCount;
+    }
+
+    @Bindable
+    public Message getLastMessage() {
+        return lastMessage;
+    }
+
+    public void setLastMessage(Message lastMessage) {
+        this.lastMessage = lastMessage;
+        notifyPropertyChanged(BR.lastMessage);
     }
 }

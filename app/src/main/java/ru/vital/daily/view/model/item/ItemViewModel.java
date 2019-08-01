@@ -43,4 +43,8 @@ public abstract class ItemViewModel<M> extends ViewModel implements Observable {
     public void notifyChange(int fieldId) {
         callbacks.notifyChange(this, fieldId);
     }
+
+    public void unbind() {
+
+    }
 }

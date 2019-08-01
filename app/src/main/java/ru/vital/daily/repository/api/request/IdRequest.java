@@ -7,13 +7,20 @@ import com.bluelinelabs.logansquare.annotation.JsonObject;
 public class IdRequest {
 
     @JsonField
-    private long id;
+    private Long id;
 
-    public long getId() {
+    public IdRequest() {
+    }
+
+    public IdRequest(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 }

@@ -65,7 +65,7 @@ public class ChannelCreateFragment extends BaseFragment<ChannelCreateViewModel, 
         setupToolbar(dataBinding.toolbar, true);
 
         viewModel.coverClickEvent.observe(this, aVoid -> {
-            openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_camera, R.drawable.ic_media}, new int[]{R.string.sheet_avatar_photo, R.string.sheet_avatar_gallery}), viewModel.avatarSheetFragmentTag, REQUEST_COVER_CODE);
+            openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_camera, R.drawable.ic_media}, new int[]{R.string.sheet_photo, R.string.sheet_avatar_gallery}), viewModel.avatarSheetFragmentTag, REQUEST_COVER_CODE);
         });
     }
 
@@ -75,7 +75,7 @@ public class ChannelCreateFragment extends BaseFragment<ChannelCreateViewModel, 
             switch (requestCode) {
                 case REQUEST_COVER_CODE:
                     switch (data.getIntExtra(Intent.EXTRA_TEXT, R.string.sheet_avatar_gallery)) {
-                        case R.string.sheet_avatar_photo:
+                        case R.string.sheet_photo:
                             if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
                                 ActivityCompat.requestPermissions(getActivity(),
                                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
@@ -104,7 +104,7 @@ public class ChannelCreateFragment extends BaseFragment<ChannelCreateViewModel, 
                     if (data != null) {
                         Uri result = data.getData();
                         file = FileUtil.createTempFile(getContext(), "cover", ".jpeg");
-                        if (FileUtil.copyImageFile(getContext(), result, file))
+                        if (FileUtil.copyFile(getContext(), result, file))
                             try {
                                 Bitmap bitmap = BitmapHandler.handleSamplingAndRotationBitmap(getContext(), Uri.fromFile(file));
                                 BitmapHandler.compress(bitmap, file);

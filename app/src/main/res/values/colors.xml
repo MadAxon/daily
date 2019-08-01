@@ -5,7 +5,7 @@
     <color name="colorAccent">#49AAFF</color>
 
     <color name="color_ripple">#2049AAFF</color>
-    
+
     <color name="color_menu">#EBE9FF</color>
     <color name="color_menu_pressed">#49AAFF</color>
 
@@ -35,11 +35,17 @@
 
     <color name="color_chat_avatar_border">#D1CEF1</color>
     <color name="color_chat_border">#BDBBD6</color>
-    <color name="color_chat_date_header_background">#80FFFFFF</color>
+    <color name="color_chat_date_header_background">#20000000</color>
+    <color name="color_chat_media_failed">#80ffffff</color>
+
+    <color name="color_message_reply_end_animation">#2E72AD</color>
+    <color name="color_message_reply_start_animation">#D1CEF1</color>
 
     <color name="color_group_avatar_background">#BEBBE1</color>
 
     <color name="color_radio_button_border">#BDBBD6</color>
+
+    <color name="color_checkbox_border">#BDBBD6</color>
 
     <color name="color_progress_view_background">#80fbfbfb</color>
     <color name="color_progress_view_audio_dark">#3F3E50</color>
@@ -47,5 +53,11 @@
 
     <color name="color_snackbar_background_warn">#FF6161</color>
     <color name="color_snackbar_background_success">#40C4FF</color>
+
+    <color name="black_overlay">#66000000</color>
+
+    <color name="color_media_editor_toolbar">#33000000</color>
+    <color name="color_media_editor_bottom_tab">#bbffffff</color>
+    <color name="color_media_editor_edit_text_background">#bbF4F3FF</color>
 
 </resources>

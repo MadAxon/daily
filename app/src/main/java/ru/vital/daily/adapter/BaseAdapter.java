@@ -62,16 +62,9 @@ public abstract class BaseAdapter<M, VH extends BaseViewHolder, VDB extends View
     public void updateItems(List<M> items) {
         if (items != null && items.size() != 0) {
             int positionStart = this.items.size();
+            this.items.clear();
             this.items.addAll(items);
             notifyItemRangeInserted(positionStart, items.size());
-        }
-    }
-
-    public void updateItem(M item) {
-        int index = items.indexOf(item);
-        if (index != -1) {
-            items.set(index, item);
-            notifyItemChanged(index);
         }
     }
 
@@ -80,4 +73,7 @@ public abstract class BaseAdapter<M, VH extends BaseViewHolder, VDB extends View
         notifyDataSetChanged();
     }
 
+    public ArrayList<M> getItems() {
+        return items;
+    }
 }

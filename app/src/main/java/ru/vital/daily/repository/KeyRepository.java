@@ -40,24 +40,24 @@ public class KeyRepository {
         return api.signInEmail(emailRequest);
     }
 
-    public void insertKey(Key key) {
+    public void saveKey(Key key) {
         DisposableProvider.doCallable(() -> {
             keyDao.insert(key);
-            return null;
+            return true;
         });
     }
 
     public void updateCurrentUserId(long userId) {
         DisposableProvider.doCallable(() -> {
             keyDao.updateCurrentUserId(userId);
-            return null;
+            return true;
         });
     }
 
     public void clearKeys() {
         DisposableProvider.doCallable(() -> {
             keyDao.deleteAll();
-            return null;
+            return true;
         });
     }
 }

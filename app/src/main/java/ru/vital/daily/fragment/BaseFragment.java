@@ -91,6 +91,15 @@ public abstract class BaseFragment<VM extends ViewModel, B extends ViewDataBindi
                     .commit();
     }
 
+    protected void openChildFragment(Fragment fragment, String tag) {
+        if (getChildFragmentManager().findFragmentByTag(tag) == null)
+            getChildFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.container, fragment, tag)
+                    .addToBackStack(null)
+                    .commit();
+    }
+
     protected void replaceFragment(Fragment fragment, String tag) {
         if (getActivity() != null && getActivity().getSupportFragmentManager().findFragmentByTag(tag) == null)
             getActivity().getSupportFragmentManager()
@@ -124,7 +133,7 @@ public abstract class BaseFragment<VM extends ViewModel, B extends ViewDataBindi
             assert appCompatActivity.getSupportActionBar() != null;
             appCompatActivity.getSupportActionBar().setDisplayShowTitleEnabled(false);
             appCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(includeBackButton);
-            appCompatActivity.getSupportActionBar().setDisplayShowHomeEnabled(includeBackButton);
+            //appCompatActivity.getSupportActionBar().setDisplayShowHomeEnabled(includeBackButton);
             appCompatActivity.getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_left);
             setHasOptionsMenu(true);
         }

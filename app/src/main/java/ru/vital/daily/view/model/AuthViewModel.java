@@ -16,8 +16,7 @@ public class AuthViewModel extends ViewModel {
                     registerFragmentTag = "registerFragmentTag";
 
     public SingleLiveEvent<Void> openSignEmailEvent = new SingleLiveEvent<>(),
-            openSignPhoneEvent = new SingleLiveEvent<>(),
-            openRegisterEvent = new SingleLiveEvent<>();
+            openSignPhoneEvent = new SingleLiveEvent<>();
 
     @Inject
     public AuthViewModel() {
@@ -30,10 +29,6 @@ public class AuthViewModel extends ViewModel {
 
     public void openSignInPhone() {
         openSignPhoneEvent.call();
-    }
-
-    public void openRegister() {
-        openRegisterEvent.call();
     }
 
     public void bottomClicked() {

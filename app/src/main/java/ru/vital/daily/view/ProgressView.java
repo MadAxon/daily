@@ -62,7 +62,6 @@ public class ProgressView extends LinearLayout {
         init(context, attrs);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public ProgressView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context, attrs);
@@ -205,9 +204,9 @@ public class ProgressView extends LinearLayout {
                         PausableProgressBar p = progressBars.get(current - 1);
                         p.setMinWithoutCallback();
                         current = current - 1;
-                        //progressBars.get(--current).startProgress();
+                        //progressBars.get(--current).startDownload();
                     } else {
-                        //progressBars.get(current).startProgress();
+                        //progressBars.get(current).startDownload();
                     }
                     isReverseStart = false;
                     if (storiesListener != null) storiesListener.onPrev();
@@ -216,7 +215,7 @@ public class ProgressView extends LinearLayout {
                 isSkipStart = false;
                 if (current < (progressBars.size() - 1)) {
                     current = current + 1;
-                    //progressBars.get(current).startProgress();
+                    //progressBars.get(current).startDownload();
                     if (storiesListener != null) storiesListener.onNext();
                 } else {
                     isComplete = true;
@@ -241,12 +240,12 @@ public class ProgressView extends LinearLayout {
             progressBars.get(i).setMaxWithoutCallback();
         }
         current = from;
-        //progressBars.get(from).startProgress();
+        //progressBars.get(from).startDownload();
     }
 
     public void startCurrentStory() {
         if (!isPaused && !isRunning) progressBars.get(current).startProgress();
-        Log.i("my_logs", "startProgress " + current);
+        Log.i("my_logs", "startDownload " + current);
     }
 
     /**

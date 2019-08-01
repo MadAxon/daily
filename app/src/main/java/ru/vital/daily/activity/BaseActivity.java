@@ -5,6 +5,8 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.inputmethod.InputMethodManager;
 
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
@@ -68,11 +70,11 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        connectivityBroadcast.isOnline.observe(this, isOnline -> {
+        /*connectivityBroadcast.isOnline.observe(this, isOnline -> {
             if (isOnline)
                 SnackbarProvider.getSuccessSnackbar(dataBinding.getRoot(), getString(R.string.connectivity_alive)).show();
             else SnackbarProvider.getWarnSnackbar(dataBinding.getRoot(), getString(R.string.connectivity_lost)).show();
-        });
+        });*/
 
         dataBinding = DataBindingUtil.setContentView(this, getLayoutId());
         dataBinding.setLifecycleOwner(this);
@@ -110,6 +112,12 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        viewModel.onStop();
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(connectivityBroadcast);
@@ -138,6 +146,12 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
                     .beginTransaction()
                     .replace(R.id.container, fragment, tag)
                     .commit();
+    }
+
+    protected void openSheetFragment(BottomSheetDialogFragment sheetDialogFragment, String tag) {
+        if (getSupportFragmentManager().findFragmentByTag(tag) == null) {
+            sheetDialogFragment.show(getSupportFragmentManager(), tag);
+        }
     }
 
     @Override

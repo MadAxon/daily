@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:tools="http://schemas.android.com/tools"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
+        <import type="android.view.View" />
+
+        <import type="ru.vital.daily.enums.FileType" />
+
+        <import type="ru.vital.daily.enums.MessageContentType" />
+
         <variable
             name="viewModel"
-            type="ru.vital.daily.view.model.item.MessageItemViewModel"/>
+            type="ru.vital.daily.view.model.item.MessageItemViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:onClick="@{() -> viewModel.onItemClicked()}"
         android:onLongClick="@{() -> viewModel.onItemLongClicked()}">
 
@@ -19,7 +26,8 @@
             android:id="@+id/view16"
             android:layout_width="2dp"
             android:layout_height="0dp"
-            android:background="@color/color_chat_border"
+            android:background="@color/colorAccent"
+            android:visibility="@{viewModel.item.selected ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="@+id/cardView"
             app:layout_constraintEnd_toEndOf="@+id/roundedImageView16"
             app:layout_constraintStart_toStartOf="@+id/roundedImageView16"
@@ -27,14 +35,12 @@
 
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/roundedImageView16"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
+            style="@style/RoundedImageView.Medium"
             android:layout_marginEnd="8dp"
+            android:src="@{viewModel.item.author}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:riv_border_color="@android:color/white"
-            app:riv_border_width="8dp"
-            app:riv_corner_radius="14dp"
             tools:src="@tools:sample/avatars" />
 
         <androidx.cardview.widget.CardView
@@ -42,9 +48,15 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="48dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:message="@{viewModel.item}"
+            app:replyAnimationEnd="@{viewModel.item.replyAnimationEvent}"
             app:cardBackgroundColor="?attr/colorAccent"
             app:cardCornerRadius="24dp"
-            app:cardElevation="5dp"
+            app:cardElevation="0dp"
+            app:cardPreventCornerOverlap="true"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/roundedImageView16"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -61,28 +73,33 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
                     android:layout_marginEnd="12dp"
+                    android:autoLink="all"
                     android:fontFamily="@font/roboto_regular"
-                    android:text="TextView"
+                    android:text="@{viewModel.item.text}"
                     android:textColor="@android:color/white"
+                    android:textColorLink="@android:color/white"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
 
-                <ImageView
+                <com.makeramen.roundedimageview.RoundedImageView
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_marginStart="12dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="12dp"
-                    android:tint="@android:color/white"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView79"
+                    app:message_readAt="@{viewModel.item.info.readAt}"
+                    app:message_status="@{viewModel.item.sendStatus}"
+                    app:message_user="@{viewModel.anotherUser}"
                     app:riv_border_color="@color/color_chat_avatar_border"
-                    app:srcCompat="@drawable/ic_check_circle_outline" />
+                    app:riv_border_width="1dp"
+                    app:riv_corner_radius="9dp" />
 
                 <TextView
                     android:id="@+id/textView80"
@@ -92,11 +109,93 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="12dp"
                     android:layout_marginBottom="12dp"
-                    android:text="TextView"
                     android:textColor="@android:color/white"
+                    app:createdAt="@{viewModel.item.createdAt}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView79" />
+                    app:layout_constraintTop_toBottomOf="@+id/textView79"
+                    app:updatedAt="@{viewModel.item.updatedAt}" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/constraintLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="@{viewModel.item.reply == null ? View.GONE : View.VISIBLE}"
+                    android:onClick="@{() -> viewModel.onReplyClicked()}"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <View
+                        android:id="@+id/view23"
+                        android:layout_width="2dp"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@android:color/white"
+                        app:layout_constraintBottom_toBottomOf="@+id/textView105"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.makeramen.roundedimageview.RoundedImageView
+                        android:id="@+id/roundedImageView24"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="8dp"
+                        android:src="@{viewModel.item.reply.account ?? viewModel.item.reply.author}"
+                        android:visibility="@{(viewModel.item.reply.author != null || viewModel.item.reply.account != null) &amp;&amp; !MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView25"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:riv_border_color="@color/color_chat_avatar_border"
+                        app:riv_border_width="1dp"
+                        app:riv_corner_radius="9dp" />
+
+                    <com.makeramen.roundedimageview.RoundedImageView
+                        android:id="@+id/roundedImageView25"
+                        style="@style/RoundedImageView.Small"
+                        android:layout_marginStart="8dp"
+                        android:visibility="@{viewModel.mediaReply != null &amp;&amp; FileType.image.name().equals(viewModel.mediaReply.type) || FileType.video.name().equals(viewModel.mediaReply.type)? View.VISIBLE : View.GONE}"
+                        app:layout_constraintBottom_toBottomOf="@+id/view23"
+                        app:layout_constraintStart_toEndOf="@+id/view23"
+                        app:layout_constraintTop_toTopOf="@+id/view23"
+                        app:message_image="@{viewModel.mediaReply}" />
+
+                    <TextView
+                        android:id="@+id/textView104"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@{(viewModel.item.reply.author != null || viewModel.item.reply.account != null) &amp;&amp; !MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? @dimen/message_reply_author_padding : @dimen/message_reply_author_gone_padding}"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="12dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/roboto_medium"
+                        android:maxLines="1"
+                        android:text="@{MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? viewModel.item.reply.content.name : (viewModel.item.reply.account != null ? viewModel.item.reply.account.uname : viewModel.item.reply.author.uname)}"
+                        android:textSize="12sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView24"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/textView105"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="12dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/roboto_regular"
+                        android:maxLines="1"
+                        android:textSize="12sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView25"
+                        app:layout_constraintTop_toBottomOf="@+id/textView104"
+                        app:subtitle_string_id="@{viewModel.replyStringId}"
+                        app:subtitle_text="@{MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? viewModel.item.reply.content.phone : viewModel.item.reply.account.phone != null ? viewModel.item.reply.account.phone : viewModel.item.reply.account.email != null ? viewModel.item.reply.account.email : viewModel.item.reply.text != null ? viewModel.item.reply.text : null}" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>

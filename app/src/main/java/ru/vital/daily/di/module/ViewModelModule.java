@@ -5,7 +5,9 @@ import dagger.Binds;
 import dagger.Module;
 import dagger.multibindings.IntoMap;
 import ru.vital.daily.view.model.AccountViewModel;
+import ru.vital.daily.view.model.AlbumViewModel;
 import ru.vital.daily.view.model.AuthViewModel;
+import ru.vital.daily.view.model.CameraViewModel;
 import ru.vital.daily.view.model.ChannelCreateViewModel;
 import ru.vital.daily.view.model.ChannelSettingsViewModel;
 import ru.vital.daily.view.model.ChatCreateViewModel;
@@ -16,7 +18,9 @@ import ru.vital.daily.view.model.DailyViewModelFactory;
 import ru.vital.daily.view.model.FeedViewModel;
 import ru.vital.daily.view.model.GroupUsersViewModel;
 import ru.vital.daily.view.model.HomeViewModel;
+import ru.vital.daily.view.model.LocationViewModel;
 import ru.vital.daily.view.model.MainViewModel;
+import ru.vital.daily.view.model.MediaEditorViewModel;
 import ru.vital.daily.view.model.RegisterViewModel;
 import ru.vital.daily.view.model.SignInViewModel;
 import ru.vital.daily.view.model.ViewModel;
@@ -93,6 +97,26 @@ public abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(ChatViewModel.class)
     abstract ViewModel bindChatViewModel(ChatViewModel chatViewModel);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(LocationViewModel.class)
+    abstract ViewModel bindLocationViewModel(LocationViewModel locationViewModel);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(CameraViewModel.class)
+    abstract ViewModel bindCameraViewModel(CameraViewModel cameraViewModel);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(MediaEditorViewModel.class)
+    abstract ViewModel bindMediaEditorViewModel(MediaEditorViewModel mediaEditorViewModel);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(AlbumViewModel.class)
+    abstract ViewModel bindAlbumViewModel(AlbumViewModel albumViewModel);
 
     @Binds
     abstract ViewModelProvider.Factory bindViewModelFactory(DailyViewModelFactory factory);

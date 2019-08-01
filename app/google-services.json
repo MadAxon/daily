@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "316527995405",
+    "firebase_url": "https://vital-daily1.firebaseio.com",
+    "project_id": "vital-daily1",
+    "storage_bucket": "vital-daily1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:316527995405:android:e772a99ce697d8a1",
+        "android_client_info": {
+          "package_name": "ru.vital.daily"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "316527995405-sug5ec69ji0d25ui7erk079jv7lf4pv7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ru.vital.daily",
+            "certificate_hash": "3ced52535973336b873ede9475d9ef6d1208250f"
+          }
+        },
+        {
+          "client_id": "316527995405-r4bcf3cf5eigo664dbhp8l29a8mtu5ka.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsR9tuUb-dKTFdF-GXJdh4BG7iin1ylbs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "316527995405-r4bcf3cf5eigo664dbhp8l29a8mtu5ka.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

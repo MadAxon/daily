@@ -10,15 +10,22 @@ import retrofit2.http.POST;
 import retrofit2.http.Part;
 import ru.vital.daily.repository.api.request.AddMembersRequest;
 import ru.vital.daily.repository.api.request.EmailRequest;
-import ru.vital.daily.repository.api.request.EmptyRequest;
+import ru.vital.daily.repository.api.request.EmptyJson;
 import ru.vital.daily.repository.api.request.IdRequest;
 import ru.vital.daily.repository.api.request.ItemRequest;
 import ru.vital.daily.repository.api.request.ItemsRequest;
+import ru.vital.daily.repository.api.request.MessageReadRequest;
+import ru.vital.daily.repository.api.request.MessageRemoveRequest;
+import ru.vital.daily.repository.api.request.MessageRequest;
+import ru.vital.daily.repository.api.request.MessagesRequest;
 import ru.vital.daily.repository.api.request.PhoneRequest;
 import ru.vital.daily.repository.api.response.ItemsResponse;
 import ru.vital.daily.repository.data.Chat;
 import ru.vital.daily.repository.data.Media;
+import ru.vital.daily.repository.data.Message;
 import ru.vital.daily.repository.model.ChatSaveModel;
+import ru.vital.daily.repository.model.MediaEditModel;
+import ru.vital.daily.repository.model.MessageSendModel;
 import ru.vital.daily.repository.model.SyncContactsModel;
 import ru.vital.daily.repository.api.response.BaseResponse;
 import ru.vital.daily.repository.api.response.ItemResponse;
@@ -46,24 +53,51 @@ public interface Api {
 
     @Multipart
     @POST("client/media/upload")
-    Single<ItemResponse<Media>> uploadMedia(@Part MultipartBody.Part file, @Part("accessKey")RequestBody accessKey, @Part("type")RequestBody type);
+    Single<ItemResponse<Media>> uploadMedia(@Part MultipartBody.Part file, @Part("type")RequestBody type);
 
     @POST("client/account/upload_contacts")
-    Single<BaseResponse> syncContacts(@Body SyncContactsModel request);
+    Single<BaseResponse<EmptyJson>> syncContacts(@Body SyncContactsModel request);
 
     @POST("client/account/get_list")
     Single<ItemsResponse<User>> getUsers(@Body ItemsRequest request);
 
     @POST("client/profile/get")
-    Maybe<ItemResponse<User>> getProfile(@Body EmptyRequest request);
+    Maybe<ItemResponse<User>> getProfile(@Body EmptyJson request);
 
     @POST("client/chat/save")
     Single<ItemResponse<Chat>> saveChat(@Body ItemRequest<ChatSaveModel> request);
 
     @POST("client/chat/add_member")
-    Single<BaseResponse> addMembersToChat(@Body AddMembersRequest request);
+    Single<BaseResponse<EmptyJson>> addMembersToChat(@Body AddMembersRequest request);
 
     @POST("client/chat/get")
     Maybe<ItemResponse<Chat>> getChat(@Body IdRequest request);
+
+    @POST("client/chat/get_list")
+    Single<ItemsResponse<Chat>> getChats(@Body ItemsRequest request);
+
+    @POST("client/chat/message/get_list")
+    Single<ItemsResponse<Message>> getMessages(@Body MessagesRequest request);
+
+    @POST("client/chat/remove")
+    Single<BaseResponse<EmptyJson>> removeChat(@Body IdRequest request);
+
+    @POST("client/chat/message/send")
+    Single<ItemResponse<Message>> sendMessage(@Body ItemRequest<MessageSendModel> request);
+
+    @POST("client/chat/message/get")
+    Single<ItemResponse<Message>> getMessage(@Body MessageRequest request);
+
+    @POST("client/chat/message/remove")
+    Single<BaseResponse<EmptyJson>> deleteMessages(@Body MessageRemoveRequest request);
+
+    @POST("client/account/get")
+    Single<ItemResponse<User>> getUser(@Body IdRequest request);
+
+    @POST("client/chat/message/read")
+    Single<BaseResponse<EmptyJson>> readMessage(@Body MessageReadRequest request);
+
+    @POST("client/media/edit")
+    Single<ItemResponse<Media>> editMedia(@Body ItemRequest<MediaEditModel> request);
 
 }

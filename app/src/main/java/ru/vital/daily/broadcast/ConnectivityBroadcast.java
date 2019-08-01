@@ -19,8 +19,11 @@ public class ConnectivityBroadcast extends BroadcastReceiver {
     @Inject
     ConnectivityManager connectivityManager;
 
+    private ConnectivityListener connectivityListener;
+
     @Inject
     public ConnectivityBroadcast() {
+        connectivityListener = null;
     }
 
     @Override
@@ -30,6 +33,19 @@ public class ConnectivityBroadcast extends BroadcastReceiver {
             boolean isOnline = networkInfo != null && networkInfo.isConnected();
             if (this.isOnline.getValue() == null && !isOnline) this.isOnline.setValue(isOnline);
             else if (this.isOnline.getValue() != null && isOnline != this.isOnline.getValue()) this.isOnline.setValue(isOnline);
+            if (connectivityListener != null) connectivityListener.onNetworkChanged(isOnline);
         }
+    }
+
+    public ConnectivityListener getConnectivityListener() {
+        return connectivityListener;
+    }
+
+    public void setConnectivityListener(ConnectivityListener connectivityListener) {
+        this.connectivityListener = connectivityListener;
+    }
+
+    public interface ConnectivityListener {
+        void onNetworkChanged(boolean isOnline);
     }
 }

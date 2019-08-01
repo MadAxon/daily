@@ -9,8 +9,9 @@ import dagger.Module;
 import dagger.Provides;
 import ru.vital.daily.repository.db.ChatDao;
 import ru.vital.daily.repository.db.DailyDatabase;
+import ru.vital.daily.repository.db.ActionDao;
+import ru.vital.daily.repository.db.DraftDao;
 import ru.vital.daily.repository.db.KeyDao;
-import ru.vital.daily.repository.db.MediaDao;
 import ru.vital.daily.repository.db.MessageDao;
 import ru.vital.daily.repository.db.UserDao;
 
@@ -43,13 +44,19 @@ public class RoomModule {
 
     @Singleton
     @Provides
-    public MediaDao provideMediaDao(DailyDatabase dailyDatabase) {
-        return dailyDatabase.mediaDao();
+    public MessageDao provideMessageDao(DailyDatabase dailyDatabase) {
+        return dailyDatabase.messageDao();
     }
 
     @Singleton
     @Provides
-    public MessageDao provideMessageDao(DailyDatabase dailyDatabase) {
-        return dailyDatabase.messageDao();
+    public ActionDao provideActionDao(DailyDatabase dailyDatabase) {
+        return dailyDatabase.actionDao();
+    }
+
+    @Singleton
+    @Provides
+    public DraftDao provideDraftDao(DailyDatabase dailyDatabase) {
+        return dailyDatabase.draftDao();
     }
 }
