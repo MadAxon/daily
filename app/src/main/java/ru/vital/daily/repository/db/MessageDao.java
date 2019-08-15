@@ -23,6 +23,9 @@ public interface MessageDao {
     @Query("SELECT * from messages")
     Maybe<List<Message>> getMessages();
 
+    @Query("SELECT * from messages where id in (:ids) and chatId = :chatId and shouldSync = :shouldSync")
+    Maybe<List<Message>> getMessages(long[] ids, long chatId, boolean shouldSync);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(List<Message> messages);
 
@@ -34,6 +37,9 @@ public interface MessageDao {
 
     @Query("UPDATE messages SET createdAt = :checkedAt where id = :id and chatId = :chatId")
     void updateCheckedAt(long id, long chatId, long checkedAt);
+
+    @Query("UPDATE messages SET updatedAt = :updatedAt where id = :id and chatId = :chatId and shouldSync = :shouldSync")
+    void updateUpdatedAt(long id, long chatId, long updatedAt, boolean shouldSync);
 
     @Query("UPDATE messages SET sendStatus = :sendStatus where id = :id and chatId = :chatId")
     void updateSendStatus(long id, long chatId, Boolean sendStatus);

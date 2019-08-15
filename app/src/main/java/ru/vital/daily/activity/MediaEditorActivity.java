@@ -1,16 +1,12 @@
 package ru.vital.daily.activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
@@ -28,19 +24,13 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoListener;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.inject.Inject;
 
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
-import ru.vital.daily.adapter.GalleryPagerAdapter;
+import ru.vital.daily.adapter.EditorPagerAdapter;
 import ru.vital.daily.databinding.ActivityMediaEditorBinding;
 import ru.vital.daily.enums.FileType;
 import ru.vital.daily.repository.data.Media;
-import ru.vital.daily.repository.model.MediaModel;
 import ru.vital.daily.view.model.MediaEditorViewModel;
 
 public class MediaEditorActivity extends BaseActivity<MediaEditorViewModel, ActivityMediaEditorBinding> {
@@ -55,7 +45,7 @@ public class MediaEditorActivity extends BaseActivity<MediaEditorViewModel, Acti
 
     private DataSource.Factory dataSourceFactory;
 
-    private GalleryPagerAdapter pagerAdapter;
+    private EditorPagerAdapter pagerAdapter;
 
     private PhotoView photoView;
 
@@ -82,7 +72,7 @@ public class MediaEditorActivity extends BaseActivity<MediaEditorViewModel, Acti
 
 
         try {
-            pagerAdapter = new GalleryPagerAdapter(LoganSquare.parseList(getIntent().getStringExtra(MEDIA_LIST_EXTRA), Long.class));
+            pagerAdapter = new EditorPagerAdapter(LoganSquare.parseList(getIntent().getStringExtra(MEDIA_LIST_EXTRA), Long.class));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -191,7 +181,7 @@ public class MediaEditorActivity extends BaseActivity<MediaEditorViewModel, Acti
         releaseVideo();
     }
 
-    public void initVideo() {
+    private void initVideo() {
         dataSourceFactory = new DefaultDataSourceFactory(this,
                 Util.getUserAgent(this, "Daily"));
         player = ExoPlayerFactory.newSimpleInstance(this);
@@ -200,7 +190,7 @@ public class MediaEditorActivity extends BaseActivity<MediaEditorViewModel, Acti
         player.setPlayWhenReady(true);
     }
 
-    public void prepareVideo() {
+    private void prepareVideo() {
         playerView.setPlayer(player);
         if (!player.getPlayWhenReady())
             player.setPlayWhenReady(true);
@@ -225,14 +215,14 @@ public class MediaEditorActivity extends BaseActivity<MediaEditorViewModel, Acti
         player.prepare(videoSource);
     }
 
-    public void releaseVideo() {
+    private void releaseVideo() {
         if (player != null) {
             player.release();
             player = null;
         }
     }
 
-    public void stopVideo() {
+    private void stopVideo() {
         if (player != null) {
             player.stop(true);
         }

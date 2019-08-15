@@ -69,9 +69,10 @@ public class DailySocket {
         });
         socket.on(MESSAGE_SEND, args -> {
             try {
+                Log.i("my_logs", "MESSAGE_SEND ");
                 SocketResponse response = LoganSquare.parse(args[0].toString(), SocketResponse.class);
                 Intent intent = new Intent(Operation.ACTION_MESSAGE_SEND);
-                intent.putExtra(ChatActivity.MESSAGE_ID_EXTRA, response.getChatMessageId());
+                intent.putExtra(ChatActivity.MESSAGE_IDS_EXTRA, response.getChatMessageIds());
                 intent.putExtra(ChatActivity.CHAT_ID_EXTRA, response.getChatId());
                 context.sendBroadcast(intent);
             } catch (IOException e) {
@@ -150,12 +151,14 @@ public class DailySocket {
         }
     }
 
-    public void emitSendMessage(Long messageId) {
+    public void emitSendMessage(long[] messageIds, Long chatId) {
         if (socket != null && socket.connected())
             try {
-                Log.i("my_logs", "emitSendMessage " + messageId);
+                Log.i("my_logs", "emitSendMessage " + Arrays.toString(messageIds) + " chatId " + chatId);
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("chatMessageId", messageId);
+                jsonObject.put("chatId", chatId);
+                JSONArray jsonArray = new JSONArray(messageIds);
+                jsonObject.put("chatMessageIds", jsonArray);
                 socket.emit(MESSAGE_SEND, jsonObject);
             } catch (JSONException e) {
                 e.printStackTrace();

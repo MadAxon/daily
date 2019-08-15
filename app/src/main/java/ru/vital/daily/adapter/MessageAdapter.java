@@ -1,8 +1,11 @@
 package ru.vital.daily.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,6 +32,7 @@ import ru.vital.daily.listener.SingleLiveEvent;
 import ru.vital.daily.repository.data.Media;
 import ru.vital.daily.repository.data.Message;
 import ru.vital.daily.repository.data.User;
+import ru.vital.daily.util.FileUtil;
 import ru.vital.daily.view.model.item.MessageItemViewModel;
 
 public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, ViewDataBinding> {
@@ -50,6 +54,8 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
     private final LongSparseArray<Message> audioItems = new LongSparseArray<>();
 
     private final LongSparseArray<Media> selectedMedias = new LongSparseArray<>();
+
+    private final LongSparseArray<Message> messages = new LongSparseArray<>();
 
     private final MessageMediaClickListener mediaClickListener;
 
@@ -78,6 +84,8 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
             nextCalendar = Calendar.getInstance();
 
     private int stableId = -2;
+
+    private int selectedItemsOfAnotherUser, selectedMediasOfAnotherUser = 0;
 
     public MessageAdapter(User anotherUser, MessageMediaClickListener mediaClickListener) {
         this.anotherUser = anotherUser;
@@ -231,24 +239,40 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
             message.setSelected(false);
             if (message.getMedias() != null && !message.getMedias().isEmpty()) {
                 final int size = message.getMedias().size();
-                for (int i = 0; i < size; i++)
+                for (int i = 0; i < size; i++) {
                     toggleSelectionMedia(message.getMedias().valueAt(i), false);
+                    if (message.getAuthor().getId() == anotherUser.getId())
+                        selectedMediasOfAnotherUser--;
+                }
             }
+            if (message.getAuthor().getId() == anotherUser.getId())
+                selectedItemsOfAnotherUser--;
         } else {
             selectedItems.put(message.getId(), message);
             message.setSelected(true);
             if (message.getMedias() != null && !message.getMedias().isEmpty()) {
                 final int size = message.getMedias().size();
-                for (int i = 0; i < size; i++)
+                for (int i = 0; i < size; i++) {
                     toggleSelectionMedia(message.getMedias().valueAt(i), true);
+                    if (message.getAuthor().getId() == anotherUser.getId())
+                        selectedMediasOfAnotherUser++;
+                }
             }
+            if (message.getAuthor().getId() == anotherUser.getId())
+                selectedItemsOfAnotherUser++;
         }
     }
 
     public void toggleSelectionMessage(Message message, boolean selected) {
-        if (selected)
+        if (selected) {
+            if (message.getAuthor().getId() == anotherUser.getId())
+                selectedItemsOfAnotherUser++;
             selectedItems.put(message.getId(), message);
-        else selectedItems.remove(message.getId());
+        } else {
+            if (message.getAuthor().getId() == anotherUser.getId())
+                selectedItemsOfAnotherUser--;
+            selectedItems.remove(message.getId());
+        }
         message.setSelected(selected);
     }
 
@@ -256,11 +280,15 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
         if (selectedMedias.get(media.getId()) != null) {
             selectedMedias.remove(media.getId());
             media.setSelected(false);
+            if (message.getAuthor().getId() == anotherUser.getId())
+                selectedMediasOfAnotherUser--;
             if (message.getSelected())
                 toggleSelectionMessage(message, false);
         } else {
             selectedMedias.put(media.getId(), media);
             media.setSelected(true);
+            if (message.getAuthor().getId() == anotherUser.getId())
+                selectedMediasOfAnotherUser++;
             final int size = message.getMedias().size();
             for (int i = 0; i < size; i++)
                 if (!message.getMedias().valueAt(i).getSelected())
@@ -287,6 +315,8 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
             selectedMedias.valueAt(i).setSelected(false);
             selectedMedias.removeAt(i);
         }
+        selectedItemsOfAnotherUser = 0;
+        selectedMediasOfAnotherUser = 0;
     }
 
     public long[] getSelectedItemsIds() {
@@ -391,6 +421,7 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
             LinkedList<Message> messageListWithDateHeaders = getListWithDateHeaders(items);
 
             this.items.addAll(0, messageListWithDateHeaders);
+            //this.items.add(2, null);
             notifyItemRangeInserted(0, messageListWithDateHeaders.size() + 1); // + 1 - for UNREAD_VIEW_TYPE item
             return messageListWithDateHeaders.size();
         }
@@ -427,10 +458,36 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 message.setShouldSync(false);
                 message.setId(newId);
                 message.setSendStatus(true);
+                messages.put(newId, message);
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * newIds and oldIds sizes must be equal
+     */
+    public void messageSent(long[] newIds, long[] oldIds) {
+        final int size = newIds.length;
+
+        Iterator<Message> iterator = items.iterator();
+        Message nextMessage;
+        for (int i = 0; i < size; i++) {
+            while (iterator.hasNext()) {
+                nextMessage = iterator.next();
+                if (nextMessage != null) {
+                    if (oldIds[i] == nextMessage.getId() && nextMessage.getShouldSync()) {
+                        nextMessage.setShouldSync(false);
+                        nextMessage.setId(newIds[i]);
+                        nextMessage.setSendStatus(true);
+                        messages.put(newIds[i], nextMessage);
+                    }
+                    if (nextMessage.getId() != 0 && oldIds[i] > nextMessage.getId())
+                        break;
+                }
+            }
+        }
     }
 
     public int messageDeleted(Message message) {
@@ -446,7 +503,10 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
             nextMessage = iterator.next();
             if (nextMessage != null) {
                 if (message.getId() == nextMessage.getId() && message.getShouldSync() == nextMessage.getShouldSync()) {
+                    deleteFilesFromCache(nextMessage);
                     iterator.remove();
+                    if (!nextMessage.getShouldSync())
+                        messages.remove(nextMessage.getId());
                     return position;
                 }
                 if (nextMessage.getId() != 0 && message.getId() > nextMessage.getId())
@@ -456,22 +516,15 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
         return -1;
     }
 
-    public int[] messagesDeleted() {
-        int[] positions = new int[selectedItems.size()];
-        for (int i = 0; i < selectedItems.size(); i++) {
-            positions[i] = items.indexOf(selectedItems.valueAt(i));
-            items.remove(selectedItems.valueAt(i));
-        }
-        return positions;
-    }
-
     public int messageDeleted(Iterator<Message> iterator, long id, int position) {
         Message nextMessage;
         while (iterator.hasNext()) {
             nextMessage = iterator.next();
             if (nextMessage != null) {
                 if (id == nextMessage.getId() && !nextMessage.getShouldSync()) {
+                    deleteFilesFromCache(nextMessage);
                     iterator.remove();
+                    messages.remove(id);
                     return position;
                 }
                 if (nextMessage.getId() != 0 && id > nextMessage.getId())
@@ -514,7 +567,12 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
     }
 
     public void readMessages(long[] ids) {
-        Arrays.sort(ids);
+        for (long id: ids) {
+            Message message = messages.get(id);
+            if (message != null)
+                message.setReadAt(new Date());
+        }
+        /*Arrays.sort(ids);
         int i;
         final int idsSize = ids.length;
         for (int j = idsSize - 1; j >= 0; j--) {
@@ -523,21 +581,23 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 Message message = items.get(i);
                 if (message != null) {
                     if (id == message.getId() && !message.getShouldSync()) {
-                        message.getInfo().setReadAt(new Date());
+                        message.setReadAt(new Date());
                         break;
                     } else if (message.getId() != 0 && !message.getShouldSync() && id > message.getId())
                         break;
                 }
             }
-        }
+        }*/
     }
 
     public int findMessage(Message message) {
         return items.indexOf(message);
     }
 
-    public void audioUploaded(long mediaId, Message media) {
-        audioItems.put(mediaId, media);
+    public void audioUploaded(long id, long mediaId) {
+        Message message = findMessage(id);
+        if (message != null && message.getMedias() != null && message.getMedias().size() > 0 && FileType.voice.name().equals(message.getMedias().valueAt(0).getType()))
+            audioItems.put(mediaId, message);
     }
 
     public Message nextAudio(Media media) {
@@ -547,23 +607,133 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
         else return null;
     }
 
+    public void clearAdapter() {
+        this.items.clear();
+        notifyDataSetChanged();
+    }
+
+    public void updateUpdatedAt(long id, long time) {
+        Message message = messages.get(id);
+        if (message != null) {
+            message.setUpdatedAt(new Date(time));
+            message.setSendStatus(true);
+        }
+    }
+
+    public int updateLazily(List<Message> messages) {
+        final int size = messages.size();
+        int count = 0;
+        for (int i = size - 1; i >= 0; i--) {
+            Message newMessage = messages.get(i);
+            Message oldMessage = this.messages.get(newMessage.getId());
+            if (oldMessage == null) {
+                nextCalendar.setTime(newMessage.getCreatedAt());
+                if (currentCalendar.get(Calendar.YEAR) != nextCalendar.get(Calendar.YEAR)
+                        || currentCalendar.get(Calendar.DAY_OF_YEAR) != nextCalendar.get(Calendar.DAY_OF_YEAR)) {
+                    items.addFirst(new Message(nextCalendar.getTime()));
+                    currentCalendar.setTime(nextCalendar.getTime());
+                    count++;
+                }
+                items.addFirst(newMessage);
+                this.messages.put(newMessage.getId(), newMessage);
+                if (newMessage.getMedias() != null && newMessage.getMedias().size() > 0) {
+                    Media media = newMessage.getMedias().valueAt(0);
+                    if (FileType.voice.name().equals(media.getType()))
+                        audioItems.put(media.getId(), newMessage);
+                }
+                count++;
+                Log.i("my_logs", "message is detected to be added with id " + newMessage.getId());
+            } else if (oldMessage.getSendStatus() != null && oldMessage.getSendStatus() && (oldMessage.getUpdatedAt() == null && newMessage.getUpdatedAt() != null || newMessage.getUpdatedAt() != null && newMessage.getUpdatedAt().getTime() - oldMessage.getUpdatedAt().getTime() > 3000L)) {
+                Log.i("my_logs", "message is detected to be changed with id " + oldMessage.getId());
+                oldMessage.setText(newMessage.getText());
+                oldMessage.setUpdatedAt(newMessage.getUpdatedAt());
+                if (oldMessage.getMedias() != null && newMessage.getMedias() != null) {
+                    final int mediaSize = oldMessage.getMedias().size();
+                    if (mediaSize > 0 && mediaSize == newMessage.getMedias().size()){
+                        for (int j = 0; j < mediaSize; j++) {
+                            oldMessage.getMedias().valueAt(j).setDescription(newMessage.getMedias().valueAt(j).getDescription());
+                        }
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    public int scrolledUp(List<Message> messages) {
+        Calendar currentCalendar = Calendar.getInstance();
+        Calendar nextCalendar = Calendar.getInstance();
+        if (messages != null && messages.size() > 0)
+            currentCalendar.setTime(messages.get(0).getCreatedAt());
+        int count = 0;
+        for (Message message: messages) {
+            nextCalendar.setTime(message.getCreatedAt());
+            if (!message.getShouldSync() && this.messages.containsKey(message.getId()))
+                continue;
+            if (currentCalendar.get(Calendar.YEAR) != nextCalendar.get(Calendar.YEAR)
+                    || currentCalendar.get(Calendar.DAY_OF_YEAR) != nextCalendar.get(Calendar.DAY_OF_YEAR)) {
+                items.addLast(new Message(nextCalendar.getTime()));
+                currentCalendar.setTime(nextCalendar.getTime());
+                count++;
+            }
+            items.addLast(message);
+            count++;
+            if (!message.getShouldSync()) {
+                this.messages.put(message.getId(), message);
+                if (message.getMedias() != null && message.getMedias().size() > 0) {
+                    Media media = message.getMedias().valueAt(0);
+                    if (FileType.voice.name().equals(media.getType()))
+                        audioItems.put(media.getId(), message);
+                }
+            }
+        }
+        return count;
+    }
+
     private LinkedList<Message> getListWithDateHeaders(List<Message> messageList) {
         LinkedList<Message> messageListWithDateHeaders = new LinkedList<>();
-        for (int i = messageList.size() - 1; i >= 0; i--) {
+        final int size = messageList.size();
+        for (int i = size - 1; i >= 0; i--) {
             final Message message = messageList.get(i);
             if (message.getMedias() != null && message.getMedias().size() > 0) {
                 Media media = message.getMedias().valueAt(0);
-                if (FileType.voice.name().equals(media.getType()) && media.getId() != 0)
+                if (FileType.voice.name().equals(media.getType()) && media.getId() != 0 && !message.getShouldSync())
                     audioItems.put(media.getId(), message);
             }
+            /*if (message.getId() == anotherUser.getId() && message.getReadAt() == null)
+                messageListWithDateHeaders.addFirst(null);*/
             nextCalendar.setTime(message.getCreatedAt());
             if (currentCalendar.get(Calendar.YEAR) != nextCalendar.get(Calendar.YEAR)
                     || currentCalendar.get(Calendar.DAY_OF_YEAR) != nextCalendar.get(Calendar.DAY_OF_YEAR)) {
                 messageListWithDateHeaders.addFirst(new Message(nextCalendar.getTime()));
                 currentCalendar.setTime(nextCalendar.getTime());
             }
-            messageListWithDateHeaders.addFirst(message);
+            if (message.getShouldSync() || messages.get(message.getId()) == null)
+                messageListWithDateHeaders.addFirst(message);
+            if (!message.getShouldSync())
+                messages.put(message.getId(), message);
         }
         return messageListWithDateHeaders;
+    }
+
+    private void deleteFilesFromCache(Message message) {
+        if (message.getMedias() != null && message.getMedias().size() > 0) {
+            final int size = message.getMedias().size();
+            for (int i = 0; i < size; i++) {
+                String url = message.getMedias().valueAt(i).getFiles().get(0).getUrl();
+                if (FileUtil.exists(url)) {
+                    File file = new File(url);
+                    file.delete();
+                }
+            }
+        }
+    }
+
+    public int getSelectedItemsOfAnotherUser() {
+        return selectedItemsOfAnotherUser;
+    }
+
+    public int getSelectedMediasOfAnotherUser() {
+        return selectedMediasOfAnotherUser;
     }
 }

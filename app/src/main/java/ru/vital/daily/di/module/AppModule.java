@@ -1,6 +1,7 @@
 package ru.vital.daily.di.module;
 
 import android.app.Application;
+import android.app.NotificationManager;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.IntentFilter;
@@ -9,6 +10,8 @@ import android.net.ConnectivityManager;
 import android.view.inputmethod.InputMethodManager;
 
 import com.github.aurae.retrofit2.LoganSquareConverterFactory;
+
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
 
@@ -35,6 +38,9 @@ public class AppModule {
     @Singleton
     Api provideRetrofit(AccessInterceptor accessInterceptor) {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                        /*.readTimeout(30, TimeUnit.MINUTES)
+                        .writeTimeout(30, TimeUnit.MINUTES)
+                        .connectTimeout(30, TimeUnit.MINUTES)*/
                         .addInterceptor(accessInterceptor)
                         .build();
         return new Retrofit.Builder()
@@ -80,6 +86,12 @@ public class AppModule {
     @Singleton
     ClipboardManager provideClipboardManager(Application application) {
         return (ClipboardManager) application.getSystemService(Context.CLIPBOARD_SERVICE);
+    }
+
+    @Provides
+    @Singleton
+    NotificationManager provideNotificationManager(Application application) {
+        return (NotificationManager) application.getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
 }

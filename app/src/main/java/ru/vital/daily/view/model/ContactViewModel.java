@@ -81,6 +81,9 @@ public class ContactViewModel extends ViewModel {
                         if (itemResponse.getStatusCode() != 0)
                             isLoading.set(false);
                     }
+                }, throwable -> {
+                    errorEvent.postValue(throwable);
+                    isLoading.set(false);
                 }));
         DisposableProvider.getDisposableItem(keyRepository.getCurrentKey(),
                 key -> {

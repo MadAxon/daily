@@ -37,7 +37,10 @@ public class MessageSendModel extends BaseObservable {
 
     @JsonField
     @Nullable
-    private List<Long> mediaIds, forwardIds;
+    private List<Long> mediaIds;
+
+    @JsonField
+    private long[] forwardIds;
 
     @JsonIgnore
     @Nullable
@@ -176,11 +179,11 @@ public class MessageSendModel extends BaseObservable {
     }
 
     @Nullable
-    public List<Long> getForwardIds() {
+    public long[] getForwardIds() {
         return forwardIds;
     }
 
-    public void setForwardIds(@Nullable List<Long> forwardIds) {
+    public void setForwardIds(@Nullable long[] forwardIds) {
         this.forwardIds = forwardIds;
     }
 

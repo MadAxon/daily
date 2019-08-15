@@ -22,9 +22,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <receiver
+            android:name=".broadcast.NotificationBroadcast"
+            android:exported="false"/>
+
+        <activity
+            android:name=".activity.ChatSelectorActivity"
+            android:noHistory="true" />
         <activity
             android:name=".activity.MediaEditorActivity"
-            android:theme="@style/AppTheme.Transparent"/>
+            android:theme="@style/AppTheme.Transparent" />
 
         <receiver
             android:name=".broadcast.DownloadBroadcast"
@@ -35,7 +42,7 @@
             android:name=".activity.GalleryActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_gallery"
-            android:theme="@style/FullscreenTheme" />
+            android:theme="@style/AppTheme.Transparent" />
         <activity android:name=".activity.GroupActivity" />
         <activity android:name=".activity.NotificationActivity" />
         <activity
@@ -47,12 +54,14 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!--<intent-filter>
+            <!--
+            <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
             <meta-data
                 android:name="android.app.searchable"
-                android:resource="@xml/searchable" />-->
+                android:resource="@xml/searchable" />
+            -->
         </activity>
 
         <meta-data
@@ -70,15 +79,18 @@
         <meta-data
             android:name="firebase_analytics_collection_enabled"
             android:value="false" />
-        <!--<meta-data
+        <!--
+<meta-data
             android:name="android.app.default_searchable"
-            android:value="ru.daily.activity.MainActivity" />-->
-
+            android:value="ru.daily.activity.MainActivity" />
+        -->
         <activity android:name=".activity.SettingsActivity" />
         <activity android:name=".activity.PostActivity" />
         <activity android:name=".activity.SharedMediaActivity" />
         <activity android:name=".activity.CountryCodeActivity" />
-        <activity android:name=".activity.ChatActivity" />
+        <activity
+            android:name=".activity.ChatActivity"
+            android:launchMode="singleTask" />
         <activity android:name=".activity.GroupInfoActivity" />
         <activity
             android:name=".activity.ChatCreateActivity"

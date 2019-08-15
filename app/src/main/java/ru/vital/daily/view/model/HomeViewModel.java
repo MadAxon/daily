@@ -50,6 +50,8 @@ public class HomeViewModel extends ViewModel {
 
     private final PublishSubject<String> searchPublish = PublishSubject.create();
 
+    private String toolbarTitle;
+
     @Inject
     public HomeViewModel(ChatRepository chatRepository, DraftRepository draftRepository, ItemsRequest itemsRequest) {
         this.chatRepository = chatRepository;
@@ -76,7 +78,10 @@ public class HomeViewModel extends ViewModel {
                 }, throwable -> {
                     errorEvent.postValue(throwable);
                     isLoading.set(false);
-                })));
+                }), throwable -> {
+                    errorEvent.postValue(throwable);
+                    isLoading.set(false);
+                }));
     }
 
     public void getChats(Consumer<List<Chat>> fromDB, Consumer<List<Chat>> fromApi) {
@@ -159,4 +164,13 @@ public class HomeViewModel extends ViewModel {
     public void setSearch(String searchText) {
         searchPublish.onNext(searchText);
     }
+
+    public String getToolbarTitle() {
+        return toolbarTitle;
+    }
+
+    public void setToolbarTitle(String toolbarTitle) {
+        this.toolbarTitle = toolbarTitle;
+    }
+
 }

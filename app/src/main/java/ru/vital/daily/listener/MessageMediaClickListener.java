@@ -9,13 +9,15 @@ public interface MessageMediaClickListener {
 
     void onAudioClick(Message message);
 
-    void cancelDownload(Media media);
+    void cancelDownload(Message message, Media media);
 
     void cancelUpload(Message message, Media media);
 
     void startDownload(Message message, Media media);
 
     void uploadMedia(Message message);
+
+    void continueUploading(Media media);
 
     boolean onImageOrVideoLongClick(Message message, Media media);
 

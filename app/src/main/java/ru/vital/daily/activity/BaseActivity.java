@@ -148,6 +148,13 @@ public abstract class BaseActivity<VM extends ViewModel, B extends ViewDataBindi
                     .commit();
     }
 
+    protected void replaceFragment(Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
+    }
+
     protected void openSheetFragment(BottomSheetDialogFragment sheetDialogFragment, String tag) {
         if (getSupportFragmentManager().findFragmentByTag(tag) == null) {
             sheetDialogFragment.show(getSupportFragmentManager(), tag);

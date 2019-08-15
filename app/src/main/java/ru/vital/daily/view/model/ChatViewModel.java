@@ -29,6 +29,7 @@ import ru.vital.daily.R;
 import ru.vital.daily.enums.ChatType;
 import ru.vital.daily.enums.FileType;
 import ru.vital.daily.enums.MessageContentType;
+import ru.vital.daily.enums.MessageType;
 import ru.vital.daily.enums.Operation;
 import ru.vital.daily.listener.SingleLiveEvent;
 import ru.vital.daily.repository.ActionRepository;
@@ -51,9 +52,11 @@ import ru.vital.daily.repository.data.User;
 import ru.vital.daily.repository.model.MediaModel;
 import ru.vital.daily.repository.model.MessageSendModel;
 import ru.vital.daily.util.DisposableProvider;
+import ru.vital.daily.util.MediaProgressHelper;
 import ru.vital.daily.util.StaticData;
 
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_CHANGE;
+import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_FORWARD;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_SEND;
 
 public class ChatViewModel extends ViewModel implements Observable {
@@ -104,6 +107,8 @@ public class ChatViewModel extends ViewModel implements Observable {
 
     private final List<Message> unreadMessages = new ArrayList<>();
 
+    private final MediaProgressHelper mediaProgressHelper;
+
     @Bindable
     private Message currentAudioMessage;
 
@@ -135,11 +140,12 @@ public class ChatViewModel extends ViewModel implements Observable {
     private final Subject<Long> emitTypeSubject = PublishSubject.create();
 
     @Inject
-    public ChatViewModel(MessageRepository messageRepository, ChatRepository chatRepository, ActionRepository actionRepository, DraftRepository draftRepository) {
+    public ChatViewModel(MessageRepository messageRepository, ChatRepository chatRepository, ActionRepository actionRepository, DraftRepository draftRepository, MediaProgressHelper mediaProgressHelper) {
         this.messageRepository = messageRepository;
         this.chatRepository = chatRepository;
         this.actionRepository = actionRepository;
         this.draftRepository = draftRepository;
+        this.mediaProgressHelper = mediaProgressHelper;
         DisposableProvider.getDisposableItems(actionRepository.getActions(), actions -> {
             for (Action action : actions) {
                 Log.i("my_logs", String.valueOf(action.getId()) + " | " + action.getChatId() + " | " + action.getAction() + " | " + action.getMessageIds());
@@ -158,7 +164,7 @@ public class ChatViewModel extends ViewModel implements Observable {
                         DisposableProvider.getDisposableItem(itemResponseCustom, ids -> {
                             emitReadMessageEvent.setValue(ids);
                             for (Message message : messages)
-                                message.getInfo().setReadAt(new Date());
+                                message.setReadAt(new Date());
                         }, throwable -> {
 
                         });
@@ -184,12 +190,12 @@ public class ChatViewModel extends ViewModel implements Observable {
     public void getMessages(Consumer<List<Message>> fromDatabase, Consumer<List<Message>> fromApi, long id, long memberId) {
         if (id != 0) getChatRequest.setId(id);
         if (memberId != 0) getChatRequest.setMemberId(memberId);
+        sendMessageModel.setChatId(id);
         isLoading.set(true);
         compositeDisposable.add(sendDisposable = DisposableProvider.getDisposableItem(chatRepository
                 .getChat(getChatRequest), chat -> {
             this.chat = chat;
             notifyChanged(BR.chat);
-            sendMessageModel.setChatId(chat.getId());
             if (ChatType.dialog.name().equals(chat.getType())) {
                 if (chat.getInfo().getLastMessageId() == null)
                     sendDisposable = chatRepository.saveEmptyChat(chat).subscribe();
@@ -214,10 +220,21 @@ public class ChatViewModel extends ViewModel implements Observable {
         });
     }
 
-    public void loadMore() {
-        /*if (messagesRequest.getPageSize() != 100) messagesRequest.setPageSize(100);
-        messagesRequest.setPageIndex(messagesRequest.getPageIndex() + 1);
-        getMoreMessages();*/
+    public void getMessages(Consumer<List<Message>> consumer, long[] ids, Long chatId) {
+        DisposableProvider.getDisposableItems(messageRepository.getMessages(ids, chatId), messages -> {
+            consumer.accept(messages);
+            messageRepository.saveMessages(messages, new Date().getTime());
+        }, throwable -> {
+
+        });
+    }
+
+    public void getMessages(Consumer<List<Message>> consumer, long chatId, int pageSize) {
+        DisposableProvider.getDisposableItems(messageRepository.getMessages(chatId, pageSize), messages -> {
+            consumer.accept(messages);
+        }, throwable -> {
+
+        });
     }
 
     public void clearExpiredMessages() {
@@ -226,7 +243,7 @@ public class ChatViewModel extends ViewModel implements Observable {
 
     private void getMessages(Consumer<List<Message>> fromDatabase, Consumer<List<Message>> fromApi) {
         messagesRequest.setChatId(chat.getId());
-        messagesRequest.setPageSize(messagesRequest.getPageSize() + chat.getInfo().getUnreadMessagesCount());
+        messagesRequest.setPageSize(messagesRequest.getPageSize()/* + chat.getInfo().getUnreadMessagesCount()*/);
         compositeDisposable.add(messageRepository.getMessages(messagesRequest).doOnComplete(() -> {
             isLoading.set(false);
         }).subscribe(new ItemsResponseHandler<Message>() {
@@ -253,20 +270,25 @@ public class ChatViewModel extends ViewModel implements Observable {
                         errorEvent.setValue(new Throwable(itemResponse.getMessage()));
                 }
             }
+        }, throwable -> {
+
         }));
     }
 
-    private void getMoreMessages() {
-        compositeDisposable.add(messageRepository.getMoreMessages(messagesRequest).subscribe(new ItemsResponseHandler<Message>() {
+    public void getMoreMessages(Consumer<List<Message>> fromDatabase, Consumer<List<Message>> fromApi) {
+        if (messagesRequest.getPageSize() != 100) messagesRequest.setPageSize(100);
+        messagesRequest.setPageIndex(messagesRequest.getPageIndex() + 1);
+        compositeDisposable.add(messageRepository.getMessages(messagesRequest).subscribe(new ItemsResponseHandler<Message>() {
 
             @Override
-            public void accept(ItemsResponse<Message> itemResponse) {
+            public void accept(ItemsResponse<Message> itemResponse) throws Exception {
                 switch (itemResponse.getStatusCode()) {
                     case 0:
                         messageRepository.updateExpiredMessages(itemResponse.getItems(), System.currentTimeMillis());
                         break;
                     case 200:
                         messageRepository.saveMessages(itemResponse.getItems(), System.currentTimeMillis());
+                        fromApi.accept(itemResponse.getItems());
                         break;
                     case 401:
                         errorEvent.setValue(new ErrorResponse(itemResponse.getMessage(), itemResponse.getStatusCode()));
@@ -275,6 +297,8 @@ public class ChatViewModel extends ViewModel implements Observable {
                         errorEvent.setValue(new Throwable(itemResponse.getMessage()));
                 }
             }
+        }, throwable -> {
+
         }));
     }
 
@@ -322,6 +346,43 @@ public class ChatViewModel extends ViewModel implements Observable {
         sendMessageModel.toDefault();
     }
 
+    public void sendMessage(Consumer<Long> consumer, Message forwardMessage) {
+        //if (sendDisposable != null && !sendDisposable.isDisposed()) return;
+        //final Message message = sendMessageModel.getMessage();
+        Message message = new Message();
+        message.setText(forwardMessage.getText());
+        message.setMedias(forwardMessage.getMedias());
+        message.setContent(forwardMessage.getContent());
+        message.setAccount(forwardMessage.getAccount());
+        message.setType(MessageType.message.name());
+        message.setContentType(forwardMessage.getContentType());
+        message.setSendStatus(null);
+        message.setShouldSync(true);
+        message.setChatId(sendMessageModel.getChatId());
+        message.setForwardAuthor(forwardMessage.getAuthor());
+        message.setForwardAuthorId(forwardMessage.getAuthor().getId());
+        message.setForwardId(forwardMessage.getId());
+        message.setAuthor(profile);
+        message.setCreatedAt(new Date());
+        sendDisposable = messageRepository.saveMessage(message).subscribe(messageId -> {
+            message.setId(messageId);
+            consumer.accept(messageId);
+            newMessage.postValue(message);
+        });
+        setInitialListSize(initialListSize++);
+    }
+
+    public void sendMessage(Consumer<Action> consumer, long[] messageIds, long fromChatId) {
+        Action action = new Action(Arrays.toString(messageIds), sendMessageModel.getChatId(), fromChatId, ACTION_MESSAGE_FORWARD);
+        sendDisposable = actionRepository.insertAction(action).subscribe(id -> {
+            action.setId(id);
+            sendDisposable.dispose();
+            consumer.accept(action);
+        }, throwable -> {
+
+        });
+    }
+
     public void retrieveSending(Consumer<Action> actionConsumer, Message message) {
         Action action = new Action(message.getId(), message.getChatId(), message.getShouldSync() ? ACTION_MESSAGE_SEND : ACTION_MESSAGE_CHANGE);
         sendDisposable = actionRepository.insertAction(action).subscribe(id -> {
@@ -357,7 +418,7 @@ public class ChatViewModel extends ViewModel implements Observable {
             sendMessageModel.setTabSubtitle(message.getContent().getPhone());
         } else if (message.getAccount() != null) {
             sendMessageModel.setTabTitle(message.getAccount().getUname());
-            sendMessageModel.setTabSubtitle(message.getAccount().getEmail() != null ? message.getAccount().getEmail() : message.getAccount().getPhone());
+            sendMessageModel.setTabSubtitle(message.getAccount().getPhone() != null ? message.getAccount().getPhone() : message.getAccount().getEmail());
             sendMessageModel.setId(-2L);
         } else {
             sendMessageModel.setTabTitle(message.getAuthor().getUname());
@@ -437,7 +498,7 @@ public class ChatViewModel extends ViewModel implements Observable {
                     sendMessageModel.setText(String.format(recordInfo, (millis / 1000 / 60) % 60, (millis / 1000) % 60, millis % 1000));
                 });
         /*audioDisposable = DisposableProvider.getCallable(() -> writeAudioDataToFile(file.getPath(), bufferSize)).subscribe();*/
-        sendMessageModel.setAudioFile(new Media(file.getName(), FileType.voice.name(), new MediaModel(file.getPath(), "audio/x-aac")));
+        sendMessageModel.setAudioFile(new Media(System.currentTimeMillis() * -1, file.getName(), FileType.voice.name(), new MediaModel(file.getPath(), "audio/x-aac")));
         /*List<Media> medias = new ArrayList<>(1);
         medias.add(new Media(new MediaModel(file.getPath(), null)));
         //medias.add(new Media(FileUtil.getFileType(mimeType), new MediaModel(file.getPath(), mimeType)));
@@ -472,6 +533,7 @@ public class ChatViewModel extends ViewModel implements Observable {
 
     public void sendMessage(LongSparseArray<Media> medias) {
         sendMessageModel.setMedias(medias);
+
         onSendClicked();
     }
 
@@ -503,7 +565,7 @@ public class ChatViewModel extends ViewModel implements Observable {
     }
 
     public void onStopRecordingClicked() {
-        if (isRecording != null && isRecording.getValue())
+        if (isRecording.getValue() != null && isRecording.getValue())
             isRecording.setValue(false);
     }
 
@@ -574,11 +636,22 @@ public class ChatViewModel extends ViewModel implements Observable {
 
     public void readMessage(Message message) {
         DisposableProvider.doCallable(() -> {
-            if (message != null && message.getAuthor() != null && message.getAuthor().getId() != profile.getId() && message.getInfo().getReadAt() == null)
+            if (message != null && message.getAuthor() != null && message.getAuthor().getId() != profile.getId() && message.getReadAt() == null)
                 unreadMessages.add(message);
             unreadMessagesSubject.onNext(unreadMessages);
             return true;
         });
+    }
+
+    public void updateChat(Consumer<Integer> unreadMessages) {
+        DisposableProvider.getDisposableItem(chatRepository.getChat(new IdRequest(sendMessageModel.getChatId())),
+                updatedChat -> {
+                    this.chat = updatedChat;
+                    notifyChanged(BR.chat);
+                    unreadMessages.accept(updatedChat.getInfo().getUnreadMessagesCount());
+                }, throwable -> {
+
+                });
     }
 
     @Override
@@ -647,6 +720,14 @@ public class ChatViewModel extends ViewModel implements Observable {
 
     public Subject<Long> getEmitTypeSubject() {
         return emitTypeSubject;
+    }
+
+    public MediaProgressHelper getMediaProgressHelper() {
+        return mediaProgressHelper;
+    }
+
+    public User getProfile() {
+        return profile;
     }
 
     private Observable.OnPropertyChangedCallback onPropertyChangedCallback = new OnPropertyChangedCallback() {

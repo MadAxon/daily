@@ -8,6 +8,8 @@ import android.util.Log;
 import java.io.File;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -15,8 +17,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import dagger.android.AndroidInjection;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
@@ -32,6 +36,8 @@ import ru.vital.daily.repository.api.DailySocket;
 import ru.vital.daily.repository.api.ProgressRequestBody;
 import ru.vital.daily.repository.api.request.ItemRequest;
 import ru.vital.daily.repository.api.request.MessageRemoveRequest;
+import ru.vital.daily.repository.api.request.MessageRequest;
+import ru.vital.daily.repository.api.response.ItemResponse;
 import ru.vital.daily.repository.api.response.handler.ItemResponseHandler;
 import ru.vital.daily.repository.api.response.handler.ItemsResponseHandler;
 import ru.vital.daily.repository.data.Action;
@@ -40,6 +46,7 @@ import ru.vital.daily.repository.data.Message;
 import ru.vital.daily.repository.model.MediaEditModel;
 import ru.vital.daily.repository.model.MessageSendModel;
 import ru.vital.daily.util.DisposableProvider;
+import ru.vital.daily.util.MediaProgressHelper;
 
 import static ru.vital.daily.enums.Operation.ACTION_INTERNET_ONLINE;
 import static ru.vital.daily.enums.Operation.ACTION_JOB_DELETE;
@@ -53,6 +60,7 @@ import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_SUCCESS;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_CANCEL;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_CHANGE;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_DELETE;
+import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_FORWARD;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_SEND;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_SEND_FAILED;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_SEND_UPDATED;
@@ -76,6 +84,13 @@ public class MessageService extends JobIntentService {
 
     @Inject
     DailySocket dailySocket;
+
+    @Inject
+    MediaProgressHelper mediaProgressHelper;
+
+    private Disposable progressDisposable;
+
+    private final Subject<Float> progressSubject = PublishSubject.create();
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -147,6 +162,7 @@ public class MessageService extends JobIntentService {
                             broadcastIntent.putExtra(MessageBroadcast.MESSAGE_IDS_EXTRA, action.getMessageIds());
                             broadcastIntent.putExtra(MessageBroadcast.MESSAGE_FOR_ALL_EXTRA, action.getForAll());
                             broadcastIntent.putExtra(MessageBroadcast.MESSAGE_ID_EXTRA, action.getMessageId());
+                            broadcastIntent.putExtra(MessageBroadcast.FROM_CHAT_ID_EXTRA, action.getFromChatId());
                             broadcastIntent.setAction(action.getAction());
                             sendBroadcast(broadcastIntent);
                         }
@@ -158,6 +174,9 @@ public class MessageService extends JobIntentService {
                     break;
                 case ACTION_MEDIA_CHANGE:
                     changeMediaDescription(intent.getLongExtra(MessageBroadcast.MEDIA_ID_EXTRA, 0), intent.getStringExtra(MessageBroadcast.MEDIA_DESCRIPTION_EXTRA));
+                    break;
+                case ACTION_MESSAGE_FORWARD:
+                    forwardMessages(intent.getLongArrayExtra(MessageBroadcast.MESSAGE_IDS_EXTRA), intent.getLongExtra(MessageBroadcast.FROM_CHAT_ID_EXTRA, 0), intent.getLongExtra(MessageBroadcast.CHAT_ID_EXTRA, 0));
                     break;
             }
         Log.i("my_logs", "onHandleWork()");
@@ -258,27 +277,46 @@ public class MessageService extends JobIntentService {
             currentUploadPosition++;
             uploadMedia(message, shouldChangeMessage);
         } else {
-            Intent progressIntent = new Intent(ACTION_MEDIA_UPLOAD_START);
+            if (progressDisposable == null)
+                progressDisposable = progressSubject.throttleLast(1, TimeUnit.SECONDS).subscribe(progress -> {
+                    Media progressMedia = mediaProgressHelper.getMedia(media.getId());
+                    if (progressMedia != null)
+                        progressMedia.setProgress(progress);
+                });
+
+            Intent progressIntent = new Intent();
             progressIntent.putExtra(ChatActivity.MESSAGE_ID_EXTRA, message.getId());
             progressIntent.putExtra(ChatActivity.CHAT_ID_EXTRA, message.getChatId());
-            sendBroadcast(progressIntent);
+            //sendBroadcast(progressIntent);
 
-            progressIntent.setAction(ACTION_MEDIA_UPLOAD_PROGRESS);
-            progressIntent.putExtra(ChatActivity.MEDIA_ID_EXTRA, media.getId());
-            progressIntent.putExtra(ChatActivity.MEDIA_PROGRESS_EXTRA, 0f);
-            sendBroadcast(progressIntent);
+            //progressIntent.setAction(ACTION_MEDIA_UPLOAD_PROGRESS);
+            //progressIntent.putExtra(ChatActivity.MEDIA_ID_EXTRA, media.getId());
+            //sendBroadcast(progressIntent);
             Subject<Media> subject = PublishSubject.create();
-
 
             File file = new File(media.getFiles().get(0).getUrl());
             Log.i("my_logs", "uploaded started with type " + media.getFiles().get(0).getType() + ", url " + media.getFiles().get(0).getUrl() + " and name " + media.getName());
 
-            compositeDisposable.add(api.uploadMedia(MultipartBody.Part.createFormData("file", /*null*/media.getName(), new ProgressRequestBody(RequestBody.create(MediaType.parse(media.getFiles().get(0).getType()), file), (bytes, contentLength, done) -> {
-                        progressIntent.putExtra(ChatActivity.MEDIA_PROGRESS_EXTRA, done ? 1f : (float) bytes / contentLength);
-                        sendBroadcast(progressIntent);
-                        //Log.i("my_logs", String.valueOf((float) bytes / contentLength));
-                    })),
-                    RequestBody.create(MediaType.parse("application/json; charset=utf-8"), media.getType()))
+            Single<ItemResponse<Media>> singleUpload;
+            if (media.getDescription() != null && !media.getDescription().isEmpty())
+                singleUpload = api.uploadMedia(MultipartBody.Part.createFormData("file", /*null*/media.getName(), new ProgressRequestBody(RequestBody.create(MediaType.parse(media.getFiles().get(0).getType()), file), (bytes, contentLength, done) -> {
+                    progressSubject.onNext(done ? 1f : (float) bytes / contentLength);
+                    //progressIntent.putExtra(ChatActivity.MEDIA_PROGRESS_EXTRA, done ? 1f : (float) bytes / contentLength);
+                            //sendBroadcast(progressIntent);
+                            Log.i("my_logs", String.valueOf((float) bytes / contentLength));
+                        })),
+                        RequestBody.create(MediaType.parse("application/json; charset=utf-8"), media.getType()),
+                        RequestBody.create(MediaType.parse("application/json; charset=utf-8"), media.getDescription()));
+            else
+                singleUpload = api.uploadMedia(MultipartBody.Part.createFormData("file", /*null*/media.getName(), new ProgressRequestBody(RequestBody.create(MediaType.parse(media.getFiles().get(0).getType()), file), (bytes, contentLength, done) -> {
+                            progressSubject.onNext(done ? 1f : (float) bytes / contentLength);
+                            //progressIntent.putExtra(ChatActivity.MEDIA_PROGRESS_EXTRA, done ? 1f : (float) bytes / contentLength);
+                            //sendBroadcast(progressIntent);
+                            Log.i("my_logs", String.valueOf((float) bytes / contentLength));
+                        })),
+                        RequestBody.create(MediaType.parse("application/json; charset=utf-8"), media.getType()));
+
+            compositeDisposable.add(singleUpload
                     .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).doOnDispose(() -> {
                         Log.i("my_logs", "do on dispose");
                         subject.onNext(new Media(0));
@@ -316,18 +354,27 @@ public class MessageService extends JobIntentService {
                 progressIntent.setAction(ACTION_MEDIA_UPLOAD_FAILED);
                 sendBroadcast(progressIntent);
                 currentUploadPosition++;
+                mediaProgressHelper.remove(media.getId());
                 uploadMedia(message, shouldChangeMessage);
             } else if (uploadedMedia.getId() == 0) {
                 currentUploadPosition++;
+                mediaProgressHelper.remove(media.getId());
                 uploadMedia(message, shouldChangeMessage);
             } else {
+
+                Media progressMedia = mediaProgressHelper.getMedia(media.getId());
+                if (progressMedia != null) {
+                    progressMedia.setId(uploadedMedia.getId());
+                    progressMedia.setProgress(null);
+                    mediaProgressHelper.remove(media.getId());
+                }
                 uploadedMedia.setFiles(media.getFiles());
+                media.setId(uploadedMedia.getId());
                 //mediaRepository.saveMedia(uploadedMedia).subscribe();
                 progressIntent.setAction(ACTION_MEDIA_UPLOAD_SUCCESS);
                 progressIntent.putExtra(ChatActivity.MEDIA_ID_EXTRA, media.getId());
-                progressIntent.putExtra(ChatActivity.MEDIA_ID_NEW_EXTRA, uploadedMedia.getId());
+                //progressIntent.putExtra(ChatActivity.MEDIA_ID_NEW_EXTRA, uploadedMedia.getId());
                 sendBroadcast(progressIntent);
-                media.setId(uploadedMedia.getId());
                 currentUploadPosition++;
                 uploadMedia(message, shouldChangeMessage);
             }
@@ -370,7 +417,7 @@ public class MessageService extends JobIntentService {
         Subject<Message> subject = PublishSubject.create();
         compositeDisposable.add(DisposableProvider.getDisposableItem(messageRepository.sendMessage(itemRequest).doOnDispose(() -> subject.onNext(new Message(0))), sentMessage -> {
             Log.i("my_logs", "sending success");
-            dailySocket.emitSendMessage(sentMessage.getId());
+            dailySocket.emitSendMessage(new long[]{sentMessage.getId()}, sentMessage.getChatId());
             subject.onNext(sentMessage);
         }, throwable -> {
             if (throwable instanceof UnknownHostException || throwable instanceof SocketTimeoutException) {
@@ -393,6 +440,14 @@ public class MessageService extends JobIntentService {
                 messageRepository.deleteMessage(message).subscribe();
                 sentMessage.setCreatedAt(message.getCreatedAt());
                 messageRepository.saveMessage(sentMessage).subscribe();
+            } else if (sentMessage.getUpdatedAt() != null) {
+                Log.i("my_logs", "updateMessageUpdatedAt" + sentMessage.getId());
+                messageRepository.updateMessageUpdatedAt(sentMessage.getId(), sentMessage.getChatId(), sentMessage.getUpdatedAt());
+                Intent intent = new Intent(ACTION_MESSAGE_CHANGE);
+                intent.putExtra(ChatActivity.CHAT_ID_EXTRA, sentMessage.getChatId());
+                intent.putExtra(ChatActivity.MESSAGE_ID_EXTRA, sentMessage.getId());
+                intent.putExtra(ChatActivity.DATE_UPDATED_EXTRA, sentMessage.getUpdatedAt().getTime());
+                sendBroadcast(intent);
             }
             deleteOperation(message);
         } else if (sentMessage.getId() != 0) {
@@ -427,18 +482,23 @@ public class MessageService extends JobIntentService {
         sendBroadcast(messageBroadcastIntent);
     }
 
-    private void deleteMessage(long[] messageIds, long chatId, boolean forAll) {
-        DisposableProvider.getDisposableBase(messageRepository.deleteMessages(new MessageRemoveRequest(messageIds, chatId, forAll)), response -> {
-            dailySocket.emitRemoveMessage(chatId, messageIds);
-            Log.i("my_logs", "delete message is successful");
-        }, throwable -> {
-            Log.i("my_logs", throwable.getLocalizedMessage());
-        });
+    private void deleteOperation(long[] messageIds, long chatId) {
         Intent messageBroadcastIntent = new Intent(this, MessageBroadcast.class);
         messageBroadcastIntent.setAction(ACTION_JOB_DELETE);
         messageBroadcastIntent.putExtra(MessageBroadcast.MESSAGE_IDS_EXTRA, messageIds);
         messageBroadcastIntent.putExtra(MessageBroadcast.CHAT_ID_EXTRA, chatId);
         sendBroadcast(messageBroadcastIntent);
+    }
+
+    private void deleteMessage(long[] messageIds, long chatId, boolean forAll) {
+        DisposableProvider.getDisposableBase(messageRepository.deleteMessages(new MessageRemoveRequest(messageIds, chatId, forAll)), response -> {
+            if (forAll)
+                dailySocket.emitRemoveMessage(chatId, messageIds);
+            Log.i("my_logs", "delete message is successful");
+        }, throwable -> {
+            Log.i("my_logs", throwable.getLocalizedMessage());
+        });
+        deleteOperation(messageIds, chatId);
     }
 
     private void changeMediaDescription(long mediaId, String description) {
@@ -449,10 +509,55 @@ public class MessageService extends JobIntentService {
         })));
     }
 
+    private void forwardMessages(long[] messageIds, long fromChatId, long toChatId) {
+        compositeDisposable.add(messageRepository.getMessages(messageIds, toChatId).subscribe(new ItemsResponseHandler<>(messages -> {
+            final int size = messages.size();
+            long[] ids = new long[size];
+            for (int i = 0; i < size; i++)
+                ids[i] = messages.get(i).getForwardId();
+            compositeDisposable.add(messageRepository.forwardMessages(ids, fromChatId, toChatId).subscribe(new ItemsResponseHandler<>(sentMessages -> {
+                messageRepository.deleteMessages(messageIds, toChatId).subscribe();
+                final int sentMessagesSize = sentMessages.size();
+                long[] sentMessageIds = new long[size];
+                int position = 0;
+
+                for (int i = 0; i < sentMessagesSize; i++) {
+                    Message newMessage = sentMessages.get(i);
+                    for (int j = position; j < sentMessagesSize; j++) {
+                        position++;
+                        if (ids[j] == newMessage.getForwardId()) {
+                            sentMessageIds[j] = newMessage.getId();
+                            newMessage.setCreatedAt(messages.get(j).getCreatedAt());
+                            break;
+                        } else {
+                            sentMessageIds[j] = 0;
+                            //j++;
+                        }
+                    }
+                }
+
+                Intent intent = new Intent(ACTION_MESSAGE_FORWARD);
+                intent.putExtra(ChatActivity.CHAT_ID_EXTRA, toChatId);
+                intent.putExtra(ChatActivity.MESSAGE_IDS_NEW_EXTRA, sentMessageIds);
+                intent.putExtra(ChatActivity.MESSAGE_IDS_OLD_EXTRA, messageIds);
+                sendBroadcast(intent);
+
+                messageRepository.saveMessages(sentMessages, toChatId);
+                deleteOperation(messageIds, toChatId);
+            }, throwable -> {
+                deleteOperation(messageIds, toChatId);
+            })));
+        }, throwable -> {
+
+        })));
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         compositeDisposable.clear();
+        if (progressDisposable != null)
+            progressDisposable.dispose();
         Log.i("my_logs", "Intent Service onDestroy");
     }
 

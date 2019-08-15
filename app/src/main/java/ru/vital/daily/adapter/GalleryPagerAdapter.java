@@ -5,13 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.databinding.DataBindingUtil;
 import androidx.viewpager.widget.PagerAdapter;
+
+import java.util.List;
+
 import ru.vital.daily.R;
 import ru.vital.daily.databinding.ItemGalleryBinding;
 import ru.vital.daily.enums.FileType;
@@ -25,11 +25,9 @@ public class GalleryPagerAdapter extends PagerAdapter {
 
     public final SingleLiveEvent<Void> clickEvent = new SingleLiveEvent<>();
 
-    private final List<Long> items;
+    private final List<Media> items;
 
-    private SelectedMedias selectedMedias;
-
-    public GalleryPagerAdapter(List<Long> items) {
+    public GalleryPagerAdapter(List<Media> items) {
         this.items = items;
     }
 
@@ -37,10 +35,10 @@ public class GalleryPagerAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
         ItemGalleryBinding binding = DataBindingUtil.inflate(LayoutInflater.from(container.getContext()), R.layout.item_gallery, container, true);
-        Media media = getMedia(position);
+        Media media = items.get(position);
+        binding.setClickListener(v -> clickEvent.call());
         if (FileType.video.name().equals(media.getType())) {
             binding.setVideo(media);
-            binding.setClickListener(v -> clickEvent.call());
         } else binding.setImage(media);
         Log.i("my_logs", "instantiateItem " + position);
         return binding.getRoot();
@@ -70,17 +68,9 @@ public class GalleryPagerAdapter extends PagerAdapter {
         return view == object;
     }
 
+
     public Media getMedia(int position) {
-        return selectedMedias.getMedias().get(items.get(position));
+        return items.get(position);
     }
-
-    public void setSelectedMedias(SelectedMedias selectedMedias) {
-        this.selectedMedias = selectedMedias;
-    }
-
-    /*public void setMedias(List<Media> medias) {
-        this.medias = medias;
-    }*/
-
 
 }

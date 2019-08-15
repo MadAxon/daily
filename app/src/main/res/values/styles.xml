@@ -21,15 +21,6 @@
         <item name="searchViewStyle">@style/SearchView</item>
     </style>
 
-    <style name="AppTheme.Transparent">
-        <item name="android:windowBackground">@android:color/black</item>
-        <item name="homeAsUpIndicator">@drawable/ic_arrow_left_white</item>
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="windowActionBarOverlay">true</item>
-        <item name="colorPrimary">@android:color/transparent</item>
-    </style>
-
     <style name="AppTheme.SplashScreen">
         <item name="android:windowBackground">@drawable/background_splash_screen</item>
     </style>
@@ -203,12 +194,13 @@
         <item name="matProg_linearProgress">true</item>
     </style>
 
-    <style name="FullscreenTheme" parent="AppTheme">
-        <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
-        <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowBackground">@null</item>
-        <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
-        <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
+    <style name="AppTheme.Transparent">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="homeAsUpIndicator">@drawable/ic_arrow_left_white</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="windowActionBarOverlay">true</item>
+        <item name="colorPrimary">@android:color/transparent</item>
     </style>
 
     <style name="FullscreenActionBarStyle" parent="Widget.AppCompat.ActionBar">

@@ -59,7 +59,10 @@ public class ChatCreateViewModel extends ViewModel {
                 }, throwable -> {
                     errorEvent.postValue(throwable);
                     isLoading.set(false);
-                })));
+                }), throwable -> {
+                    errorEvent.postValue(throwable);
+                    isLoading.set(false);
+                }));
 
         isLoading.set(true);
         searchPublish.onNext("");

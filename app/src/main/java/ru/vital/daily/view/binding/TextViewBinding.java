@@ -9,18 +9,27 @@ import android.text.SpannableStringBuilder;
 import android.text.format.DateUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.TypefaceSpan;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.BindingAdapter;
+
+import com.google.android.exoplayer2.C;
+
 import ru.vital.daily.R;
 import ru.vital.daily.enums.FileType;
+import ru.vital.daily.enums.MessageContentType;
 import ru.vital.daily.repository.data.Message;
+import ru.vital.daily.repository.data.User;
 import ru.vital.daily.repository.model.MediaModel;
 
 public class TextViewBinding {
@@ -38,6 +47,18 @@ public class TextViewBinding {
         textView.setText(spannableStringBuilder);
     }
 
+    @BindingAdapter("forwardAuthor")
+    public static void setForwardAuthor(TextView textView, User forwardAuthor) {
+        if (forwardAuthor != null) {
+            textView.setVisibility(View.VISIBLE);
+            SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(textView.getContext().getString(R.string.chat_message_forward));
+            SpannableString spannableString = new SpannableString(forwardAuthor.getUname());
+            spannableString.setSpan(new TypefaceSpan("sans-serif-medium"), 0, spannableString.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannableStringBuilder.append(spannableString);
+            textView.setText(spannableStringBuilder);
+        } else textView.setVisibility(View.GONE);
+    }
+
     @BindingAdapter("android:drawableStart")
     public static void setDrawableStart(TextView textView, int drawableStart) {
         textView.setCompoundDrawablesWithIntrinsicBounds(drawableStart, 0, 0, 0);
@@ -51,6 +72,12 @@ public class TextViewBinding {
             else
                 textView.setText(textView.getContext().getString(R.string.chat_message_updated, new SimpleDateFormat("HH:mm", Locale.getDefault()).format(createdAt)));
         }
+    }
+
+    @BindingAdapter("mediaDate")
+    public static void setMediaDate(TextView textView, Date date) {
+        if (date != null)
+            textView.setText(DateUtils.formatDateTime(textView.getContext(), date.getTime(), DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_SHOW_YEAR));
     }
 
     @BindingAdapter("simpleDate")
@@ -80,11 +107,30 @@ public class TextViewBinding {
         if (mediaModel != null && mediaModel.getType().contains("video") && mediaModel.getUrl() != null) {
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
 //use one of overloaded setDataSource() functions to set your data source
-            retriever.setDataSource(textView.getContext(), Uri.parse(mediaModel.getUrl()));
+            FileInputStream fileInputStream = null;
+            try {
+                fileInputStream = new FileInputStream(mediaModel.getUrl());
+                retriever.setDataSource(fileInputStream.getFD());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (fileInputStream != null) {
+                    try {
+                        fileInputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            //retriever.setDataSource(textView.getContext(), Uri.parse(mediaModel.getUrl()));
             String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            long seconds = Long.parseLong(time) / 1000;
-            retriever.release();
-            textView.setText(String.format(Locale.getDefault(),"%02d:%02d", (seconds / 60) % 60, seconds % 60));
+            if (time != null) {
+                long seconds = Long.parseLong(time) / 1000;
+                retriever.release();
+                textView.setText(String.format(Locale.getDefault(), "%02d:%02d", (seconds / 60) % 60, seconds % 60));
+            } else textView.setText(null);
         } else textView.setText(null);
     }
 
@@ -94,7 +140,7 @@ public class TextViewBinding {
         textView.setText(String.format(Locale.getDefault(),"%02d:%02d", (seconds / 60) % 60, seconds % 60));
     }
 
-    @BindingAdapter(value = {"chatLastMessage", "typing"})
+    @BindingAdapter(value = {"chatLastMessage", "typing"}, requireAll = false)
     public static void setChatLastMessage(TextView textView, Message message, boolean typing) {
         if (typing) {
             SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(textView.getContext().getString(R.string.chat_message_typing));
@@ -117,9 +163,12 @@ public class TextViewBinding {
                     spannableStringBuilder = new SpannableStringBuilder(textView.getContext().getString(R.string.chat_message_photo));
                 else if (FileType.video.name().equals(type))
                     spannableStringBuilder = new SpannableStringBuilder(textView.getContext().getString(R.string.chat_message_video));
-                else if (FileType.audio.name().equals(type))
+                else if (FileType.voice.name().equals(type))
                     spannableStringBuilder = new SpannableStringBuilder(textView.getContext().getString(R.string.chat_message_voice));
                 else spannableStringBuilder = new SpannableStringBuilder(textView.getContext().getString(R.string.chat_message_file));
+                spannableStringBuilder.setSpan(new ForegroundColorSpan(textView.getResources().getColor(R.color.colorAccent)), 0, spannableStringBuilder.length(), 0);
+            } else if (MessageContentType.contact.name().equals(message.getContentType()) || message.getAccount() != null) {
+                spannableStringBuilder = new SpannableStringBuilder(textView.getResources().getString(R.string.chat_message_contact));
                 spannableStringBuilder.setSpan(new ForegroundColorSpan(textView.getResources().getColor(R.color.colorAccent)), 0, spannableStringBuilder.length(), 0);
             } else spannableStringBuilder = new SpannableStringBuilder();
         } else {

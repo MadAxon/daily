@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
@@ -43,6 +44,12 @@ import ru.vital.daily.util.FileUtil;
 
 public class ImageViewBinding {
 
+    @BindingAdapter("android:layout_marginBottom")
+    public static void setLayoutMarginBottom(RoundedImageView roundedImageView, float margin) {
+        ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) roundedImageView.getLayoutParams();
+        layoutParams.setMargins(layoutParams.leftMargin, layoutParams.topMargin, layoutParams.rightMargin, Math.round(margin));
+    }
+
     @BindingAdapter("clipToOutline")
     public static void setClipOutline(ImageView imageView, boolean clipToOutline) {
         imageView.setClipToOutline(clipToOutline);
@@ -51,6 +58,11 @@ public class ImageViewBinding {
     @BindingAdapter("app:srcCompat")
     public static void setSrcCompat(ImageView imageView, Drawable drawable) {
         imageView.setImageDrawable(drawable);
+    }
+
+    @BindingAdapter("app:srcCompat")
+    public static void setSrcCompat(ImageView imageView, int drawable) {
+        imageView.setImageResource(drawable);
     }
 
     @BindingAdapter("android:src")

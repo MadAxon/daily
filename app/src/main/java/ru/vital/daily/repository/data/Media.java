@@ -39,7 +39,7 @@ public class Media extends BaseObservable {
     private Date createdAt, updatedAt;
 
     @JsonIgnore
-    private boolean hasIconForProgress, selected;
+    private boolean hasIconForProgress, selected, forceCancelled;
 
     @JsonIgnore
     private Float progress;
@@ -214,4 +214,11 @@ public class Media extends BaseObservable {
         notifyPropertyChanged(BR.description);
     }
 
+    public boolean getForceCancelled() {
+        return forceCancelled;
+    }
+
+    public void setForceCancelled(boolean forceCancelled) {
+        this.forceCancelled = forceCancelled;
+    }
 }

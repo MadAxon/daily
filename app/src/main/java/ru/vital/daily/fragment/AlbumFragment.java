@@ -1,7 +1,9 @@
 package ru.vital.daily.fragment;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -14,6 +16,8 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.loader.content.CursorLoader;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -34,7 +38,8 @@ import ru.vital.daily.view.model.AlbumViewModel;
 
 public class AlbumFragment extends BaseFragment<AlbumViewModel, FragmentAlbumBinding> {
 
-    private final int REQUEST_GALLERY_CODE = 104;
+    private final int REQUEST_GALLERY_CODE = 104,
+            PERMISSION_READ_EXTERNAL_STORAGE_CODE = 201;
 
     @Override
     protected AlbumViewModel onCreateViewModel() {
@@ -91,24 +96,9 @@ public class AlbumFragment extends BaseFragment<AlbumViewModel, FragmentAlbumBin
         });
 
         viewModel.mediaSparseArray.put(0, new ArrayList<>());
-        loadAllMedias();
-        loadAllVideos();
-
-        Cursor cursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                new String[]{
-                        "DISTINCT " + MediaStore.Images.ImageColumns.BUCKET_ID,
-                        MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME
-                }, null, null, null);
-        if (cursor != null) {
-
-            dataBinding.getAdapter().setSelectedMedias(viewModel.medias);
-            //dataBinding.getAdapter().setSelectedMedias(viewModel.getSelectedMedias().getMedias());
-            while (cursor.moveToNext())
-                loadAlbum(cursor);
-            cursor.close();
-        }
-
-        dataBinding.getAdapter().updateMedias(viewModel.mediaSparseArray.get(0));
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_EXTERNAL_STORAGE_CODE);
+        else loadMedias();
         dataBinding.getAdapter().checkClickEvent.observe(this, media -> {
             viewModel.getSelectedMedias().checkMedia(media);
             if (viewModel.getSelectedMedias().getSelected().size() > 0)
@@ -140,6 +130,38 @@ public class AlbumFragment extends BaseFragment<AlbumViewModel, FragmentAlbumBin
                     send();
                     break;
             }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_READ_EXTERNAL_STORAGE_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    loadMedias();
+                else
+                    viewModel.errorEvent.setValue(new Throwable(getString(R.string.permission_media_denied)));
+                break;
+        }
+    }
+
+    private void loadMedias() {
+        loadAllMedias();
+        loadAllVideos();
+
+        Cursor cursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[]{
+                        "DISTINCT " + MediaStore.Images.ImageColumns.BUCKET_ID,
+                        MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME
+                }, null, null, null);
+        if (cursor != null) {
+
+            dataBinding.getAdapter().setSelectedMedias(viewModel.medias);
+            //dataBinding.getAdapter().setSelectedMedias(viewModel.getSelectedMedias().getMedias());
+            while (cursor.moveToNext())
+                loadAlbum(cursor);
+            cursor.close();
+        }
+        dataBinding.getAdapter().updateMedias(viewModel.mediaSparseArray.get(0));
     }
 
     private void loadAlbum(Cursor cursor) {

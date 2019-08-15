@@ -52,8 +52,8 @@ public class MainActivity extends BaseActivity<MainViewModel, ActivityMainBindin
     @Inject
     DailySocket dailySocket;
 
-    /*@Inject
-    NotificationService notificationService;*/
+    @Inject
+    NotificationService notificationService;
 
     private BroadcastReceiver socketReceiver;
 
@@ -105,7 +105,7 @@ public class MainActivity extends BaseActivity<MainViewModel, ActivityMainBindin
                     key -> {
                         dailySocket.connect(key.getAccessKey());
                         accessInterceptor.setAccessKey(key.getAccessKey());
-                        NotificationService.subscribe(key.getNotificationTopic());
+                        notificationService.subscribe(key.getNotificationTopic());
                         if (key.getUserId() != 0) {
                             DisposableProvider.getDisposableItem(viewModel.getProfile(key.getUserId()), user -> {
                                 StaticData.init(key, user);

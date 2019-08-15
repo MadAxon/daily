@@ -46,7 +46,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="48dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
             app:replyAnimationEnd="@{viewModel.item.replyAnimationEvent}"
             app:message="@{viewModel.item}"
             app:cardPreventCornerOverlap="true"
@@ -63,6 +62,27 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/roundedImageView16"
                 app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.Barrier
+                    android:id="@+id/barrier"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:barrierDirection="bottom"
+                    app:constraint_referenced_ids="constraintLayout,textView106"
+                    tools:layout_editor_absoluteX="295dp" />
+
+                <TextView
+                    android:id="@+id/textView106"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="12dp"
+                    app:forwardAuthor="@{viewModel.item.forwardAuthor}"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/constraintLayout"
@@ -154,7 +174,7 @@
                     android:src="@{viewModel.item.account}"
                     android:onClick="@{() -> viewModel.onUserClicked()}"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+                    app:layout_constraintTop_toBottomOf="@+id/barrier"
                     tools:src="@tools:sample/avatars" />
 
                 <TextView
@@ -221,7 +241,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView82"
-                    app:message_readAt="@{viewModel.item.info.readAt}"
+                    app:message_readAt="@{viewModel.item.readAt}"
                     app:message_status="@{viewModel.item.sendStatus}"
                     app:message_user="@{viewModel.anotherUser}"
                     app:riv_border_color="@color/color_chat_avatar_border"

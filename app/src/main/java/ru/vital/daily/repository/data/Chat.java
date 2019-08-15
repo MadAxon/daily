@@ -149,4 +149,16 @@ public class Chat extends BaseObservable {
         this.update = update;
         notifyPropertyChanged(BR.update);
     }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj instanceof Chat) {
+            return id == ((Chat) obj).id;
+        } return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) id;
+    }
 }

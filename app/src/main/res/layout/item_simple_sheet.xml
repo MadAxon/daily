@@ -5,24 +5,40 @@
 
     <data>
         <import type="ru.vital.daily.R"/>
+        <import type="android.view.View" />
         <variable
             name="viewModel"
             type="ru.vital.daily.view.model.item.SimpleSheetItemViewModel"/>
     </data>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:onClick="@{() -> viewModel.onItemClicked()}"
+        android:background="?selectableItemBackground">
+
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            app:srcCompat="@{viewModel.item.drawableId}"
+            android:layout_gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="0dp"
+            android:visibility="@{viewModel.item.drawableId != 0 ? View.VISIBLE : View.GONE}"/>
+
         <TextView
             android:id="@+id/textView"
             style="@style/TextView.Medium"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:gravity="center_vertical"
-            android:drawableStart="@{viewModel.item.drawableId}"
-            android:drawablePadding="8dp"
-            android:onClick="@{() -> viewModel.onItemClicked()}"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:text="@{viewModel.item.stringId}"
             android:textColor="@{viewModel.item.drawableId == R.drawable.ic_garbage ? @color/color_text_view_warn : @color/color_text_view_dark}"
-            android:paddingStart="@{viewModel.item.drawableId != 0 ? @dimen/text_view_drawable_start_padding : @dimen/text_view_no_drawable_start_padding}"
-            android:paddingEnd="24dp"
-            android:background="?selectableItemBackground" />
+            android:paddingStart="16dp"
+            android:paddingEnd="24dp" />
+
+    </LinearLayout>
 
 </layout>

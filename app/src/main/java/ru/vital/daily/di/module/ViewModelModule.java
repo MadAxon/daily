@@ -11,6 +11,7 @@ import ru.vital.daily.view.model.CameraViewModel;
 import ru.vital.daily.view.model.ChannelCreateViewModel;
 import ru.vital.daily.view.model.ChannelSettingsViewModel;
 import ru.vital.daily.view.model.ChatCreateViewModel;
+import ru.vital.daily.view.model.ChatSheetViewModel;
 import ru.vital.daily.view.model.ChatViewModel;
 import ru.vital.daily.view.model.ConfirmationViewModel;
 import ru.vital.daily.view.model.ContactViewModel;
@@ -112,6 +113,11 @@ public abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(MediaEditorViewModel.class)
     abstract ViewModel bindMediaEditorViewModel(MediaEditorViewModel mediaEditorViewModel);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ChatSheetViewModel.class)
+    abstract ViewModel bindChatSheetViewModel(ChatSheetViewModel chatSheetViewModel);
 
     @Binds
     @IntoMap

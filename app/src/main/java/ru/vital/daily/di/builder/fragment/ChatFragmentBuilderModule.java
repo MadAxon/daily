@@ -10,6 +10,7 @@ import ru.vital.daily.fragment.FileFragment;
 import ru.vital.daily.fragment.LocationFragment;
 import ru.vital.daily.fragment.MediaFragment;
 import ru.vital.daily.fragment.MoneyFragment;
+import ru.vital.daily.fragment.sheet.ChatSheetFragment;
 
 @Module
 public abstract class ChatFragmentBuilderModule {
@@ -34,5 +35,8 @@ public abstract class ChatFragmentBuilderModule {
 
     @ContributesAndroidInjector
     abstract AlbumFragment bindAlbumFragment();
+
+    @ContributesAndroidInjector
+    abstract ChatSheetFragment bindChatSheetFragment();
 
 }

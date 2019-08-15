@@ -5,6 +5,7 @@ import dagger.android.ContributesAndroidInjector;
 import ru.vital.daily.service.DownloadService;
 import ru.vital.daily.service.InternetService;
 import ru.vital.daily.service.MessageService;
+import ru.vital.daily.service.NotificationService;
 
 @Module
 public abstract class ServiceBuilderModule {
@@ -17,5 +18,8 @@ public abstract class ServiceBuilderModule {
 
     @ContributesAndroidInjector
     abstract DownloadService bindDownloadService();
+
+    @ContributesAndroidInjector
+    abstract NotificationService bindNotificationService();
 
 }

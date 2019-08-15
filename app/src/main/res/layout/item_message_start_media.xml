@@ -5,8 +5,9 @@
     android:id="@+id/layout2">
 
     <data>
-
+        <import type="ru.vital.daily.enums.FileType" />
         <import type="android.view.View" />
+        <import type="ru.vital.daily.enums.MessageContentType" />
         <variable
             name="viewHolder"
             type="ru.vital.daily.adapter.viewholder.MessageMediaViewHolder" />
@@ -18,7 +19,6 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:onClick="@{() -> viewModel.onItemClicked()}"
         android:onLongClick="@{() -> viewModel.onItemLongClicked()}">
 
@@ -28,6 +28,7 @@
             android:layout_height="0dp"
             android:background="@color/colorAccent"
             android:visibility="@{viewModel.item.selected ? View.VISIBLE : View.GONE}"
+            android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="@+id/constraintLayout10"
             app:layout_constraintEnd_toEndOf="@+id/roundedImageView16"
             app:layout_constraintStart_toStartOf="@+id/roundedImageView16"
@@ -47,36 +48,74 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="2dp"
             android:layout_marginEnd="48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/roundedImageView16"
             app:layout_constraintTop_toTopOf="parent">
 
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="reply,cardView"
+                tools:layout_editor_absoluteX="295dp" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:visibility="@{viewModel.item.forwardAuthor != null ? View.VISIBLE : View.GONE}"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/textView106"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="12dp"
+                    android:padding="12dp"
+                    android:textColor="@color/color_text_view_dark"
+                    app:forwardAuthor="@{viewModel.item.forwardAuthor}" />
+
+            </androidx.cardview.widget.CardView>
+
             <ru.vital.daily.view.MediaGridLayout
                 android:id="@+id/gridLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@{viewModel.mediaReply != null ? @dimen/message_reply_media_padding : @dimen/message_reply_media_no_padding}"
                 android:columnCount="2"
-                android:paddingBottom="4dp"
+                app:forceUpdate="@{viewModel.forceUpdate}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:startItem="@{true}"
-                app:medias="@{viewModel.item}"
+                app:layout_constraintTop_toBottomOf="@+id/barrier"
                 app:mediaClick="@{viewModel.mediaClickListener}"
-                app:mediaViewHolder="@{viewHolder}">
-                
+                app:mediaViewHolder="@{viewHolder}"
+                app:medias="@{viewModel.item}"
+                app:messageId="@{viewModel.item.id}"
+                app:messageShouldSync="@{viewModel.item.shouldSync}"
+                app:startItem="@{true}">
+
             </ru.vital.daily.view.MediaGridLayout>
 
+            <!--
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:visibility="@{viewModel.item.text == null || viewModel.item.text.length() == 0 ? View.GONE : View.VISIBLE}"
-                app:cardBackgroundColor="@android:color/white"
+                app:cardBackgroundColor="@color/colorAccent"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="2dp"
+                app:cardElevation="0dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -96,15 +135,15 @@
                     android:text="@{viewModel.item.text}" />
 
             </androidx.cardview.widget.CardView>
+-->
 
             <com.makeramen.roundedimageview.RoundedImageView
                 android:id="@+id/roundedImageView20"
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:layout_marginStart="12dp"
-                android:layout_marginBottom="12dp"
+                android:layout_marginBottom="16dp"
                 android:src="@{viewModel.item.author}"
-                android:elevation="2dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:riv_border_color="@color/color_chat_avatar_border"
@@ -117,12 +156,104 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
-                android:layout_marginBottom="12dp"
-                android:elevation="2dp"
+                android:layout_marginBottom="16dp"
                 app:createdAt="@{viewModel.item.createdAt}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:updatedAt="@{viewModel.item.updatedAt}" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/reply"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/constraintLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{() -> viewModel.onReplyClicked()}"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:visibility="@{viewModel.item.reply == null ? View.GONE : View.VISIBLE}">
+
+                    <View
+                        android:id="@+id/view23"
+                        android:layout_width="2dp"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="12dp"
+                        android:background="@color/colorAccent"
+                        app:layout_constraintBottom_toBottomOf="@+id/textView105"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.makeramen.roundedimageview.RoundedImageView
+                        android:id="@+id/roundedImageView24"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@{viewModel.item.reply.account ?? viewModel.item.reply.author}"
+                        android:visibility="@{(viewModel.item.reply.author != null || viewModel.item.reply.account != null) &amp;&amp; !MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView25"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:riv_border_color="@color/color_chat_avatar_border"
+                        app:riv_border_width="1dp"
+                        app:riv_corner_radius="9dp" />
+
+                    <com.makeramen.roundedimageview.RoundedImageView
+                        android:id="@+id/roundedImageView25"
+                        style="@style/RoundedImageView.Small"
+                        android:layout_marginStart="8dp"
+                        android:visibility="@{viewModel.mediaReply != null &amp;&amp; FileType.image.name().equals(viewModel.mediaReply.type) || FileType.video.name().equals(viewModel.mediaReply.type)? View.VISIBLE : View.GONE}"
+                        app:layout_constraintBottom_toBottomOf="@+id/view23"
+                        app:layout_constraintStart_toEndOf="@+id/view23"
+                        app:layout_constraintTop_toTopOf="@+id/view23"
+                        app:message_image="@{viewModel.mediaReply}" />
+
+                    <TextView
+                        android:id="@+id/textView104"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@{(viewModel.item.reply.author != null || viewModel.item.reply.account != null) &amp;&amp; !MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? @dimen/message_reply_author_padding : @dimen/message_reply_author_gone_padding}"
+                        android:layout_marginEnd="12dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/roboto_medium"
+                        android:maxLines="1"
+                        android:text="@{MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? viewModel.item.reply.content.name : (viewModel.item.reply.account != null ? viewModel.item.reply.account.uname : viewModel.item.reply.author.uname)}"
+                        android:textColor="@color/color_text_view_dark"
+                        android:textSize="12sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView24"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/textView105"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="12dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/roboto_regular"
+                        android:maxLines="1"
+                        android:textSize="12sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/roundedImageView25"
+                        app:layout_constraintTop_toBottomOf="@+id/textView104"
+                        app:subtitle_string_id="@{viewModel.replyStringId}"
+                        app:subtitle_text="@{MessageContentType.contact.name().equals(viewModel.item.reply.contentType) ? viewModel.item.reply.content.phone : viewModel.item.reply.account.phone != null ? viewModel.item.reply.account.phone : viewModel.item.reply.account.email != null ? viewModel.item.reply.account.email : viewModel.item.reply.text != null ? viewModel.item.reply.text : null}" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            </androidx.cardview.widget.CardView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

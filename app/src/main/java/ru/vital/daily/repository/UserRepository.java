@@ -32,6 +32,10 @@ public class UserRepository {
         this.userDao = userDao;
     }
 
+    public Single<ItemsResponse<User>> getUsers() {
+        return userDao.getUsers().map(ItemsResponse::new);
+    }
+
     public Flowable<ItemsResponse<User>> getUsers(long id, ItemsRequest request) {
         return Single.concatArray(userDao.getUsersExceptMineByDate(id).map(ItemsResponse::new).toSingle(), api.getUsers(request)).observeOn(AndroidSchedulers.mainThread());
     }

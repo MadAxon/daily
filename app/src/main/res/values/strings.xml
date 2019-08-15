@@ -15,7 +15,7 @@
     <string name="common_copy_link">Скопировать ссылку веб-сайта</string>
     <string name="common_more">Дополнительно</string>
     <string name="common_on">Да</string>
-    <string name="common_off">Нет</string>Д
+    <string name="common_off">Нет</string>
     <string name="common_delete">Удалить</string>
     <string name="common_resend">Переслать</string>
     <string name="common_connecting">Соединение…</string>
@@ -193,6 +193,14 @@
         <item quantity="many">%d сообщений</item>
         <item quantity="other">%d сообщений</item>
     </plurals>
+    <plurals name="unread_messages">
+        <item quantity="zero">Нет непрочитанных сообщений</item>
+        <item quantity="one">%d непрочитанное сообщение</item>
+        <item quantity="two">%d непрочитанных сообщения</item>
+        <item quantity="few">%d непрочитанных сообщения</item>
+        <item quantity="many">%d непрочитанных сообщений</item>
+        <item quantity="other">%d непрочитанных сообщений</item>
+    </plurals>
     <string name="chat_add_members">Добавить участников</string>
     <string name="chat_unread">Непрочитанные сообщения</string>
     <string name="chat_message_updated">Изменено %s</string>
@@ -201,12 +209,14 @@
     <string name="chat_remove_summary">Внимание: Все сообщения при этом будут утеряны!</string>
     <string name="chat_channel_created">Канал создан</string>
     <string name="chat_cleaned">Нет сообщений</string>
+    <string name="chat_recording">Запись - %02d:%02d.%03d</string>
+    <string name="chat_forward">Переслать…</string>
+
     <string name="chat_message_edit">Редактировать сообщение</string>
     <string name="chat_message_edit_media_sign">Подпись медиа</string>
     <string name="chat_message_edit_media_sign_summary">Изменить подпись</string>
     <string name="chat_message_delete_check">Также удалить для %s</string>
     <string name="chat_message_delete_title">Удалить %s?</string>
-    <string name="chat_recording">Запись - %02d:%02d.%03d</string>
     <string name="chat_message_cancel">Отменить отправку</string>
     <string name="chat_message_retrieve">Повторить отправку</string>
     <string name="chat_message_draft">Черновик:&#160;</string>
@@ -214,12 +224,15 @@
     <string name="chat_message_video">Видео</string>
     <string name="chat_message_voice">Аудиозапись</string>
     <string name="chat_message_file">Файл</string>
-    <string name="chat_message_image_upload_failed">Не удалось отправить\n изображение</string>
-    <string name="chat_message_video_upload_failed">Не удалось отправить\n видео</string>
+    <string name="chat_message_contact">Контакт</string>
+    <string name="chat_message_image_upload_failed">Не удалось отправить\nизображение</string>
+    <string name="chat_message_video_upload_failed">Не удалось отправить\nвидео</string>
     <string name="chat_message_audio_snackbar">Нажмите и удерживайте для записи аудио сообщения</string>
     <string name="chat_message_typing">печатает…</string>
+    <string name="chat_message_forward">Пересланное сообщение\nОт &#160;</string>
 
     <string name="media_editor_caption_hint">Добавить подпись</string>
+    <string name="gallery_title_suffix">из</string>
 
     <string name="users_empty">Список пользователей пуст</string>
     <string name="contacts_empty">У вас нет контактов</string>
@@ -237,6 +250,8 @@
 
     <string name="permission_camera_denied">Вы запретили доступ к камере телефона</string>
     <string name="permission_users_denied">Вы запретили доступ к своим контактам</string>
+    <string name="permission_audio_denied">Вы запретили доступ к микрофону</string>
+    <string name="permission_media_denied">Вы запретили доступ к медиафайлам устройства</string>
 
     <string name="title_activity_gallery">GalleryActivity</string>
     <string name="dummy_button">Dummy Button</string>

@@ -32,12 +32,15 @@
             app:layout_constraintTop_toTopOf="parent"
             app:resize_mode="zoom"
             app:surface_type="texture_view"
-            app:use_controller="false" />
+            app:controller_layout_id="@layout/layout_exo_play_controllers"
+            app:use_controller="true"
+            app:repeat_toggle_modes="one"/>
 
         <com.github.chrisbanes.photoview.PhotoView
             android:id="@+id/photo_view"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:onClick="@{clickListener}"
             app:simpleImage="@{image.files.get(0).url ?? video.files.get(0).url}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

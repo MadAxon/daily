@@ -20,7 +20,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="@{() -> viewModel.onItemClicked()}"
-        android:onLongClick="@{() -> viewModel.onItemLongClicked()}">
+        android:onLongClick="@{() -> viewModel.onItemLongClicked()}"
+        android:layout_marginBottom="8dp">
 
         <View
             android:id="@+id/view16"
@@ -49,14 +50,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="48dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
             app:message="@{viewModel.item}"
             app:replyAnimationEnd="@{viewModel.item.replyAnimationEvent}"
             app:cardBackgroundColor="?attr/colorAccent"
             app:cardCornerRadius="24dp"
             app:cardElevation="0dp"
             app:cardPreventCornerOverlap="true"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/roundedImageView16"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -67,6 +66,27 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/roundedImageView16"
                 app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.Barrier
+                    android:id="@+id/barrier"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:barrierDirection="bottom"
+                    app:constraint_referenced_ids="constraintLayout,textView106"
+                    tools:layout_editor_absoluteX="295dp" />
+
+                <TextView
+                    android:id="@+id/textView106"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="12dp"
+                    app:forwardAuthor="@{viewModel.item.forwardAuthor}"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/textView79"
@@ -83,7 +103,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+                    app:layout_constraintTop_toBottomOf="@+id/barrier" />
 
                 <com.makeramen.roundedimageview.RoundedImageView
                     android:layout_width="18dp"
@@ -94,7 +114,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView79"
-                    app:message_readAt="@{viewModel.item.info.readAt}"
+                    app:message_readAt="@{viewModel.item.readAt}"
                     app:message_status="@{viewModel.item.sendStatus}"
                     app:message_user="@{viewModel.anotherUser}"
                     app:riv_border_color="@color/color_chat_avatar_border"
@@ -120,8 +140,8 @@
                     android:id="@+id/constraintLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:visibility="@{viewModel.item.reply == null ? View.GONE : View.VISIBLE}"
                     android:onClick="@{() -> viewModel.onReplyClicked()}"
+                    android:visibility="@{viewModel.item.reply == null ? View.GONE : View.VISIBLE}"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"

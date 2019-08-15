@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.GridLayout;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import androidx.collection.LongSparseArray;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -28,15 +29,18 @@ import ru.vital.daily.view.MediaGridLayout;
 
 public class GridLayoutBinding {
 
+
+
     @BindingAdapter("android:layout_marginTop")
     public static void setMarginTop(GridLayout gridLayout, float margin) {
         ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) gridLayout.getLayoutParams();
         layoutParams.setMargins(layoutParams.leftMargin, Math.round(margin), layoutParams.rightMargin, layoutParams.bottomMargin);
     }
 
-    @BindingAdapter(value = {"medias", "mediaClick", "mediaViewHolder", "startItem"})
-    public static void setMedias(final MediaGridLayout gridLayout, final Message message, MessageMediaClickListener mediaClickListener, MessageMediaViewHolder mediaViewHolder, boolean startItem) {
-        if (gridLayout.getMessageId() != message.getId() || gridLayout.getShouldSync() != message.getShouldSync()) {
+    @BindingAdapter(value = {"medias", "mediaClick", "mediaViewHolder", "startItem", "forceUpdate"})
+    public static void setMedias(final MediaGridLayout gridLayout, final Message message, MessageMediaClickListener mediaClickListener, MessageMediaViewHolder mediaViewHolder, boolean startItem, AtomicBoolean forceUpdate
+    ) {
+        if (gridLayout.getMessageId() != message.getId() || gridLayout.getShouldSync() != message.getShouldSync() || forceUpdate.compareAndSet(true, false)) {
             Log.i("my_logs", "setMedias() " + message.getMedias().valueAt(0).getFiles().get(0).getUrl());
             gridLayout.setMessageId(message.getId());
             gridLayout.setShouldSync(message.getShouldSync());
@@ -115,7 +119,7 @@ public class GridLayoutBinding {
                     mediaClickListener.cancelUpload(mediaMessage, media1);
                     gridLayout.removeViewAt(index);
                     Log.i("my_logs", "gridLayout removeViewAt " + index);
-                } else mediaClickListener.cancelDownload(mediaMessage.getMedias().get(media1.getId()));
+                } else mediaClickListener.cancelDownload(mediaMessage, mediaMessage.getMedias().get(media1.getId()));
             });
             gridLayout.addView(binding.getRoot(), index);
         }
@@ -154,7 +158,7 @@ public class GridLayoutBinding {
                 mediaClickListener.cancelUpload(mediaMessage, media1);
                 gridLayout.removeViewAt(lastItem);
                 Log.i("my_logs", "gridLayout removeViewAt " + lastItem);
-            } else mediaClickListener.cancelDownload(mediaMessage.getMedias().get(media1.getId()));
+            } else mediaClickListener.cancelDownload(mediaMessage, mediaMessage.getMedias().get(media1.getId()));
         });
         gridLayout.addView(binding.getRoot(), lastItem);
     }
@@ -162,9 +166,9 @@ public class GridLayoutBinding {
     private static void setDescription(GridLayout gridLayout, ItemMessageMediaGridBinding binding, boolean startItem, float paddingBottom) {
         if (startItem) {
             binding.description.setCardBackgroundColor(gridLayout.getContext().getResources().getColor(android.R.color.white));
-            binding.description.setCardElevation(1.9f);
+            binding.description.setCardElevation(gridLayout.getResources().getDimension(R.dimen.message_elevation));
             binding.textView79.setTextColor(gridLayout.getResources().getColor(R.color.color_text_view_dark));
-            binding.roundedImageView.setElevation(2.0f);
+            binding.roundedImageView.setElevation(gridLayout.getResources().getDimension(R.dimen.message_elevation_extra));
         }
         binding.textView79.setPadding(binding.textView79.getPaddingLeft(), binding.textView79.getPaddingTop(), binding.textView79.getPaddingRight(), Math.round(paddingBottom));
     }

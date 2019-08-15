@@ -23,5 +23,10 @@
 
     <dimen name="message_media_bottom_padding_16dp">16dp</dimen>
     <dimen name="message_media_bottom_padding_40dp">40dp</dimen>
+    <dimen name="message_media_bottom_margin_12dp">12dp</dimen>
+    <dimen name="message_media_bottom_margin_16dp">16dp</dimen>
+
+    <dimen name="message_elevation">2dp</dimen>
+    <dimen name="message_elevation_extra">2.1dp</dimen>
 
 </resources>

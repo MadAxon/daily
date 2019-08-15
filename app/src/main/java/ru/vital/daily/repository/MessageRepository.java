@@ -24,6 +24,7 @@ import io.reactivex.schedulers.Schedulers;
 import ru.vital.daily.repository.api.Api;
 import ru.vital.daily.repository.api.request.EmptyJson;
 import ru.vital.daily.repository.api.request.ItemRequest;
+import ru.vital.daily.repository.api.request.MessageForwardRequest;
 import ru.vital.daily.repository.api.request.MessageReadRequest;
 import ru.vital.daily.repository.api.request.MessageRemoveRequest;
 import ru.vital.daily.repository.api.request.MessageRequest;
@@ -54,8 +55,24 @@ public class MessageRepository {
         return messageDao.getMessages().toSingle().map(ItemsResponse::new);
     }
 
+    public Single<ItemsResponse<Message>> getMessages(long[] ids, long chatId) {
+        return messageDao.getMessages(ids, chatId, true).toSingle().map(ItemsResponse::new);
+    }
+
     public Flowable<ItemsResponse<Message>> getMessages(MessagesRequest request) {
+        return api.getMessages(request).toFlowable().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+    }
+
+    /*public Flowable<ItemsResponse<Message>> getMessages(MessagesRequest request) {
         return Single.concatArray(messageDao.getMessages(request.getChatId(), 0).map(ItemsResponse::new).toSingle(), api.getMessages(request).onErrorResumeNext(throwable -> messageDao.getMessages(request.getChatId(), 0).map(ItemsResponse::new).toSingle())).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+    }*/
+
+    public Single<ItemsResponse<Message>> getMessages(long[] ids, Long chatId) {
+        return api.getMessages(new MessagesRequest(ids, chatId));
+    }
+
+    public Single<ItemsResponse<Message>> getMessages(Long chatId, int pageSize) {
+        return api.getMessages(new MessagesRequest(chatId, pageSize));
     }
 
     public Single<ItemsResponse<Message>> getMoreMessages(MessagesRequest request) {
@@ -65,12 +82,12 @@ public class MessageRepository {
     }
 
     public void saveMessages(List<Message> messages, long checkedAt) {
-        /*DisposableProvider.doCallable(() -> {
+        DisposableProvider.doCallable(() -> {
             for (Message message : messages)
                 message.setCheckedAt(checkedAt);
             messageDao.insert(messages);
             return true;
-        });*/
+        });
     }
 
     public void updateExpiredMessages(List<Message> messages, long checkedAt) {
@@ -167,6 +184,17 @@ public class MessageRepository {
             for (int i = 0; i < size; i++)
                 ids[i] = unreadMessages.get(i).getId();
             return api.readMessage(new MessageReadRequest(ids, chatId)).map(emptyJsonBaseResponse -> new ItemResponse<>(ids));
+        });
+    }
+
+    public Single<ItemsResponse<Message>> forwardMessages(long[] messagesIds, long fromChatId, long toChatId) {
+        return api.forwardMessages(new MessageForwardRequest(messagesIds, fromChatId, toChatId));
+    }
+
+    public void updateMessageUpdatedAt(long id, long chatId, Date updatedAt) {
+        DisposableProvider.doCallable(() -> {
+            messageDao.updateUpdatedAt(id, chatId, updatedAt.getTime(), false);
+            return true;
         });
     }
 }

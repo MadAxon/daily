@@ -49,6 +49,7 @@ public class ChatAdapter extends BaseAdapter<Chat, ChatViewHolder, ItemChatBindi
                     || (currentChatOfIndex.getInfo().getLastMessageId() != null && incomingChat.getInfo().getLastMessageId() == null)
                     || (currentChatOfIndex.getInfo().getLastMessageId() != null && incomingChat.getInfo().getLastMessageId() != null && !currentChatOfIndex.getInfo().getLastMessageId().equals(incomingChat.getInfo().getLastMessageId()))) {
                 this.items.set(index, incomingChat);
+                itemsSparseArray.put(incomingChat.getId(), incomingChat);
                 return index;
             }
             return -1;
@@ -80,9 +81,19 @@ public class ChatAdapter extends BaseAdapter<Chat, ChatViewHolder, ItemChatBindi
             itemsSparseArray.put(chat.getId(), chat);
     }
 
-    public void insertNewChat(Chat chat) {
-        items.add(0, chat);
+    public int insertNewChat(Chat chat) {
         itemsSparseArray.put(chat.getId(), chat);
+        if (itemsSparseArray.get(chat.getId()) == null) {
+            items.add(0, chat);
+            return -1;
+        } else {
+            int position = items.indexOf(chat);
+            for (int i = position; i >= 1; i--) {
+                items.set(i, items.get(i - 1));
+            }
+            items.set(0, chat);
+            return position;
+        }
     }
 
     public int updateChat(Chat updatedChat) {
@@ -95,8 +106,11 @@ public class ChatAdapter extends BaseAdapter<Chat, ChatViewHolder, ItemChatBindi
                     items.set(i, items.get(i - 1));
                 }
                 items.set(0, updatedChat);
-            } else
+                itemsSparseArray.put(updatedChat.getId(), updatedChat);
+            } else {
                 items.set(position, updatedChat);
+                itemsSparseArray.put(updatedChat.getId(), updatedChat);
+            }
             return position;
         }
         return -1;

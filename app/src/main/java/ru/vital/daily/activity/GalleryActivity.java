@@ -3,17 +3,42 @@ package ru.vital.daily.activity;
 import android.annotation.SuppressLint;
 
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.MotionEvent;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import androidx.lifecycle.ViewModelProviders;
+import androidx.viewpager.widget.ViewPager;
+
+import com.bluelinelabs.logansquare.LoganSquare;
+import com.github.chrisbanes.photoview.PhotoView;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.RepeatModeUtil;
+import com.google.android.exoplayer2.util.Util;
+import com.google.android.exoplayer2.video.VideoListener;
+
+import java.io.IOException;
+import java.util.Locale;
+
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
+import ru.vital.daily.adapter.EditorPagerAdapter;
+import ru.vital.daily.adapter.GalleryPagerAdapter;
 import ru.vital.daily.databinding.ActivityGalleryBinding;
+import ru.vital.daily.enums.FileType;
+import ru.vital.daily.repository.data.Media;
 import ru.vital.daily.view.model.GalleryViewModel;
 
 /**
@@ -21,6 +46,22 @@ import ru.vital.daily.view.model.GalleryViewModel;
  * status bar and navigation/system bar) with user interaction.
  */
 public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGalleryBinding> {
+
+
+    public static final String
+            MEDIA_CURRENT_EXTRA = "MEDIA_CURRENT_EXTRA",
+            MEDIA_LIST_EXTRA= "MEDIA_LIST_EXTRA";
+
+    private SimpleExoPlayer player;
+
+    private PlayerView playerView;
+
+    private DataSource.Factory dataSourceFactory;
+
+    private GalleryPagerAdapter pagerAdapter;
+
+    private PhotoView photoView;
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -96,14 +137,78 @@ public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGall
         mVisible = true;
 
 
-        // Set up the user interaction to manually show or hide the system UI.
-        dataBinding.viewPager.setOnClickListener(view -> toggle());
-
-
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        //findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+
+        setupToolbar(dataBinding.toolbar, true);
+        dataBinding.appBarLayout.bringToFront();
+
+
+        try {
+            pagerAdapter = new GalleryPagerAdapter(LoganSquare.parseList(getIntent().getStringExtra(MEDIA_LIST_EXTRA), Media.class));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        dataBinding.viewPager.setAdapter(pagerAdapter);
+        dataBinding.viewPager.setCurrentItem(getIntent().getIntExtra(MEDIA_CURRENT_EXTRA, 0));
+        viewModel.setCurrentMedia(pagerAdapter.getMedia(getIntent().getIntExtra(MEDIA_CURRENT_EXTRA, 0)));
+
+        dataBinding.viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                viewModel.setCurrentMedia(pagerAdapter.getMedia(position));
+                viewModel.title.set(String.format(Locale.getDefault(), "%d %s %d", position + 1, getString(R.string.gallery_title_suffix), pagerAdapter.getCount()));
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+        pagerAdapter.pageSelectedEvent.observe(this, constraintLayout -> {
+            stopVideo();
+            if (playerView != null) {
+                playerView.setPlayer(null);
+                playerView = null;
+            }
+
+            Media media = pagerAdapter.getMedia(dataBinding.viewPager.getCurrentItem());
+            if (FileType.video.name().equals(media.getType())) {
+                playerView = constraintLayout.findViewById(R.id.player_view);
+                photoView = constraintLayout.findViewById(R.id.photo_view);
+                prepareVideo();
+            }
+        });
+        pagerAdapter.clickEvent.observe(this, aVoid -> {
+            toggle();
+        });
+        viewModel.shareClickEvent.observe(this, aVoid -> {
+
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_gallery, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_message_resend:
+
+                break;
+        }
+        return true;
     }
 
     @Override
@@ -157,5 +262,72 @@ public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGall
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initVideo();
+        if (playerView != null)
+            prepareVideo();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        releaseVideo();
+    }
+
+    private void initVideo() {
+        dataSourceFactory = new DefaultDataSourceFactory(this,
+                Util.getUserAgent(this, "Daily"));
+        player = ExoPlayerFactory.newSimpleInstance(this);
+        player.setVolume(0.5f);
+        //player.setRepeatMode(Player.REPEAT_MODE_ONE);
+
+        player.setPlayWhenReady(true);
+    }
+
+    private void prepareVideo() {
+        playerView.setPlayer(player);
+        //playerView.setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE);
+        playerView.setControllerVisibilityListener(visibility -> {
+            if (visibility == View.VISIBLE)
+                hide();
+        });
+        if (!player.getPlayWhenReady())
+            player.setPlayWhenReady(true);
+        player.addVideoListener(new VideoListener() {
+            @Override
+            public void onRenderedFirstFrame() {
+                photoView.setVisibility(View.GONE);
+            }
+        });
+        player.addListener(new Player.EventListener() {
+            @Override
+            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                switch (playbackState) {
+                    case 1:
+                        photoView.setVisibility(View.VISIBLE);
+                        break;
+                }
+            }
+        });
+        MediaSource videoSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(Uri.parse(pagerAdapter.getMedia(dataBinding.viewPager.getCurrentItem()).getFiles().get(0).getUrl()));
+        player.prepare(videoSource);
+    }
+
+    private void releaseVideo() {
+        if (player != null) {
+            player.release();
+            player = null;
+        }
+    }
+
+    private void stopVideo() {
+        if (player != null) {
+            player.stop(true);
+        }
     }
 }

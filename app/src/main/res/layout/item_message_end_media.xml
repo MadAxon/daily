@@ -19,7 +19,6 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:onClick="@{() -> viewModel.onItemClicked()}"
         android:onLongClick="@{() -> viewModel.onItemLongClicked()}">
 
@@ -29,6 +28,7 @@
             android:layout_height="0dp"
             android:background="@color/colorAccent"
             android:visibility="@{viewModel.item.selected ? View.VISIBLE : View.GONE}"
+            android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="@+id/constraintLayout10"
             app:layout_constraintEnd_toEndOf="@+id/roundedImageView16"
             app:layout_constraintStart_toStartOf="@+id/roundedImageView16"
@@ -48,23 +48,56 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="48dp"
-            android:layout_marginTop="2dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="6dp"
             app:layout_constraintEnd_toStartOf="@+id/roundedImageView16"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="reply,cardView"
+                tools:layout_editor_absoluteX="295dp" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:visibility="@{viewModel.item.forwardAuthor != null ? View.VISIBLE : View.GONE}"
+                app:cardBackgroundColor="@color/colorAccent"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/textView106"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="12dp"
+                    android:padding="12dp"
+                    app:forwardAuthor="@{viewModel.item.forwardAuthor}" />
+
+            </androidx.cardview.widget.CardView>
 
             <ru.vital.daily.view.MediaGridLayout
                 android:id="@+id/gridLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:columnCount="2"
-                android:paddingBottom="4dp"
                 android:layout_marginTop="@{viewModel.mediaReply != null ? @dimen/message_reply_media_padding : @dimen/message_reply_media_no_padding}"
+                android:columnCount="2"
+                app:forceUpdate="@{viewModel.forceUpdate}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/reply"
+                app:layout_constraintTop_toBottomOf="@+id/barrier"
                 app:mediaClick="@{viewModel.mediaClickListener}"
                 app:mediaViewHolder="@{viewHolder}"
                 app:medias="@{viewModel.item}"
@@ -111,7 +144,7 @@
                 android:layout_marginBottom="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:message_readAt="@{viewModel.item.info.readAt}"
+                app:message_readAt="@{viewModel.item.readAt}"
                 app:message_status="@{viewModel.item.sendStatus}"
                 app:message_user="@{viewModel.anotherUser}"
                 app:riv_border_color="@color/color_chat_avatar_border"
@@ -151,10 +184,10 @@
                     android:id="@+id/constraintLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:onClick="@{() -> viewModel.onReplyClicked()}"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
-                    android:visibility="@{viewModel.item.reply == null ? View.GONE : View.VISIBLE}"
-                    android:onClick="@{() -> viewModel.onReplyClicked()}">
+                    android:visibility="@{viewModel.item.reply == null ? View.GONE : View.VISIBLE}">
 
                     <View
                         android:id="@+id/view23"

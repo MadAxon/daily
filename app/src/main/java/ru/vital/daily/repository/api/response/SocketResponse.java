@@ -10,7 +10,7 @@ public class SocketResponse {
 
     @JsonField
     @Nullable
-    private Long locationId, chatId, chatMessageId, accountId;
+    private Long locationId, chatId, accountId;
 
     @JsonField
     @Nullable
@@ -52,12 +52,4 @@ public class SocketResponse {
         this.chatId = chatId;
     }
 
-    @Nullable
-    public Long getChatMessageId() {
-        return chatMessageId;
-    }
-
-    public void setChatMessageId(@Nullable Long chatMessageId) {
-        this.chatMessageId = chatMessageId;
-    }
 }

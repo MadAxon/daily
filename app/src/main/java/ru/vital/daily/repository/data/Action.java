@@ -19,6 +19,11 @@ public class Action {
      */
     private boolean forAll;
 
+    /**
+     * For forwarding messages only
+     */
+    private long fromChatId;
+
     public Action() {
     }
 
@@ -43,6 +48,14 @@ public class Action {
         this.chatId = chatId;
         this.action = action;
         this.forAll = forAll;
+    }
+
+    @Ignore
+    public Action(String messageIds, long chatId, long fromChatId, String action) {
+        this.messageIds = messageIds;
+        this.chatId = chatId;
+        this.fromChatId = fromChatId;
+        this.action = action;
     }
 
     public long getId() {
@@ -91,5 +104,13 @@ public class Action {
 
     public void setForAll(boolean forAll) {
         this.forAll = forAll;
+    }
+
+    public long getFromChatId() {
+        return fromChatId;
+    }
+
+    public void setFromChatId(long fromChatId) {
+        this.fromChatId = fromChatId;
     }
 }

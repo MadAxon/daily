@@ -23,6 +23,7 @@ import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_CANCEL;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_CANCEL;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_CHANGE;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_DELETE;
+import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_FORWARD;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_SEND;
 
 public class MessageBroadcast extends BroadcastReceiver {
@@ -30,6 +31,7 @@ public class MessageBroadcast extends BroadcastReceiver {
     public static final String
             JOB_ID_EXTRA = "JOB_ID_EXTRA",
             CHAT_ID_EXTRA = "CHAT_ID_EXTRA",
+            FROM_CHAT_ID_EXTRA = "FROM_CHAT_ID_EXTRA",
             MESSAGE_ID_EXTRA = "MESSAGE_ID_EXTRA",
             MESSAGE_IDS_EXTRA = "MESSAGE_IDS_EXTRA",
             MESSAGE_FOR_ALL_EXTRA = "MESSAGE_FOR_ALL_EXTRA",
@@ -55,7 +57,7 @@ public class MessageBroadcast extends BroadcastReceiver {
                 case ACTION_MESSAGE_DELETE:
                     intentService.putExtra(MESSAGE_IDS_EXTRA, idsStringToLongArray(intent.getStringExtra(MESSAGE_IDS_EXTRA)));
                     intentService.putExtra(MESSAGE_FOR_ALL_EXTRA, intent.getBooleanExtra(MESSAGE_FOR_ALL_EXTRA, false));
-                    context.startService(intentService);
+                    MessageService.enqueueWork(context, intentService);
                     break;
                 case ACTION_MESSAGE_SEND:
                     intentService.putExtra(MESSAGE_ID_EXTRA, intent.getLongExtra(MESSAGE_ID_EXTRA, 0));
@@ -101,6 +103,11 @@ public class MessageBroadcast extends BroadcastReceiver {
                 case ACTION_MEDIA_CHANGE:
                     intentService.putExtra(MEDIA_ID_EXTRA, intent.getLongExtra(MEDIA_ID_EXTRA, 0));
                     intentService.putExtra(MEDIA_DESCRIPTION_EXTRA, intent.getStringExtra(MEDIA_DESCRIPTION_EXTRA));
+                    MessageService.enqueueWork(context, intentService);
+                    break;
+                case ACTION_MESSAGE_FORWARD:
+                    intentService.putExtra(MESSAGE_IDS_EXTRA, idsStringToLongArray(intent.getStringExtra(MESSAGE_IDS_EXTRA)));
+                    intentService.putExtra(FROM_CHAT_ID_EXTRA, intent.getLongExtra(FROM_CHAT_ID_EXTRA, 0));
                     MessageService.enqueueWork(context, intentService);
                     break;
             }

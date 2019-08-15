@@ -45,12 +45,15 @@ public class Message extends BaseObservable {
     private boolean shouldSync = false;
 
     @JsonField
+    private Long forwardId, forwardAuthorId;
+
+    @JsonField
     @Nullable
     private String text, type, contentType;
 
     @JsonField
     @Nullable
-    private Date createdAt, updatedAt;
+    private Date createdAt, updatedAt, readAt;
 
     @JsonIgnore
     private long checkedAt;
@@ -65,7 +68,7 @@ public class Message extends BaseObservable {
 
     @JsonField
     @Nullable
-    private User author, account;
+    private User author, account, forwardAuthor;
 
     @JsonIgnore
     @Ignore
@@ -273,4 +276,39 @@ public class Message extends BaseObservable {
         notifyPropertyChanged(BR.replyAnimationEvent);
     }
 
+    public Long getForwardId() {
+        return forwardId;
+    }
+
+    public void setForwardId(Long forwardId) {
+        this.forwardId = forwardId;
+    }
+
+    public Long getForwardAuthorId() {
+        return forwardAuthorId;
+    }
+
+    public void setForwardAuthorId(Long forwardAuthorId) {
+        this.forwardAuthorId = forwardAuthorId;
+    }
+
+    @Nullable
+    public User getForwardAuthor() {
+        return forwardAuthor;
+    }
+
+    public void setForwardAuthor(@Nullable User forwardAuthor) {
+        this.forwardAuthor = forwardAuthor;
+    }
+
+    @Nullable
+    @Bindable
+    public Date getReadAt() {
+        return readAt;
+    }
+
+    public void setReadAt(@Nullable Date readAt) {
+        this.readAt = readAt;
+        notifyPropertyChanged(BR.readAt);
+    }
 }

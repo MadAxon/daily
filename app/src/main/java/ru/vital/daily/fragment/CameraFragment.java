@@ -16,7 +16,6 @@ import java.io.IOException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.lifecycle.ViewModelProviders;
@@ -38,7 +37,6 @@ import ru.vital.daily.repository.data.Media;
 import ru.vital.daily.repository.model.MediaModel;
 import ru.vital.daily.util.BitmapHandler;
 import ru.vital.daily.util.FileUtil;
-import ru.vital.daily.util.GridItemTripleDecoration;
 import ru.vital.daily.view.model.CameraViewModel;
 import ru.vital.daily.view.model.ChatSheetViewModel;
 
@@ -48,7 +46,8 @@ public class CameraFragment extends BaseFragment<CameraViewModel, FragmentCamera
             REQUEST_PHOTO_CODE = 102,
             REQUEST_VIDEO_CODE = 103,
             REQUEST_GALLERY_CODE = 104,
-            PERMISSION_EXTERNAL_STORAGE_CODE = 200;
+            PERMISSION_WRITE_EXTERNAL_STORAGE_CODE = 200,
+            PERMISSION_READ_EXTERNAL_STORAGE_CODE = 201;
 
     private ChatSheetViewModel chatSheetViewModel;
 
@@ -83,7 +82,6 @@ public class CameraFragment extends BaseFragment<CameraViewModel, FragmentCamera
         viewModel.getSelectedMedias().clear();
 
         dataBinding.recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
-        dataBinding.recyclerView.addItemDecoration(new GridItemTripleDecoration());
         dataBinding.setAdapter(new MediaAdapter(false, 3));
         dataBinding.getAdapter().clickEvent.observe(this, id -> {
             if (id == 0L) {
@@ -104,35 +102,10 @@ public class CameraFragment extends BaseFragment<CameraViewModel, FragmentCamera
                 startActivityForResult(intent, REQUEST_GALLERY_CODE);
             }
         });
-        CursorLoader cursorLoader = new CursorLoader(
-                getContext(),
-                MediaStore.Files.getContentUri("external"),
-                new String[] {
-                        MediaStore.Files.FileColumns._ID,
-                        MediaStore.Files.FileColumns.DATA,
-                        MediaStore.Files.FileColumns.DISPLAY_NAME,
-                        MediaStore.Files.FileColumns.MIME_TYPE,
-                },
-                MediaStore.Files.FileColumns.MEDIA_TYPE + "="
-                        + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
-                        + " OR "
-                        + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
-                        + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO,
-                null, // Selection args (none).
-                MediaStore.Files.FileColumns.DATE_ADDED + " DESC" // Sort order.
-        );
-        final Cursor cursor = cursorLoader.loadInBackground();
-        if (cursor != null) {
-            dataBinding.getAdapter().setSelectedMedias(viewModel.getSelectedMedias().getMedias());
-            dataBinding.getAdapter().addNull();
-            while (cursor.moveToNext()) {
-                String type = cursor.getString(3);
-                Media media = new Media(cursor.getLong(0) * -1, cursor.getString(2), FileUtil.getFileType(type), new MediaModel(cursor.getString(1), type));
-                dataBinding.getAdapter().addMedia(media);
-            }
-            cursor.close();
-            dataBinding.getAdapter().notifyInserted();
-        }
+
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_EXTERNAL_STORAGE_CODE);
+        else loadMedias();
 
         dataBinding.getAdapter().checkClickEvent.observe(this, media -> {
             viewModel.getSelectedMedias().checkMedia(media);
@@ -153,12 +126,19 @@ public class CameraFragment extends BaseFragment<CameraViewModel, FragmentCamera
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.i("my_logs", "onRequestPermissionsResult()");
         switch (requestCode) {
-            case PERMISSION_EXTERNAL_STORAGE_CODE:
+            case PERMISSION_WRITE_EXTERNAL_STORAGE_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                     handleCameraSheetClick(chatSheetViewModel.cameraSheetClickEvent.getValue());
                 else
                     viewModel.errorEvent.setValue(new Throwable(getString(R.string.permission_camera_denied)));
+                break;
+            case PERMISSION_READ_EXTERNAL_STORAGE_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    loadMedias();
+                else
+                    viewModel.errorEvent.setValue(new Throwable(getString(R.string.permission_media_denied)));
                 break;
         }
     }
@@ -196,6 +176,41 @@ public class CameraFragment extends BaseFragment<CameraViewModel, FragmentCamera
         }
     }
 
+    private void loadMedias() {
+        Log.i("my_logs", "loadMedias()");
+        CursorLoader cursorLoader = new CursorLoader(
+                getContext(),
+                MediaStore.Files.getContentUri("external"),
+                new String[]{
+                        MediaStore.Files.FileColumns._ID,
+                        MediaStore.Files.FileColumns.DATA,
+                        MediaStore.Files.FileColumns.DISPLAY_NAME,
+                        MediaStore.Files.FileColumns.MIME_TYPE,
+                },
+                MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                        + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+                        + " OR "
+                        + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                        + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO,
+                null, // Selection args (none).
+                MediaStore.Files.FileColumns.DATE_ADDED + " DESC" // Sort order.
+        );
+        final Cursor cursor = cursorLoader.loadInBackground();
+        if (cursor != null) {
+
+            Log.i("my_logs", "loadMedias() " + cursor.getCount());
+            dataBinding.getAdapter().setSelectedMedias(viewModel.getSelectedMedias().getMedias());
+            dataBinding.getAdapter().addNull();
+            while (cursor.moveToNext()) {
+                String type = cursor.getString(3);
+                Media media = new Media(cursor.getLong(0) * -1, cursor.getString(2), FileUtil.getFileType(type), new MediaModel(cursor.getString(1), type));
+                dataBinding.getAdapter().addMedia(media);
+            }
+            cursor.close();
+            dataBinding.getAdapter().notifyInserted();
+        }
+    }
+
     private void openPhoto() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (intent.resolveActivity(packageManager) != null && (file = FileUtil.createTempFile(getContext(), "avatar", ".jpeg")) != null) {
@@ -217,16 +232,16 @@ public class CameraFragment extends BaseFragment<CameraViewModel, FragmentCamera
         switch (stringId) {
             case R.string.sheet_photo:
                 if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-                    ActivityCompat.requestPermissions(getActivity(),
+                    requestPermissions(
                             new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            PERMISSION_EXTERNAL_STORAGE_CODE);
+                            PERMISSION_WRITE_EXTERNAL_STORAGE_CODE);
                 else openPhoto();
                 break;
             case R.string.sheet_video:
                 if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-                    ActivityCompat.requestPermissions(getActivity(),
+                    requestPermissions(
                             new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            PERMISSION_EXTERNAL_STORAGE_CODE);
+                            PERMISSION_WRITE_EXTERNAL_STORAGE_CODE);
                 else openVideo();
                 break;
         }

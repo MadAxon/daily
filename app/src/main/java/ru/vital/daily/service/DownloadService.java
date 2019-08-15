@@ -13,12 +13,14 @@ import com.github.aurae.retrofit2.LoganSquareConverterFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
 import dagger.android.AndroidInjection;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
@@ -52,13 +54,13 @@ public class DownloadService extends JobIntentService {
     @Inject
     MediaProgressHelper mediaProgressHelper;
 
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-
-    //private LongSparseArray<Media> medias = new LongSparseArray<>();
+    private final Subject<Float> progressSubject = PublishSubject.create();
 
     private long mediaId;
 
-    private float progress = 0.f;// To decrease number of updates by Media.setProgress()
+    private Disposable downloadDisposable, progressDisposable;
+
+    private boolean cancelled;
 
     public static void enqueueWork(Context context, Intent intent) {
         enqueueWork(context, DownloadService.class, 1905, intent);
@@ -76,9 +78,14 @@ public class DownloadService extends JobIntentService {
             long cancelledMediaId = intent.getLongExtra(ChatActivity.MEDIA_ID_EXTRA, 0);
             switch (intent.getAction()) {
                 case ACTION_MEDIA_DOWNLOAD_CANCEL:
-                    if (mediaId == cancelledMediaId)
-                        compositeDisposable.clear();
-                    else mediaProgressHelper.remove(cancelledMediaId);
+                    if (mediaId == cancelledMediaId) {
+                        downloadDisposable.dispose();
+                        cancelled = true;
+                        Log.i("my_logs", "compositeDisposable.clear()");
+                    } else {
+                        mediaProgressHelper.remove(cancelledMediaId);
+                        Log.i("my_logs", "mediaProgressHelper.remove()");
+                    }
                     break;
             }
         }
@@ -99,7 +106,8 @@ public class DownloadService extends JobIntentService {
                     });
                     Message message = messageSubject.blockingFirst();
                     messageSubject.onComplete();
-                    downloadMedia(message, intent.getLongExtra(ChatActivity.MEDIA_ID_EXTRA, 0));
+                    /*if (cancelled) cancelled = false;
+                    else*/ downloadMedia(message, intent.getLongExtra(ChatActivity.MEDIA_ID_EXTRA, 0));
                     break;
             }
         }
@@ -116,16 +124,23 @@ public class DownloadService extends JobIntentService {
             return;
         //sendBroadcast(progressIntent);
 
-        progress = 0.f;
+        if (progressDisposable == null)
+            progressDisposable = progressSubject.throttleLast(1, TimeUnit.SECONDS).subscribe(progress -> {
+                Media progressMedia = mediaProgressHelper.getMedia(mediaId);
+                if (progressMedia != null)
+                    progressMedia.setProgress(progress);
+            });
+
         media.setHasIconForProgress(false);
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .addInterceptor(new ProgressInterceptor((bytes, contentLength, done) -> {
                     //progressIntent.putExtra(ChatActivity.MEDIA_PROGRESS_EXTRA, done ? 1f : (float) bytes / contentLength);
                     float current = done ? 1f : (float) bytes / contentLength;
-                    if (progress + 0.05f <= current) {
+                    progressSubject.onNext(current);
+                    /*if (progress + 0.05f <= current) {
                         progress = progress + current;
                         mediaProgressHelper.getMedia(mediaId).setProgress(progress);
-                    }
+                    }*/
                     //sendBroadcast(progressIntent);
                 }))
                 .build();
@@ -138,39 +153,55 @@ public class DownloadService extends JobIntentService {
                 .create(ProgressApi.class);
 
         MediaModel mediaModel = media.getFiles().get(0);
-        File file = FileUtil.createTempFile(this, media.getType(), media.getName());
 
-        Subject<String> subject = PublishSubject.create();
-        compositeDisposable.add(progressApi
-                .download(mediaModel.getUrl())
-                .subscribeOn(Schedulers.io())
-                .unsubscribeOn(Schedulers.io())
-                .map(ResponseBody::byteStream)
-                .observeOn(Schedulers.computation())
-                .doOnDispose(() -> subject.onNext(""))
-                .doOnNext(inputStream -> FileUtil.writeToFile(inputStream, file))
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(inputStream -> {
-                    subject.onNext(file.getPath());
-                }, throwable -> {
-                    subject.onNext("");
-                }));
-        String url = subject.blockingFirst();
-        subject.onComplete();
-        if (url.isEmpty()) {
-            //medias.remove(media.getId());
-            Media downloadedMedia = mediaProgressHelper.getMedia(mediaId);
-            downloadedMedia.setHasIconForProgress(true);
-            downloadedMedia.setProgress(null);
+        if (!FileUtil.exists(mediaModel.getUrl())) {
+            File file = FileUtil.createTempFile(this, media.getType(), media.getName());
+            Subject<String> subject = PublishSubject.create();
+            downloadDisposable = progressApi
+                    .download(mediaModel.getUrl())
+                    .subscribeOn(Schedulers.io())
+                    .unsubscribeOn(Schedulers.io())
+                    .map(ResponseBody::byteStream)
+                    .observeOn(Schedulers.computation())
+                    .doOnDispose(() -> subject.onNext(""))
+                    .doOnNext(inputStream -> FileUtil.writeToFile(inputStream, file))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(inputStream -> {
+                        subject.onNext(file.getPath());
+                    }, throwable -> {
+                        subject.onNext("");
+                    });
+            String url = subject.blockingFirst();
+            subject.onComplete();
+            if (url.isEmpty()) {
+                //medias.remove(media.getId());
+                Log.i("my_logs", "url is empty in service");
+                Media downloadedMedia = mediaProgressHelper.getMedia(mediaId);
+                if (downloadedMedia != null) {
+                    downloadedMedia.setHasIconForProgress(true);
+                    downloadedMedia.setProgress(null);
+                }
+            } else {
+                Media downloadedMedia = mediaProgressHelper.getMedia(mediaId);
+                if (downloadedMedia != null) {
+                    downloadedMedia.getFiles().get(0).setUrl(url);
+                    downloadedMedia.setHasIconForProgress(false);
+                    downloadedMedia.setProgress(null);
+
+                    message.getMedias().put(downloadedMedia.getId(), downloadedMedia);
+                }
+                messageRepository.updateMedias(message.getId(), message.getChatId(), message.getMedias(), false);
+
+                Intent intent = new Intent(ACTION_MEDIA_DOWNLOAD_SUCCESS);
+                intent.putExtra(ChatActivity.CHAT_ID_EXTRA, message.getChatId());
+                sendBroadcast(intent);
+            }
         } else {
             Media downloadedMedia = mediaProgressHelper.getMedia(mediaId);
-            downloadedMedia.getFiles().get(0).setUrl(url);
-            downloadedMedia.setHasIconForProgress(false);
-            downloadedMedia.setProgress(null);
-
-            message.getMedias().put(downloadedMedia.getId(), downloadedMedia);
-            messageRepository.updateMedias(message.getId(), message.getChatId(), message.getMedias(), false);
-
+            if (downloadedMedia != null) {
+                downloadedMedia.setHasIconForProgress(false);
+                downloadedMedia.setProgress(null);
+            }
             Intent intent = new Intent(ACTION_MEDIA_DOWNLOAD_SUCCESS);
             intent.putExtra(ChatActivity.CHAT_ID_EXTRA, message.getChatId());
             sendBroadcast(intent);
@@ -181,6 +212,9 @@ public class DownloadService extends JobIntentService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        downloadDisposable.dispose();
+        if (progressDisposable != null)
+            progressDisposable.dispose();
         Log.i("my_logs", "onDestroy download media");
     }
 }

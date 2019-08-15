@@ -14,6 +14,7 @@ import ru.vital.daily.repository.api.request.EmptyJson;
 import ru.vital.daily.repository.api.request.IdRequest;
 import ru.vital.daily.repository.api.request.ItemRequest;
 import ru.vital.daily.repository.api.request.ItemsRequest;
+import ru.vital.daily.repository.api.request.MessageForwardRequest;
 import ru.vital.daily.repository.api.request.MessageReadRequest;
 import ru.vital.daily.repository.api.request.MessageRemoveRequest;
 import ru.vital.daily.repository.api.request.MessageRequest;
@@ -54,6 +55,10 @@ public interface Api {
     @Multipart
     @POST("client/media/upload")
     Single<ItemResponse<Media>> uploadMedia(@Part MultipartBody.Part file, @Part("type")RequestBody type);
+
+    @Multipart
+    @POST("client/media/upload")
+    Single<ItemResponse<Media>> uploadMedia(@Part MultipartBody.Part file, @Part("type")RequestBody type, @Part("description")RequestBody description);
 
     @POST("client/account/upload_contacts")
     Single<BaseResponse<EmptyJson>> syncContacts(@Body SyncContactsModel request);
@@ -99,5 +104,8 @@ public interface Api {
 
     @POST("client/media/edit")
     Single<ItemResponse<Media>> editMedia(@Body ItemRequest<MediaEditModel> request);
+
+    @POST("client/chat/message/forward")
+    Single<ItemsResponse<Message>> forwardMessages(@Body MessageForwardRequest request);
 
 }
