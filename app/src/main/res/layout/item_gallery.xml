@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+        <import type="ru.vital.daily.util.FileUtil" />
         <import type="android.view.View"/>
         <variable
             name="image"
@@ -41,12 +42,25 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:onClick="@{clickListener}"
-            app:simpleImage="@{image.files.get(0).url ?? video.files.get(0).url}"
+            app:message_image="@{image}"
+            app:message_media_uploaded="@{image != null ? FileUtil.exists(image.files.get(0).url) : FileUtil.exists(video.files.get(0).url)}"
+            app:message_video="@{video}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <com.pnikosis.materialishprogress.ProgressWheel
+            style="@style/ProgressWheelMediaWhite"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:mediaProgress="@{image.progress ?? video.progress}" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

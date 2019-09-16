@@ -24,6 +24,13 @@ public class MessagesRequest extends ItemsRequest {
         setOrderBy(OrderBy.id.name());
     }
 
+    public MessagesRequest(Long chatId) {
+        setPageIndex(0);
+        setDirection(Direction.desc.name());
+        setOrderBy(OrderBy.id.name());
+        this.chatId = chatId;
+    }
+
     public MessagesRequest(long[] ids, Long chatId) {
         setPageIndex(0);
         setPageSize(-1);

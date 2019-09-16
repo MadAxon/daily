@@ -13,7 +13,9 @@ import javax.inject.Inject;
 import dagger.android.AndroidInjection;
 import io.reactivex.disposables.Disposable;
 import ru.vital.daily.repository.ActionRepository;
+import ru.vital.daily.repository.data.Action;
 import ru.vital.daily.service.MessageService;
+import ru.vital.daily.util.DisposableProvider;
 
 import static ru.vital.daily.enums.Operation.ACTION_INTERNET_OFFLINE;
 import static ru.vital.daily.enums.Operation.ACTION_INTERNET_ONLINE;
@@ -81,11 +83,12 @@ public class MessageBroadcast extends BroadcastReceiver {
                     intentService.putExtra(MEDIA_ID_EXTRA, intent.getLongExtra(MEDIA_ID_EXTRA, 0));
                     MessageService.enqueueWork(context, intentService);
                 case ACTION_JOB_DELETE:
-                    if (intent.getLongExtra(MESSAGE_ID_EXTRA, 0) != 0)
+                    deleteAction(intent.getLongExtra(JOB_ID_EXTRA, 0));
+                    /*if (intent.getLongExtra(MESSAGE_ID_EXTRA, 0) != 0)
                         deleteAction(intent.getLongExtra(MESSAGE_ID_EXTRA, 0),
                                 intent.getLongExtra(CHAT_ID_EXTRA, 0));
                     else deleteAction(intent.getLongArrayExtra(MESSAGE_IDS_EXTRA),
-                            intent.getLongExtra(CHAT_ID_EXTRA, 0));
+                            intent.getLongExtra(CHAT_ID_EXTRA, 0));*/
                     break;
                 case ACTION_INTERNET_ONLINE:
                     Log.i("my_logs", "online work");
@@ -101,6 +104,7 @@ public class MessageBroadcast extends BroadcastReceiver {
                     MessageService.enqueueWork(context, intentService);
                     break;
                 case ACTION_MEDIA_CHANGE:
+                    intentService.putExtra(MESSAGE_ID_EXTRA, intent.getLongExtra(MESSAGE_ID_EXTRA, 0));
                     intentService.putExtra(MEDIA_ID_EXTRA, intent.getLongExtra(MEDIA_ID_EXTRA, 0));
                     intentService.putExtra(MEDIA_DESCRIPTION_EXTRA, intent.getStringExtra(MEDIA_DESCRIPTION_EXTRA));
                     MessageService.enqueueWork(context, intentService);
@@ -110,6 +114,26 @@ public class MessageBroadcast extends BroadcastReceiver {
                     intentService.putExtra(FROM_CHAT_ID_EXTRA, intent.getLongExtra(FROM_CHAT_ID_EXTRA, 0));
                     MessageService.enqueueWork(context, intentService);
                     break;
+                case "android.intent.action.BOOT_COMPLETED":
+                case "android.intent.action.QUICKBOOT_POWERON":
+                case "com.htc.intent.action.QUICKBOOT_POWERON":
+                    DisposableProvider.getDisposableItems(actionRepository.getActions(),
+                            actions -> {
+                                for (Action action : actions) {
+                                    Intent broadcastIntent = new Intent(context, MessageBroadcast.class);
+                                    broadcastIntent.putExtra(MessageBroadcast.JOB_ID_EXTRA, action.getId());
+                                    broadcastIntent.putExtra(MessageBroadcast.CHAT_ID_EXTRA, action.getChatId());
+                                    broadcastIntent.putExtra(MessageBroadcast.MESSAGE_IDS_EXTRA, action.getMessageIds());
+                                    broadcastIntent.putExtra(MessageBroadcast.MESSAGE_FOR_ALL_EXTRA, action.getForAll());
+                                    broadcastIntent.putExtra(MessageBroadcast.MESSAGE_ID_EXTRA, action.getMessageId());
+                                    broadcastIntent.putExtra(MessageBroadcast.FROM_CHAT_ID_EXTRA, action.getFromChatId());
+                                    broadcastIntent.setAction(action.getAction());
+                                    context.sendBroadcast(broadcastIntent);
+                                }
+                            }, throwable -> {
+
+                            });
+                    break;
             }
         }
     }
@@ -118,6 +142,10 @@ public class MessageBroadcast extends BroadcastReceiver {
         Disposable disposable = actionRepository.deleteAction(messageId, chatId).subscribe(integer -> {
             Log.i("my_logs", "The count is " + integer);
         });
+    }
+
+    private void deleteAction(long jobId) {
+        actionRepository.deleteAction(jobId);
     }
 
     private void deleteAction(long[] messageIds, long chatId) {
@@ -138,7 +166,8 @@ public class MessageBroadcast extends BroadcastReceiver {
                 results[i] = Long.parseLong(items[i]);
             } catch (NumberFormatException nfe) {
                 //NOTE: write something here if you need to recover from formatting errors
-            };
+            }
+            ;
         }
         return results;
     }

@@ -1,5 +1,7 @@
 package ru.vital.daily.repository.data;
 
+import android.widget.LinearLayout;
+
 import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonIgnore;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
@@ -45,7 +47,12 @@ public class Message extends BaseObservable {
     private boolean shouldSync = false;
 
     @JsonField
-    private Long forwardId, forwardAuthorId;
+    private Long forwardId;
+    @JsonField
+    private Long forwardAuthorId;
+
+    @JsonField
+    private Long accountId;
 
     @JsonField
     @Nullable
@@ -89,8 +96,15 @@ public class Message extends BaseObservable {
     private Message reply;
 
     @JsonIgnore
+    private int gridHeight;
+
+    @JsonIgnore
     @Ignore
     private boolean replyAnimationEvent;
+
+    @JsonIgnore
+    @Ignore
+    private LinearLayout linearLayout;
 
     public Message() {
     }
@@ -311,4 +325,22 @@ public class Message extends BaseObservable {
         this.readAt = readAt;
         notifyPropertyChanged(BR.readAt);
     }
+
+    public Long getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
+    }
+
+    public int getGridHeight() {
+        return gridHeight;
+    }
+
+    public void setGridHeight(int gridHeight) {
+        this.gridHeight = gridHeight;
+    }
+
+
 }

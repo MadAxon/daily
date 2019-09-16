@@ -87,25 +87,21 @@
 
             </androidx.cardview.widget.CardView>
 
-            <ru.vital.daily.view.MediaGridLayout
+            <LinearLayout
                 android:id="@+id/gridLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@{viewModel.mediaReply != null ? @dimen/message_reply_media_padding : @dimen/message_reply_media_no_padding}"
-                android:columnCount="2"
-                app:forceUpdate="@{viewModel.forceUpdate}"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/barrier"
+                android:orientation="vertical"
                 app:mediaClick="@{viewModel.mediaClickListener}"
                 app:mediaViewHolder="@{viewHolder}"
                 app:medias="@{viewModel.item}"
-                app:messageId="@{viewModel.item.id}"
-                app:messageShouldSync="@{viewModel.item.shouldSync}"
-                app:startItem="@{false}">
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/barrier">
 
-            </ru.vital.daily.view.MediaGridLayout>
+            </LinearLayout>
 
             <!--
             <androidx.cardview.widget.CardView

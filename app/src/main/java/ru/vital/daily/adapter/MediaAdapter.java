@@ -98,10 +98,6 @@ public class MediaAdapter extends BaseAdapter<Long, BaseViewHolder, ViewDataBind
         notifyItemInserted(1);
     }
 
-    public void addNull() {
-        items.add(0L);
-    }
-
     public void addMedia(Media media) {
         items.add(media.getId());
         medias.put(media.getId(), media);

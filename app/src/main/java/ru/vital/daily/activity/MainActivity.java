@@ -103,6 +103,7 @@ public class MainActivity extends BaseActivity<MainViewModel, ActivityMainBindin
 
             DisposableProvider.getDisposableItem(viewModel.getKeys(),
                     key -> {
+                        viewModel.initChats();
                         dailySocket.connect(key.getAccessKey());
                         accessInterceptor.setAccessKey(key.getAccessKey());
                         notificationService.subscribe(key.getNotificationTopic());

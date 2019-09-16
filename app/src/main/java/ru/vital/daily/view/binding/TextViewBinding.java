@@ -67,7 +67,7 @@ public class TextViewBinding {
     @BindingAdapter(value = {"createdAt", "updatedAt"})
     public static void setMessageDateInfo(TextView textView, Date createdAt, @Nullable Date updatedAt) {
         if (createdAt != null) {
-            if (updatedAt == null || updatedAt.getTime() - createdAt.getTime() <= 2000L)
+            if (updatedAt == null || updatedAt.getTime() - createdAt.getTime() <= 3000L)
                 textView.setText(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(createdAt));
             else
                 textView.setText(textView.getContext().getString(R.string.chat_message_updated, new SimpleDateFormat("HH:mm", Locale.getDefault()).format(createdAt)));
@@ -93,10 +93,12 @@ public class TextViewBinding {
         else textView.setText(null);
     }
 
-    @BindingAdapter(value = {"relativeOnlineTime", "typing"}, requireAll = false)
-    public static void setRelativeOnlineTime(TextView textView, Date date, boolean typing) {
+    @BindingAdapter(value = {"relativeOnlineTime", "typing", "online"}, requireAll = false)
+    public static void setRelativeOnlineTime(TextView textView, Date date, boolean typing, boolean online) {
         if (typing)
             textView.setText(R.string.chat_message_typing);
+        else if (online)
+            textView.setText(textView.getResources().getString(R.string.chat_status_online));
         else if (date != null)
             textView.setText(textView.getContext().getString(R.string.chat_status_last_online, getRelativeTimeText(textView.getContext(), date)));
         else textView.setText(null);
@@ -167,7 +169,7 @@ public class TextViewBinding {
                     spannableStringBuilder = new SpannableStringBuilder(textView.getContext().getString(R.string.chat_message_voice));
                 else spannableStringBuilder = new SpannableStringBuilder(textView.getContext().getString(R.string.chat_message_file));
                 spannableStringBuilder.setSpan(new ForegroundColorSpan(textView.getResources().getColor(R.color.colorAccent)), 0, spannableStringBuilder.length(), 0);
-            } else if (MessageContentType.contact.name().equals(message.getContentType()) || message.getAccount() != null) {
+            } else if (MessageContentType.contact.name().equals(message.getContentType()) || message.getAccountId() != null && message.getAccountId() > 0) {
                 spannableStringBuilder = new SpannableStringBuilder(textView.getResources().getString(R.string.chat_message_contact));
                 spannableStringBuilder.setSpan(new ForegroundColorSpan(textView.getResources().getColor(R.color.colorAccent)), 0, spannableStringBuilder.length(), 0);
             } else spannableStringBuilder = new SpannableStringBuilder();
@@ -184,6 +186,11 @@ public class TextViewBinding {
     public static void setMarginStart(TextView textView, float margin) {
         ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) textView.getLayoutParams();
         layoutParams.setMargins(Math.round(margin), layoutParams.topMargin, layoutParams.rightMargin, layoutParams.bottomMargin);
+    }
+
+    @BindingAdapter("android:paddingBottom")
+    public static void setPaddingBottom(TextView textView, float padding) {
+        textView.setPadding(textView.getPaddingLeft(), textView.getPaddingTop(), textView.getPaddingRight(), Math.round(padding));
     }
 
     @BindingAdapter(value = {"subtitle_text", "subtitle_string_id"})

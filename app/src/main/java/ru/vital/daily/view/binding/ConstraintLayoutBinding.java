@@ -21,8 +21,9 @@ public class ConstraintLayoutBinding {
     public static void setChatVoice(ConstraintLayout constraintLayout, Message message, MessageMediaClickListener mediaClickListener) {
         Media media = message.getMedias().valueAt(0);
         MediaModel mediaModel = media.getFiles().get(0);
-        if (!FileUtil.exists(mediaModel.getUrl()) && mediaModel.getSize() <= FileSize.MB_LIMIT_IMAGE_FOR_AUTO_UPLOAD && !media.getForceCancelled())
+        if (!FileUtil.exists(mediaModel.getUrl()) && mediaModel.getSize() <= FileSize.MB_LIMIT_IMAGE_FOR_AUTO_UPLOAD && !media.getForceCancelled()) {
             mediaClickListener.startDownload(message, message.getMedias().valueAt(0));
+        }
     }
 
 }

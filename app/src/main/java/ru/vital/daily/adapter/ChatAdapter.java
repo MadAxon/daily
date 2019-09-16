@@ -2,6 +2,7 @@ package ru.vital.daily.adapter;
 
 import android.util.Log;
 
+import java.util.Date;
 import java.util.List;
 
 import androidx.collection.LongSparseArray;
@@ -51,6 +52,14 @@ public class ChatAdapter extends BaseAdapter<Chat, ChatViewHolder, ItemChatBindi
                 this.items.set(index, incomingChat);
                 itemsSparseArray.put(incomingChat.getId(), incomingChat);
                 return index;
+            }
+            if (currentChatOfIndex.getInfo().getLastMessage() != null && incomingChat.getInfo().getLastMessage() != null) {
+                Date oldDate = currentChatOfIndex.getInfo().getLastMessage().getUpdatedAt();
+                Date newDate = incomingChat.getInfo().getLastMessage().getUpdatedAt();
+                if (oldDate == null && newDate != null || oldDate != null && oldDate.compareTo(newDate) != 0) {
+                    currentChatOfIndex.getInfo().setLastMessage(incomingChat.getInfo().getLastMessage());
+                    //currentChatOfIndex.getInfo().notifyLastMessage();
+                }
             }
             return -1;
         }

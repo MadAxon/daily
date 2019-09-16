@@ -39,9 +39,10 @@ public final class FileUtil {
     }
 
     public static boolean exists(String url) {
-        if (URLUtil.isNetworkUrl(url))
+        /*if (URLUtil.isNetworkUrl(url))
             return false;
-        else return new File(url).exists();
+        else return new File(url).exists();*/
+        return true;
     }
 
     public static String getMimeType(@Nullable Context context, Uri uri) {

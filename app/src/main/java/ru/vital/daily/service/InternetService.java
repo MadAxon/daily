@@ -14,6 +14,7 @@ import dagger.android.AndroidInjection;
 import ru.vital.daily.broadcast.ConnectivityBroadcast;
 import ru.vital.daily.broadcast.MessageBroadcast;
 import ru.vital.daily.enums.Operation;
+import ru.vital.daily.repository.api.DailySocket;
 import ru.vital.daily.util.SharedPrefs;
 
 public class InternetService extends JobService implements ConnectivityBroadcast.ConnectivityListener {
@@ -23,6 +24,9 @@ public class InternetService extends JobService implements ConnectivityBroadcast
 
     @Inject
     SharedPrefs sharedPrefs;
+
+    @Inject
+    DailySocket dailySocket;
 
     @Override
     public void onCreate() {
@@ -53,6 +57,14 @@ public class InternetService extends JobService implements ConnectivityBroadcast
         if (sharedPrefs.getOnline() != isOnline) {
             sharedPrefs.applyOnline(isOnline);
             Intent intent = new Intent(this, MessageBroadcast.class);
+            if (isOnline) {
+                intent.setAction(Operation.ACTION_INTERNET_ONLINE);
+                dailySocket.disconnect();
+                dailySocket.reconnect();
+            } else {
+                intent.setAction(Operation.ACTION_INTERNET_OFFLINE);
+                //dailySocket.disconnect();
+            }
             intent.setAction(isOnline ? Operation.ACTION_INTERNET_ONLINE : Operation.ACTION_INTERNET_OFFLINE);
             sendBroadcast(intent);
         }

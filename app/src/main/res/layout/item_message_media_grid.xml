@@ -32,43 +32,11 @@
         android:onClick="@{() -> mediaClickListener.onImageOrVideoClick(message, video ?? image)}"
         android:onLongClick="@{() -> mediaClickListener.onImageOrVideoLongClick(message, video ?? image)}">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/description"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:visibility="@{video.description != null &amp;&amp; !video.description.isEmpty() || image.description != null &amp;&amp; !image.description.isEmpty() ? View.VISIBLE : View.GONE}"
-            android:onClick="@{() -> viewModel.onItemClicked()}"
-            app:cardBackgroundColor="@color/colorAccent"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            android:layout_marginBottom="8dp"
-            android:layout_marginStart="2dp"
-            android:layout_marginEnd="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/space2">
-
-            <TextView
-                android:id="@+id/textView79"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto_regular"
-                android:paddingStart="12dp"
-                android:paddingTop="48dp"
-                android:paddingEnd="12dp"
-                android:text="@{video.description ?? image.description}"
-                android:autoLink="all"
-                android:textColorLink="@android:color/white"
-                android:textColor="@android:color/white" />
-
-        </androidx.cardview.widget.CardView>
-
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/roundedImageView"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:background="@color/color_group_avatar_background"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -79,9 +47,10 @@
             app:message_image="@{image}"
             app:message_media_uploaded="@{image != null ? FileUtil.exists(image.files.get(0).url) : FileUtil.exists(video.files.get(0).url)}"
             app:message_video="@{video}"
-            app:selected="@{video != null ? video.selected : image.selected}"
             app:riv_border_width="2dp"
             app:riv_corner_radius="24dp"
+            app:riv_mutate_background="true"
+            app:selected="@{video != null ? video.selected : image.selected}"
             tools:src="@tools:sample/avatars">
 
         </com.makeramen.roundedimageview.RoundedImageView>
@@ -124,6 +93,37 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_play_arrow" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:onClick="@{() -> viewModel.onItemClicked()}"
+            android:visibility="@{video.description != null &amp;&amp; !video.description.isEmpty() || image.description != null &amp;&amp; !image.description.isEmpty() ? View.VISIBLE : View.GONE}"
+            app:cardBackgroundColor="@color/colorAccent"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/roundedImageView">
+
+            <TextView
+                android:id="@+id/textView79"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="all"
+                android:fontFamily="@font/roboto_regular"
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="@{video.description != null &amp;&amp; !video.description.isEmpty() || image.description != null &amp;&amp; !image.description.isEmpty() ? @dimen/message_media_bottom_padding_40dp : @dimen/message_media_bottom_padding_0dp}"
+                android:text="@{video.description ?? image.description}"
+                android:textColor="@android:color/white"
+                android:textColorLink="@android:color/white" />
+
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/textView54"
@@ -193,9 +193,9 @@
             android:paddingTop="8dp"
             android:paddingEnd="16dp"
             android:paddingBottom="8dp"
-            android:text="@string/chat_message_image_upload_failed"
+            android:text="@{image.failedDownloading ? @string/chat_message_image_download_failed : @string/chat_message_image_upload_failed}"
             android:textColor="@color/color_text_view_warn"
-            android:visibility="@{image != null &amp;&amp; image.id &lt; 0 &amp;&amp; image.progress == null ? View.VISIBLE : View.GONE}"
+            android:visibility="@{image != null &amp;&amp; image.id &lt; 0 &amp;&amp; image.progress == null || image != null &amp;&amp; image.failedDownloading ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -215,24 +215,14 @@
             android:paddingTop="8dp"
             android:paddingEnd="16dp"
             android:paddingBottom="8dp"
-            android:text="@string/chat_message_video_upload_failed"
+            android:text="@{video.failedDownloading ? @string/chat_message_video_download_failed : @string/chat_message_video_upload_failed}"
             android:textColor="@color/color_text_view_warn"
-            android:visibility="@{video != null &amp;&amp; video.id &lt; 0 &amp;&amp; video.progress == null ? View.VISIBLE : View.GONE}"
+            android:visibility="@{video != null &amp;&amp; video.id &lt; 0 &amp;&amp; video.progress == null || video != null &amp;&amp; video.failedDownloading ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-        <Space
-            android:id="@+id/space2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="40dp"
-            app:layout_constraintBottom_toBottomOf="@+id/roundedImageView"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

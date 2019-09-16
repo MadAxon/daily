@@ -56,6 +56,10 @@ public class Media extends BaseObservable {
     @JsonIgnore
     private Boolean playing;
 
+    @JsonIgnore
+    @Ignore
+    private boolean failedDownloading;
+
     public Media() {
     }
 
@@ -220,5 +224,15 @@ public class Media extends BaseObservable {
 
     public void setForceCancelled(boolean forceCancelled) {
         this.forceCancelled = forceCancelled;
+    }
+
+    @Bindable
+    public boolean getFailedDownloading() {
+        return failedDownloading;
+    }
+
+    public void setFailedDownloading(boolean failedDownloading) {
+        this.failedDownloading = failedDownloading;
+        notifyPropertyChanged(BR.failedDownloading);
     }
 }

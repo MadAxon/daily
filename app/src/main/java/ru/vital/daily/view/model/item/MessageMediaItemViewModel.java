@@ -20,7 +20,7 @@ public class MessageMediaItemViewModel extends MessageItemViewModel {
 
     private MessageMediaClickListener mediaClickListener;
 
-    public final ObservableField<AtomicBoolean> forceUpdate = new ObservableField<>(new AtomicBoolean(false));
+    private Media image, video;
 
     @Override
     public void setItem(Message item) {
@@ -28,12 +28,10 @@ public class MessageMediaItemViewModel extends MessageItemViewModel {
         int size = item.getMedias().size();
         for (int i = 0; i < size; i++) {
             Media media = item.getMedias().valueAt(i);
-            if (!forceUpdate.get().get() && (media.getDescription() != null && !media.getDescription().isEmpty())) {
-                forceUpdate.get().set(true);
-            }
-            media.addOnPropertyChangedCallback(onPropertyChangedCallback);
-            if (FileType.video.name().equals(media.getType()) && !FileUtil.exists(media.getFiles().get(0).getUrl()) && media.getFiles().get(0).getSize() <= FileSize.MB_LIMIT_VIDEO_FOR_AUTO_UPLOAD && !media.getForceCancelled())
+            if (FileType.video.name().equals(media.getType()) && !FileUtil.exists(media.getFiles().get(0).getUrl()) && media.getFiles().get(0).getSize() <= FileSize.MB_LIMIT_VIDEO_FOR_AUTO_UPLOAD && !media.getForceCancelled()) {
+                video = media;
                 mediaClickListener.startDownload(item, media);
+            } else image = media;
             if (item.getSendStatus() == null && media.getId() <= 0) {
                 mediaClickListener.continueUploading(media);
             }
@@ -48,22 +46,11 @@ public class MessageMediaItemViewModel extends MessageItemViewModel {
         return mediaClickListener;
     }
 
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        item.removeOnPropertyChangedCallback(onPropertyChangedCallback);
+    public Media getImage() {
+        return image;
     }
 
-    private final OnPropertyChangedCallback onPropertyChangedCallback = new OnPropertyChangedCallback() {
-        @Override
-        public void onPropertyChanged(Observable sender, int propertyId) {
-            switch (propertyId) {
-                case BR.description:
-                    if (!forceUpdate.get().get())
-                        forceUpdate.set(new AtomicBoolean(true));
-                    break;
-            }
-        }
-    };
-
+    public Media getVideo() {
+        return video;
+    }
 }

@@ -51,6 +51,7 @@ import ru.vital.daily.repository.data.Message;
 import ru.vital.daily.repository.data.User;
 import ru.vital.daily.repository.model.MediaModel;
 import ru.vital.daily.repository.model.MessageSendModel;
+import ru.vital.daily.util.ChatData;
 import ru.vital.daily.util.DisposableProvider;
 import ru.vital.daily.util.MediaProgressHelper;
 import ru.vital.daily.util.StaticData;
@@ -97,6 +98,8 @@ public class ChatViewModel extends ViewModel implements Observable {
 
     private final DraftRepository draftRepository;
 
+    private final ChatData chatData;
+
     private final MessagesRequest messagesRequest = new MessagesRequest();
 
     private final ChatRequest getChatRequest = new ChatRequest();
@@ -125,13 +128,15 @@ public class ChatViewModel extends ViewModel implements Observable {
     private int initialListSize;
 
     @Bindable
-    private boolean typing;
+    private boolean typing, online;
 
-    private Disposable sendDisposable, recordDisposable, audioDisposable;
+    private Disposable sendDisposable, recordDisposable, scrollUpDisposable;
 
     private Draft draft;
 
     private MediaRecorder mediaRecorder;
+
+    private int scrollDownPageIndex;
 
     private final Subject<List<Message>> unreadMessagesSubject = PublishSubject.create();
 
@@ -140,11 +145,12 @@ public class ChatViewModel extends ViewModel implements Observable {
     private final Subject<Long> emitTypeSubject = PublishSubject.create();
 
     @Inject
-    public ChatViewModel(MessageRepository messageRepository, ChatRepository chatRepository, ActionRepository actionRepository, DraftRepository draftRepository, MediaProgressHelper mediaProgressHelper) {
+    public ChatViewModel(MessageRepository messageRepository, ChatRepository chatRepository, ActionRepository actionRepository, DraftRepository draftRepository, MediaProgressHelper mediaProgressHelper, ChatData chatData) {
         this.messageRepository = messageRepository;
         this.chatRepository = chatRepository;
         this.actionRepository = actionRepository;
         this.draftRepository = draftRepository;
+        this.chatData = chatData;
         this.mediaProgressHelper = mediaProgressHelper;
         DisposableProvider.getDisposableItems(actionRepository.getActions(), actions -> {
             for (Action action : actions) {
@@ -163,8 +169,10 @@ public class ChatViewModel extends ViewModel implements Observable {
                     compositeDisposable.add(messageRepository.readMessages(new ArrayList<>(messages), sendMessageModel.getChatId()).subscribe(itemResponseCustom -> {
                         DisposableProvider.getDisposableItem(itemResponseCustom, ids -> {
                             emitReadMessageEvent.setValue(ids);
-                            for (Message message : messages)
+                            for (Message message : messages) {
                                 message.setReadAt(new Date());
+                                updateMessageReadAt(message.getId(), message.getChatId(), message.getReadAt());
+                            }
                         }, throwable -> {
 
                         });
@@ -187,11 +195,12 @@ public class ChatViewModel extends ViewModel implements Observable {
         sendMessageModel.setMessage(message);
     }
 
-    public void getMessages(Consumer<List<Message>> fromDatabase, Consumer<List<Message>> fromApi, long id, long memberId) {
+    public void getChat(Consumer<Void> consumer, long id, long memberId) {
         if (id != 0) getChatRequest.setId(id);
         if (memberId != 0) getChatRequest.setMemberId(memberId);
         sendMessageModel.setChatId(id);
-        isLoading.set(true);
+        messagesRequest.setChatId(id);
+        //isLoading.set(true);
         compositeDisposable.add(sendDisposable = DisposableProvider.getDisposableItem(chatRepository
                 .getChat(getChatRequest), chat -> {
             this.chat = chat;
@@ -206,8 +215,8 @@ public class ChatViewModel extends ViewModel implements Observable {
                             break;
                         }
             }
-            getMessages(fromDatabase, fromApi);
-
+            //getMessages(fromDatabase, fromApi);
+            consumer.accept(null);
         }, errorEvent::setValue));
     }
 
@@ -241,8 +250,8 @@ public class ChatViewModel extends ViewModel implements Observable {
         messageRepository.clearExpiredMessages(604800000L);
     }
 
-    private void getMessages(Consumer<List<Message>> fromDatabase, Consumer<List<Message>> fromApi) {
-        messagesRequest.setChatId(chat.getId());
+    public void getMessages(Consumer<List<Message>> fromDatabase, Consumer<List<Message>> fromApi) {
+        //messagesRequest.setChatId(chat.getId());
         messagesRequest.setPageSize(messagesRequest.getPageSize()/* + chat.getInfo().getUnreadMessagesCount()*/);
         compositeDisposable.add(messageRepository.getMessages(messagesRequest).doOnComplete(() -> {
             isLoading.set(false);
@@ -252,15 +261,19 @@ public class ChatViewModel extends ViewModel implements Observable {
             public void accept(ItemsResponse<Message> itemResponse) throws Exception {
                 switch (itemResponse.getStatusCode()) {
                     case 0:
-                        initialListSize = itemResponse.getItems().size();
-                        messageRepository.updateExpiredMessages(itemResponse.getItems(), System.currentTimeMillis());
-                        fromDatabase.accept(itemResponse.getItems());
+                        if (itemResponse.getItems() != null) {
+                            setInitialListSize(itemResponse.getItems().size());
+                            messageRepository.updateExpiredMessages(itemResponse.getItems(), System.currentTimeMillis());
+                            fromDatabase.accept(itemResponse.getItems());
+                        }
+                        if (initialListSize == 0)
+                            isLoading.set(true);
                         break;
                     case 200:
                         if (initialListSize == 0) {
                             setInitialListSize(itemResponse.getItems().size());
                         }
-                        messageRepository.saveMessages(itemResponse.getItems(), System.currentTimeMillis());
+                        //messageRepository.saveMessages(itemResponse.getItems(), System.currentTimeMillis());
                         fromApi.accept(itemResponse.getItems());
                         break;
                     case 401:
@@ -275,19 +288,56 @@ public class ChatViewModel extends ViewModel implements Observable {
         }));
     }
 
-    public void getMoreMessages(Consumer<List<Message>> fromDatabase, Consumer<List<Message>> fromApi) {
-        if (messagesRequest.getPageSize() != 100) messagesRequest.setPageSize(100);
+    public void scrollUp(Consumer<List<Message>> fromDatabase, Consumer<List<Message>> fromApi) {
+        if (scrollUpDisposable != null && !scrollUpDisposable.isDisposed()) return;
+        //if (messagesRequest.getPageSize() != 100) messagesRequest.setPageSize(100);
         messagesRequest.setPageIndex(messagesRequest.getPageIndex() + 1);
+        scrollUpDisposable = messageRepository.getMessages(messagesRequest).subscribe(new ItemsResponseHandler<Message>() {
+
+            @Override
+            public void accept(ItemsResponse<Message> itemResponse) throws Exception {
+                switch (itemResponse.getStatusCode()) {
+                    case 0:
+                        if (itemResponse.getItems() != null) {
+                            messageRepository.updateExpiredMessages(itemResponse.getItems(), System.currentTimeMillis());
+                            fromDatabase.accept(itemResponse.getItems());
+                        }
+                        break;
+                    case 200:
+                        //messageRepository.saveMessages(itemResponse.getItems(), System.currentTimeMillis());
+                        fromApi.accept(itemResponse.getItems());
+                        break;
+                    case 401:
+                        errorEvent.setValue(new ErrorResponse(itemResponse.getMessage(), itemResponse.getStatusCode()));
+                        break;
+                    default:
+                        errorEvent.setValue(new Throwable(itemResponse.getMessage()));
+                }
+            }
+        }, throwable -> {
+
+        });
+    }
+
+    public void scrollDown(Consumer<List<Message>> fromDatabase, Consumer<List<Message>> fromApi) {
+        Log.i("my_logs", "scrolled down");
+        MessagesRequest messagesRequest = new MessagesRequest(this.messagesRequest.getChatId());
+        scrollDownPageIndex--;
+        messagesRequest.setPageIndex(scrollDownPageIndex);
+        messagesRequest.setPageSize(10);
         compositeDisposable.add(messageRepository.getMessages(messagesRequest).subscribe(new ItemsResponseHandler<Message>() {
 
             @Override
             public void accept(ItemsResponse<Message> itemResponse) throws Exception {
                 switch (itemResponse.getStatusCode()) {
                     case 0:
-                        messageRepository.updateExpiredMessages(itemResponse.getItems(), System.currentTimeMillis());
+                        if (itemResponse.getItems() != null) {
+                            messageRepository.updateExpiredMessages(itemResponse.getItems(), System.currentTimeMillis());
+                            fromDatabase.accept(itemResponse.getItems());
+                        }
                         break;
                     case 200:
-                        messageRepository.saveMessages(itemResponse.getItems(), System.currentTimeMillis());
+                        //messageRepository.saveMessages(itemResponse.getItems(), System.currentTimeMillis());
                         fromApi.accept(itemResponse.getItems());
                         break;
                     case 401:
@@ -384,6 +434,14 @@ public class ChatViewModel extends ViewModel implements Observable {
     }
 
     public void retrieveSending(Consumer<Action> actionConsumer, Message message) {
+        message.setSendStatus(null);
+        final int size = message.getMedias().size();
+        if (message.getMedias() != null && size > 0)
+            for (int i = 0; i < size; i++) {
+                Media media = message.getMedias().valueAt(i);
+                media.setProgress(0.f);
+                mediaProgressHelper.putMedia(media);
+            }
         Action action = new Action(message.getId(), message.getChatId(), message.getShouldSync() ? ACTION_MESSAGE_SEND : ACTION_MESSAGE_CHANGE);
         sendDisposable = actionRepository.insertAction(action).subscribe(id -> {
             actionRepository.deleteDoubledActions(id, message.getId(), message.getChatId());
@@ -654,6 +712,28 @@ public class ChatViewModel extends ViewModel implements Observable {
                 });
     }
 
+    public void updateMessageReadAt(long id, long chatId, Date readAt) {
+        messageRepository.updateMessageReadAt(id, chatId, readAt);
+    }
+
+    public void saveMessage(Message message) {
+        messageRepository.saveMessage(message).subscribe();
+    }
+
+    public void findMessageIndex(Consumer<Boolean> consumer, long id) {
+        compositeDisposable.add(messageRepository.findMessageIndex(id, sendMessageModel.getChatId()).subscribe(count -> {
+            int index = count / 10;
+            Log.i("my_logs", "count = " + count + ", index = " + index + ", scrollDownPageIndex = " + scrollDownPageIndex);
+            if (index > scrollDownPageIndex) {
+                messagesRequest.setPageSize(messagesRequest.getPageSize() + (count % 10));
+                scrollDownPageIndex = index;
+            }
+            consumer.accept(count > 0);
+        }, throwable -> {
+
+        }));
+    }
+
     @Override
     public void addOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
         callbacks.add(callback);
@@ -690,6 +770,15 @@ public class ChatViewModel extends ViewModel implements Observable {
 
     public boolean getTyping() {
         return typing;
+    }
+
+    public boolean getOnline() {
+        return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
+        notifyChanged(BR.online);
     }
 
     public MessageSendModel getSendMessageModel() {
@@ -740,4 +829,21 @@ public class ChatViewModel extends ViewModel implements Observable {
             }
         }
     };
+
+    public int getScrollDownPageIndex() {
+        return scrollDownPageIndex;
+    }
+
+    public void setScrollDownPageIndex(int scrollDownPageIndex) {
+        this.scrollDownPageIndex = scrollDownPageIndex;
+    }
+
+    public ChatData getChatData() {
+        return chatData;
+    }
+
+    public void updateMessageHeight(Message message, int height) {
+        messageRepository.updateGridHeight(message, height);
+
+    }
 }

@@ -114,4 +114,8 @@ public class ChatInfoModel extends BaseObservable {
         this.lastMessage = lastMessage;
         notifyPropertyChanged(BR.lastMessage);
     }
+
+    public void notifyLastMessage() {
+        notifyPropertyChanged(BR.lastMessage);
+    }
 }

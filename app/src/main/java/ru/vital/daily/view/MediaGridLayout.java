@@ -4,11 +4,15 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.GridLayout;
 
+import java.util.Date;
+
 public class MediaGridLayout extends GridLayout {
     
     private long messageId;
     
     private boolean shouldSync;
+
+    private Date updatedAt;
     
     public MediaGridLayout(Context context) {
         super(context);
@@ -40,5 +44,13 @@ public class MediaGridLayout extends GridLayout {
 
     public void setShouldSync(boolean shouldSync) {
         this.shouldSync = shouldSync;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

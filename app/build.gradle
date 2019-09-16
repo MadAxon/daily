@@ -51,6 +51,12 @@ android {
     }
 }
 
+configurations {
+    all {
+        exclude group: 'org.json', module: 'json'
+    }
+}
+
 repositories {
     maven {
         url 'http://dl.bintray.com/amulyakhare/maven'

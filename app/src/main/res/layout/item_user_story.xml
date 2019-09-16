@@ -16,10 +16,12 @@
         android:background="?selectableItemBackground"
         android:onClick="@{() -> viewModel.onItemClicked()}">
 
+        <!--
+            android:background="@{viewModel.isMyStory == null ? null : viewModel.isMyStory ? @drawable/background_user_story_myself : @drawable/background_user_story_old}"-->
+
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/roundedImageView3"
             style="@style/RoundedImageView.Large"
-            android:background="@{viewModel.isMyStory == null ? null : viewModel.isMyStory ? @drawable/background_user_story_myself : @drawable/background_user_story_old}"
             android:padding="2dp"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
@@ -51,7 +53,6 @@
             android:layout_height="20dp"
             android:layout_marginEnd="6dp"
             android:layout_marginBottom="6dp"
-            android:visibility="@{viewModel.isMyStory ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toTopOf="@+id/textView12"
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@drawable/ic_add_circle" />

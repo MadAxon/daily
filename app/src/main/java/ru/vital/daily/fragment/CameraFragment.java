@@ -200,7 +200,7 @@ public class CameraFragment extends BaseFragment<CameraViewModel, FragmentCamera
 
             Log.i("my_logs", "loadMedias() " + cursor.getCount());
             dataBinding.getAdapter().setSelectedMedias(viewModel.getSelectedMedias().getMedias());
-            dataBinding.getAdapter().addNull();
+            dataBinding.getAdapter().addMedia(new Media());
             while (cursor.moveToNext()) {
                 String type = cursor.getString(3);
                 Media media = new Media(cursor.getLong(0) * -1, cursor.getString(2), FileUtil.getFileType(type), new MediaModel(cursor.getString(1), type));

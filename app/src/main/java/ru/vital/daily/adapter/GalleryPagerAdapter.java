@@ -12,11 +12,14 @@ import androidx.viewpager.widget.PagerAdapter;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import ru.vital.daily.R;
 import ru.vital.daily.databinding.ItemGalleryBinding;
 import ru.vital.daily.enums.FileType;
 import ru.vital.daily.listener.SingleLiveEvent;
 import ru.vital.daily.repository.data.Media;
+import ru.vital.daily.util.MediaProgressHelper;
 import ru.vital.daily.util.SelectedMedias;
 
 public class GalleryPagerAdapter extends PagerAdapter {

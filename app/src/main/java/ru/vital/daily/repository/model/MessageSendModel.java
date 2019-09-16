@@ -229,7 +229,7 @@ public class MessageSendModel extends BaseObservable {
         } else { // send a new message
             message.setShouldSync(true);
             message.setCreatedAt(new Date());
-            message.setUpdatedAt(message.getCreatedAt());
+            //message.setUpdatedAt(message.getCreatedAt());
             message.setType(MessageType.message.name());
             message.setContentType(contentType);
         }

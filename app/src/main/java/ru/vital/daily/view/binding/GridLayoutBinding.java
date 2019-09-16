@@ -5,8 +5,10 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.GridLayout;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -37,14 +39,13 @@ public class GridLayoutBinding {
         layoutParams.setMargins(layoutParams.leftMargin, Math.round(margin), layoutParams.rightMargin, layoutParams.bottomMargin);
     }
 
-    @BindingAdapter(value = {"medias", "mediaClick", "mediaViewHolder", "startItem", "forceUpdate"})
-    public static void setMedias(final MediaGridLayout gridLayout, final Message message, MessageMediaClickListener mediaClickListener, MessageMediaViewHolder mediaViewHolder, boolean startItem, AtomicBoolean forceUpdate
-    ) {
-        if (gridLayout.getMessageId() != message.getId() || gridLayout.getShouldSync() != message.getShouldSync() || forceUpdate.compareAndSet(true, false)) {
-            Log.i("my_logs", "setMedias() " + message.getMedias().valueAt(0).getFiles().get(0).getUrl());
+    @BindingAdapter(value = {"medias", "mediaClick", "mediaViewHolder", "startItem", "updatedAt"})
+    public static void setMedias(final MediaGridLayout gridLayout, final Message message, MessageMediaClickListener mediaClickListener, MessageMediaViewHolder mediaViewHolder, boolean startItem, Date updatedAt) {
+        if (gridLayout.getMessageId() != message.getId() || gridLayout.getShouldSync() != message.getShouldSync() || (updatedAt != null && gridLayout.getMessageId() == message.getId() && message.getUpdatedAt() != null && message.getUpdatedAt().compareTo(updatedAt) != 0)) {
+            //Log.i("my_logs", "setMedias() " + message.getMedias().valueAt(0).getFiles().get(0).getUrl());
             gridLayout.setMessageId(message.getId());
             gridLayout.setShouldSync(message.getShouldSync());
-            final LongSparseArray<Media> medias = message.getMedias();
+            /*final LongSparseArray<Media> medias = message.getMedias();
             boolean hasDescription = false;
             int size;
             if (medias != null && (size = medias.size()) > 0) {
@@ -57,18 +58,18 @@ public class GridLayoutBinding {
                 }
                 gridLayout.removeAllViews();
                 //gridLayout.setRowCount((medias.size() / 2) + (medias.size() % 2));
-                if (gridLayout.getWidth() == 0) {
+                if (message.getGridHeight() == 0) {
 
-                    Log.i("my_logs", "gridLayout add view ");
+                    //Log.i("my_logs", "gridLayout add view ");
                     boolean finalHasDescription = hasDescription;
                     gridLayout.post(() -> addViewsToGridLayout(gridLayout, message, medias, mediaClickListener, mediaViewHolder, startItem, finalHasDescription));
                 }
                 else {
-                    Log.i("my_logs", "gridLayout add view ");
+                    //Log.i("my_logs", "gridLayout add view ");
                     addViewsToGridLayout(gridLayout, message, medias, mediaClickListener, mediaViewHolder, startItem, hasDescription);
                 }
-            }
-        } else Log.i("my_logs", "gridLayout nothing to do " + gridLayout.getMessageId() + " | " + message.getId());
+            }*/
+        } //else Log.i("my_logs", "gridLayout nothing to do " + gridLayout.getMessageId() + " | " + message.getId());
     }
 
     @BindingAdapter(value = {"messageId", "messageShouldSync"})
@@ -80,6 +81,11 @@ public class GridLayoutBinding {
     }
 
     private static void addViewsToGridLayout(final GridLayout gridLayout, final Message message, final LongSparseArray<Media> medias, MessageMediaClickListener mediaClickListener, MessageMediaViewHolder mediaViewHolder, boolean startItem, boolean hasDescription) {
+        ViewTreeObserver viewTreeObserver = gridLayout.getViewTreeObserver();
+        viewTreeObserver.addOnGlobalLayoutListener(() -> {
+            if (gridLayout.getHeight() != 0 && message.getGridHeight() != gridLayout.getHeight())
+                mediaClickListener.heightChanged(message, gridLayout.getHeight());
+        });
         final int lastItem = medias.size() - 1;
         int columnSpec = hasDescription ? 2 : 1;
         for (int i = 0; i < lastItem; i++) {
@@ -117,7 +123,7 @@ public class GridLayoutBinding {
             binding.setCancelUploadListener((mediaMessage, media1) -> {
                 if (media1.getId() <= 0) {
                     mediaClickListener.cancelUpload(mediaMessage, media1);
-                    gridLayout.removeViewAt(index);
+                    //gridLayout.removeViewAt(index);
                     Log.i("my_logs", "gridLayout removeViewAt " + index);
                 } else mediaClickListener.cancelDownload(mediaMessage, mediaMessage.getMedias().get(media1.getId()));
             });
@@ -156,7 +162,7 @@ public class GridLayoutBinding {
         binding.setCancelUploadListener((mediaMessage, media1) -> {
             if (media1.getId() <= 0) {
                 mediaClickListener.cancelUpload(mediaMessage, media1);
-                gridLayout.removeViewAt(lastItem);
+                //gridLayout.removeViewAt(lastItem);
                 Log.i("my_logs", "gridLayout removeViewAt " + lastItem);
             } else mediaClickListener.cancelDownload(mediaMessage, mediaMessage.getMedias().get(media1.getId()));
         });
@@ -165,12 +171,12 @@ public class GridLayoutBinding {
 
     private static void setDescription(GridLayout gridLayout, ItemMessageMediaGridBinding binding, boolean startItem, float paddingBottom) {
         if (startItem) {
-            binding.description.setCardBackgroundColor(gridLayout.getContext().getResources().getColor(android.R.color.white));
+            /*binding.description.setCardBackgroundColor(gridLayout.getContext().getResources().getColor(android.R.color.white));
             binding.description.setCardElevation(gridLayout.getResources().getDimension(R.dimen.message_elevation));
             binding.textView79.setTextColor(gridLayout.getResources().getColor(R.color.color_text_view_dark));
-            binding.roundedImageView.setElevation(gridLayout.getResources().getDimension(R.dimen.message_elevation_extra));
+            binding.roundedImageView.setElevation(gridLayout.getResources().getDimension(R.dimen.message_elevation_extra));*/
         }
-        binding.textView79.setPadding(binding.textView79.getPaddingLeft(), binding.textView79.getPaddingTop(), binding.textView79.getPaddingRight(), Math.round(paddingBottom));
+        /*binding.textView79.setPadding(binding.textView79.getPaddingLeft(), binding.textView79.getPaddingTop(), binding.textView79.getPaddingRight(), Math.round(paddingBottom));*/
     }
 
 }

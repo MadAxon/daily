@@ -3,6 +3,7 @@ package ru.vital.daily.view.model;
 import android.util.Log;
 
 import androidx.databinding.Observable;
+import androidx.databinding.ObservableField;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,7 @@ public class HomeViewModel extends ViewModel {
 
     private final PublishSubject<String> searchPublish = PublishSubject.create();
 
-    private String toolbarTitle;
+    private final ObservableField<String> toolbarTitle = new ObservableField<>();
 
     @Inject
     public HomeViewModel(ChatRepository chatRepository, DraftRepository draftRepository, ItemsRequest itemsRequest) {
@@ -165,12 +166,12 @@ public class HomeViewModel extends ViewModel {
         searchPublish.onNext(searchText);
     }
 
-    public String getToolbarTitle() {
+    public ObservableField<String> getToolbarTitle() {
         return toolbarTitle;
     }
 
     public void setToolbarTitle(String toolbarTitle) {
-        this.toolbarTitle = toolbarTitle;
+        this.toolbarTitle.set(toolbarTitle);
     }
 
 }

@@ -14,7 +14,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import ru.vital.daily.repository.api.Api;
-import ru.vital.daily.repository.api.request.AddMembersRequest;
+import ru.vital.daily.repository.api.request.JoinRequest;
 import ru.vital.daily.repository.api.request.ChatRequest;
 import ru.vital.daily.repository.api.request.EmptyJson;
 import ru.vital.daily.repository.api.request.IdRequest;
@@ -58,12 +58,16 @@ public class ChatRepository {
         else return api.getChats(request).onErrorResumeNext(throwable -> chatDao.getChats().map(ItemsResponse::new).toSingle()).toFlowable().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io());
     }
 
+    public Single<ItemsResponse<Chat>> getChats() {
+        return chatDao.getChats().map(ItemsResponse::new).toSingle();
+    }
+
     public Single<ItemResponse<Chat>> getChat(IdRequest request) {
         return api.getChat(request).toSingle();
     }
 
-    public Disposable addMembersToChat(AddMembersRequest request, Consumer<Void> onContinue, Consumer<Throwable> error) {
-        return DisposableProvider.getDisposableBase(api.addMembersToChat(request),
+    public Disposable addMembersToChat(JoinRequest request, Consumer<Void> onContinue, Consumer<Throwable> error) {
+        return DisposableProvider.getDisposableBase(api.join(request),
                 s -> {
                     syncChat(request);
                     onContinue.accept(null);

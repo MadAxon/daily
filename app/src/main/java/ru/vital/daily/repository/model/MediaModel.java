@@ -1,5 +1,7 @@
 package ru.vital.daily.repository.model;
 
+import android.util.Log;
+
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 

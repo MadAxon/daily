@@ -23,6 +23,7 @@
 
     <dimen name="message_media_bottom_padding_16dp">16dp</dimen>
     <dimen name="message_media_bottom_padding_40dp">40dp</dimen>
+    <dimen name="message_media_bottom_padding_0dp">0dp</dimen>
     <dimen name="message_media_bottom_margin_12dp">12dp</dimen>
     <dimen name="message_media_bottom_margin_16dp">16dp</dimen>
 

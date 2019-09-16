@@ -14,11 +14,15 @@ import android.widget.ImageView;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.github.chrisbanes.photoview.PhotoView;
 import com.makeramen.roundedimageview.RoundedImageView;
 
@@ -97,7 +101,7 @@ public class ImageViewBinding {
                 loadSimpleImage(roundedImageView, placeholder.getUrl());
             }*/
             if (image.getFiles().size() >= 2)
-                loadFadingImage(roundedImageView, image.getFiles().get(0).getUrl(), image.getFiles().get(image.getFiles().size() - 1).getUrl());
+                loadFadingImage(roundedImageView, image, image.getFiles().get(0).getUrl(), image.getFiles().get(image.getFiles().size() - 1).getUrl());
             else loadSimpleImage(roundedImageView, image.getFiles().get(0).getUrl());
             return true;
         }
@@ -111,7 +115,7 @@ public class ImageViewBinding {
             if (uploaded || FileUtil.exists(image.getFiles().get(0).getUrl()))
                 loadSimpleImage(roundedImageView, image.getFiles().get(0).getUrl());
             else if (image.getFiles().get(0).getSize() <= FileSize.MB_LIMIT_IMAGE_FOR_AUTO_UPLOAD) {
-                loadFadingImage(roundedImageView, image.getFiles().get(0).getUrl(), image.getFiles().get(image.getFiles().size() - 1).getUrl());
+                loadFadingImage(roundedImageView, image, image.getFiles().get(0).getUrl(), image.getFiles().get(image.getFiles().size() - 1).getUrl());
                 image.setHasIconForProgress(false);
             } else {
                 loadSimpleImage(roundedImageView, image.getFiles().get(image.getFiles().size() - 1).getUrl());
@@ -120,6 +124,41 @@ public class ImageViewBinding {
         } else if (video != null && video.getFiles() != null && video.getFiles().size() > 0) {
             if (video.getFiles().size() >= 1) {
                 loadSimpleImage(roundedImageView, video.getFiles().get(video.getFiles().size() - 1).getUrl());
+                if (!FileUtil.exists(video.getFiles().get(0).getUrl())) {
+                    Log.i("my_logs", "video.setHasIconForProgress");
+                    video.setHasIconForProgress(true);
+                }
+            }
+            /*for (MediaModel mediaModel : video.getFiles()) {
+                if (mediaModel.getType().contains(FileType.image.name())) {
+                    loadSimpleImage(roundedImageView, mediaModel.getUrl());
+                    darkenImage(roundedImageView);
+                    return;
+                }
+            }
+            if (video.getFiles().size() > 0) {
+                loadSimpleImage(roundedImageView, video.getFiles().get(0).getUrl());
+                darkenImage(roundedImageView);
+            }*/
+        }
+    }
+
+    @BindingAdapter(value = {"message_image", "message_video", "message_media_uploaded"}, requireAll = false)
+    public static void setMessageMedia(PhotoView photoView, Media image, Media video, boolean uploaded) {
+        if (image != null && image.getFiles() != null && image.getFiles().size() > 0) {
+            Log.i("my_logs", "message_image | " + image.getFiles().get(0).getUrl());
+            if (uploaded || FileUtil.exists(image.getFiles().get(0).getUrl()))
+                loadSimpleImage(photoView, image.getFiles().get(0).getUrl());
+            else if (image.getFiles().get(0).getSize() <= FileSize.MB_LIMIT_IMAGE_FOR_AUTO_UPLOAD) {
+                loadFadingImage(photoView, image, image.getFiles().get(0).getUrl(), image.getFiles().get(image.getFiles().size() - 1).getUrl());
+                image.setHasIconForProgress(false);
+            } else {
+                loadSimpleImage(photoView, image.getFiles().get(image.getFiles().size() - 1).getUrl());
+                image.setHasIconForProgress(true);
+            }
+        } else if (video != null && video.getFiles() != null && video.getFiles().size() > 0) {
+            if (video.getFiles().size() >= 1) {
+                loadSimpleImage(photoView, video.getFiles().get(video.getFiles().size() - 1).getUrl());
                 if (!FileUtil.exists(video.getFiles().get(0).getUrl())) {
                     Log.i("my_logs", "video.setHasIconForProgress");
                     video.setHasIconForProgress(true);
@@ -239,7 +278,8 @@ public class ImageViewBinding {
         Glide.with(imageView).load(imageUrl).apply(requestOptions).into(imageView);
     }
 
-    private static void loadFadingImage(RoundedImageView imageView, String imageUrl, @Nullable String placeholderUrl) {
+    private static void loadFadingImage(RoundedImageView imageView, Media media, String imageUrl, @Nullable String placeholderUrl) {
+        Log.i("my_logs", "loadFadingImage");
         RequestOptions requestOptions = new RequestOptions().centerCrop();
         int radius = Math.round(imageView.getCornerRadius());
         int borderWidth = Math.round(imageView.getBorderWidth());
@@ -251,6 +291,30 @@ public class ImageViewBinding {
                         .load(placeholderUrl)
                         .transform(new CenterCrop(), new RoundedCornersTransformation(radius, borderWidth)))
                 .transform(new CenterCrop(), new RoundedCornersTransformation(radius, borderWidth))
+                .into(imageView);
+    }
+
+    private static void loadFadingImage(PhotoView imageView, Media media, String imageUrl, @Nullable String placeholderUrl) {
+        RequestOptions requestOptions = new RequestOptions().centerCrop();
+        Glide.with(imageView).load(imageUrl)
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .diskCacheStrategy(DiskCacheStrategy.DATA)
+                .apply(requestOptions)
+                .thumbnail(Glide.with(imageView)
+                        .addDefaultRequestListener(new RequestListener<Object>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Object> target, boolean isFirstResource) {
+                                if (!media.getFailedDownloading())
+                                    media.setFailedDownloading(true);
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(Object resource, Object model, Target<Object> target, DataSource dataSource, boolean isFirstResource) {
+                                return false;
+                            }
+                        })
+                        .load(placeholderUrl))
                 .into(imageView);
     }
 

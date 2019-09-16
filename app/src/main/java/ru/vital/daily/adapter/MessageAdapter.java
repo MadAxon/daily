@@ -2,7 +2,11 @@ package ru.vital.daily.adapter;
 
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.GridLayout;
+import android.widget.LinearLayout;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -15,15 +19,21 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.collection.LongSparseArray;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 
+import ru.vital.daily.BR;
 import ru.vital.daily.R;
+import ru.vital.daily.adapter.viewholder.MediaViewHolder;
 import ru.vital.daily.adapter.viewholder.MessageAudioViewHolder;
 import ru.vital.daily.adapter.viewholder.MessageContactDailyViewHolder;
 import ru.vital.daily.adapter.viewholder.MessageContactViewHolder;
 import ru.vital.daily.adapter.viewholder.MessageMediaViewHolder;
 import ru.vital.daily.adapter.viewholder.MessageViewHolder;
+import ru.vital.daily.databinding.ItemMessageEndMediaBinding;
+import ru.vital.daily.databinding.ItemMessageMediaGridBinding;
+import ru.vital.daily.databinding.ItemMessageStartMediaBinding;
 import ru.vital.daily.enums.FileType;
 import ru.vital.daily.enums.MessageContentType;
 import ru.vital.daily.enums.MessageType;
@@ -33,6 +43,8 @@ import ru.vital.daily.repository.data.Media;
 import ru.vital.daily.repository.data.Message;
 import ru.vital.daily.repository.data.User;
 import ru.vital.daily.util.FileUtil;
+import ru.vital.daily.util.StaticData;
+import ru.vital.daily.view.MediaGridLayout;
 import ru.vital.daily.view.model.item.MessageItemViewModel;
 
 public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, ViewDataBinding> {
@@ -61,8 +73,6 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
 
     private final LinkedList<Message> items = new LinkedList<>();
 
-    private final User anotherUser;
-
     private final int START_SIMPLE_VIEW_TYPE = 0,
             END_SIMPLE_VIEW_TYPE = 1,
             START_MEDIA_VIEW_TYPE = 2,
@@ -87,9 +97,11 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
 
     private int selectedItemsOfAnotherUser, selectedMediasOfAnotherUser = 0;
 
-    public MessageAdapter(User anotherUser, MessageMediaClickListener mediaClickListener) {
-        this.anotherUser = anotherUser;
+    private final User profile;
+
+    public MessageAdapter(MessageMediaClickListener mediaClickListener) {
         this.mediaClickListener = mediaClickListener;
+        this.profile = StaticData.getData().profile;
         currentCalendar.setTimeInMillis(0);
         setHasStableIds(true);
     }
@@ -157,7 +169,7 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 return viewHolder;
             case END_AUDIO_VIEW_TYPE:
                 MessageAudioViewHolder viewHolder2 = new MessageAudioViewHolder(viewDataBinding);
-                viewHolder2.viewModel.setAnotherUser(anotherUser);
+                //viewHolder2.viewModel.setAnotherUser(anotherUser);
                 viewHolder2.viewModel.setItemLongClickedEvent(longClickEvent);
                 viewHolder2.viewModel.setMediaClickListener(mediaClickListener);
                 viewHolder2.viewModel.setClickEvent(clickEvent);
@@ -173,7 +185,7 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 return viewHolder1;
             case END_MEDIA_VIEW_TYPE:
                 MessageMediaViewHolder viewHolder3 = new MessageMediaViewHolder(viewDataBinding);
-                viewHolder3.viewModel.setAnotherUser(anotherUser);
+                //viewHolder3.viewModel.setAnotherUser(anotherUser);
                 viewHolder3.setVideoEvent(videoEvent);
                 viewHolder3.viewModel.setItemLongClickedEvent(longClickEvent);
                 viewHolder3.viewModel.setMediaClickListener(mediaClickListener);
@@ -189,7 +201,7 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 return viewHolder6;
             case END_CONTACT_DAILY_VIEW_TYPE:
                 MessageContactDailyViewHolder viewHolder7 = new MessageContactDailyViewHolder(viewDataBinding);
-                viewHolder7.viewModel.setAnotherUser(anotherUser);
+                //viewHolder7.viewModel.setAnotherUser(anotherUser);
                 viewHolder7.viewModel.setUserClickedEvent(contactDailyClickEvent);
                 viewHolder7.viewModel.setClickEvent(clickEvent);
                 viewHolder7.viewModel.setItemLongClickedEvent(longClickEvent);
@@ -204,7 +216,7 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 return viewHolder8;
             case END_CONTACT_VIEW_TYPE:
                 MessageContactViewHolder viewHolder9 = new MessageContactViewHolder(viewDataBinding);
-                viewHolder9.viewModel.setAnotherUser(anotherUser);
+                //viewHolder9.viewModel.setAnotherUser(anotherUser);
                 viewHolder9.viewModel.setContactClickEvent(contactClickEvent);
                 viewHolder9.viewModel.setClickEvent(clickEvent);
                 viewHolder9.viewModel.setItemLongClickedEvent(longClickEvent);
@@ -212,7 +224,7 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 return viewHolder9;
             case END_SIMPLE_VIEW_TYPE:
                 MessageViewHolder<MessageItemViewModel> viewHolder4 = new MessageViewHolder<>(viewDataBinding);
-                viewHolder4.viewModel.setAnotherUser(anotherUser);
+                //viewHolder4.viewModel.setAnotherUser(anotherUser);
                 viewHolder4.viewModel.setClickEvent(clickEvent);
                 viewHolder4.viewModel.setItemLongClickedEvent(longClickEvent);
                 viewHolder4.viewModel.setReplyClicked(replyClickEvent);
@@ -241,11 +253,11 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 final int size = message.getMedias().size();
                 for (int i = 0; i < size; i++) {
                     toggleSelectionMedia(message.getMedias().valueAt(i), false);
-                    if (message.getAuthor().getId() == anotherUser.getId())
+                    if (message.getAuthor().getId() != profile.getId())
                         selectedMediasOfAnotherUser--;
                 }
             }
-            if (message.getAuthor().getId() == anotherUser.getId())
+            if (message.getAuthor().getId() != profile.getId())
                 selectedItemsOfAnotherUser--;
         } else {
             selectedItems.put(message.getId(), message);
@@ -254,22 +266,22 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 final int size = message.getMedias().size();
                 for (int i = 0; i < size; i++) {
                     toggleSelectionMedia(message.getMedias().valueAt(i), true);
-                    if (message.getAuthor().getId() == anotherUser.getId())
+                    if (message.getAuthor().getId() != profile.getId())
                         selectedMediasOfAnotherUser++;
                 }
             }
-            if (message.getAuthor().getId() == anotherUser.getId())
+            if (message.getAuthor().getId() != profile.getId())
                 selectedItemsOfAnotherUser++;
         }
     }
 
     public void toggleSelectionMessage(Message message, boolean selected) {
         if (selected) {
-            if (message.getAuthor().getId() == anotherUser.getId())
+            if (message.getAuthor().getId() != profile.getId())
                 selectedItemsOfAnotherUser++;
             selectedItems.put(message.getId(), message);
         } else {
-            if (message.getAuthor().getId() == anotherUser.getId())
+            if (message.getAuthor().getId() != profile.getId())
                 selectedItemsOfAnotherUser--;
             selectedItems.remove(message.getId());
         }
@@ -280,14 +292,14 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
         if (selectedMedias.get(media.getId()) != null) {
             selectedMedias.remove(media.getId());
             media.setSelected(false);
-            if (message.getAuthor().getId() == anotherUser.getId())
+            if (message.getAuthor().getId() != profile.getId())
                 selectedMediasOfAnotherUser--;
             if (message.getSelected())
                 toggleSelectionMessage(message, false);
         } else {
             selectedMedias.put(media.getId(), media);
             media.setSelected(true);
-            if (message.getAuthor().getId() == anotherUser.getId())
+            if (message.getAuthor().getId() != profile.getId())
                 selectedMediasOfAnotherUser++;
             final int size = message.getMedias().size();
             for (int i = 0; i < size; i++)
@@ -361,29 +373,36 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
         if (MessageType.message.name().equals(message.getType())) {
             if (message.getMedias() != null && message.getMedias().size() > 0) {
                 if (FileType.image.name().equals(message.getMedias().valueAt(0).getType()) || FileType.video.name().equals(message.getMedias().valueAt(0).getType())) {
-                    if (message.getAuthor().getId() != anotherUser.getId())
+                    if (message.getAuthor().getId() == profile.getId())
                         return END_MEDIA_VIEW_TYPE;
                     else return START_MEDIA_VIEW_TYPE;
                 } else if (FileType.voice.name().equals(message.getMedias().valueAt(0).getType())) {
-                    if (message.getAuthor().getId() != anotherUser.getId())
+                    if (message.getAuthor().getId() == profile.getId())
                         return END_AUDIO_VIEW_TYPE;
                     else return START_AUDIO_VIEW_TYPE;
                 }
             } else if (message.getAccount() != null) {
-                if (message.getAuthor().getId() != anotherUser.getId())
+                if (message.getAuthor().getId() == profile.getId())
                     return END_CONTACT_DAILY_VIEW_TYPE;
                 else return START_CONTACT_DAILY_VIEW_TYPE;
             } else if (MessageContentType.contact.name().equals(message.getContentType())) {
-                if (message.getAuthor().getId() != anotherUser.getId())
+                if (message.getAuthor().getId() == profile.getId())
                     return END_CONTACT_VIEW_TYPE;
                 else return START_CONTACT_VIEW_TYPE;
             } else {
-                if (message.getAuthor().getId() != anotherUser.getId())
+                if (message.getAuthor().getId() == profile.getId())
                     return END_SIMPLE_VIEW_TYPE;
                 else return START_SIMPLE_VIEW_TYPE;
             }
         } else if (message.getHeaderDate() != null) return DATE_VIEW_TYPE;
         return -1;
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull MessageViewHolder holder) {
+        super.onViewRecycled(holder);
+        holder.viewDataBinding.setVariable(BR.viewModel, null);
+        holder.viewDataBinding.executePendingBindings();
     }
 
     @Override
@@ -410,7 +429,7 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
     public void updateItemsFromDatabase(List<Message> items) {
         if (items.size() != 0) {
             this.items.addAll(0, getListWithDateHeaders(items));
-            notifyItemRangeInserted(0, this.items.size());
+            //notifyItemRangeInserted(0, this.items.size());
         }
     }
 
@@ -434,8 +453,8 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
      */
     public boolean newMessage(Message message) {
         nextCalendar.setTime(message.getCreatedAt());
-        if (currentCalendar.get(Calendar.YEAR) != nextCalendar.get(Calendar.YEAR)
-                || currentCalendar.get(Calendar.DAY_OF_YEAR) != nextCalendar.get(Calendar.DAY_OF_YEAR)) {
+        if (currentCalendar.get(Calendar.YEAR) < nextCalendar.get(Calendar.YEAR)
+                || currentCalendar.get(Calendar.DAY_OF_YEAR) < nextCalendar.get(Calendar.DAY_OF_YEAR)) {
             items.addFirst(new Message(nextCalendar.getTime()));
             currentCalendar.setTime(nextCalendar.getTime());
             items.addFirst(message);
@@ -547,18 +566,18 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
         return null;
     }
 
-    public int findReply(Message reply) {
+    public int findReply(long id) {
         Message nextMessage;
         int position = 0;
         Iterator<Message> iterator = items.iterator();
         while (iterator.hasNext()) {
             nextMessage = iterator.next();
             if (nextMessage != null) {
-                if (reply.getId() == nextMessage.getId() && !nextMessage.getShouldSync()) {
+                if (id == nextMessage.getId() && !nextMessage.getShouldSync()) {
                     nextMessage.setReplyAnimationEvent(true);
                     return position;
                 }
-                if (nextMessage.getId() != 0 && reply.getId() > nextMessage.getId())
+                if (nextMessage.getId() != 0 && id > nextMessage.getId())
                     return -1;
                 position++;
             }
@@ -566,12 +585,16 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
         return -1;
     }
 
-    public void readMessages(long[] ids) {
-        for (long id: ids) {
+    public List<Message> readMessages(long[] ids) {
+        List<Message> messagesForUpdating = new ArrayList<>(ids.length);
+        for (long id : ids) {
             Message message = messages.get(id);
-            if (message != null)
+            if (message != null) {
                 message.setReadAt(new Date());
+                messagesForUpdating.add(message);
+            }
         }
+        return messagesForUpdating;
         /*Arrays.sort(ids);
         int i;
         final int idsSize = ids.length;
@@ -620,19 +643,20 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
         }
     }
 
-    public int updateLazily(List<Message> messages) {
+    public List<Message> updateLazily(List<Message> messages) {
         final int size = messages.size();
-        int count = 0;
+        List<Message> newMessages = new ArrayList<>();
         for (int i = size - 1; i >= 0; i--) {
             Message newMessage = messages.get(i);
             Message oldMessage = this.messages.get(newMessage.getId());
             if (oldMessage == null) {
                 nextCalendar.setTime(newMessage.getCreatedAt());
-                if (currentCalendar.get(Calendar.YEAR) != nextCalendar.get(Calendar.YEAR)
-                        || currentCalendar.get(Calendar.DAY_OF_YEAR) != nextCalendar.get(Calendar.DAY_OF_YEAR)) {
-                    items.addFirst(new Message(nextCalendar.getTime()));
+                if (currentCalendar.get(Calendar.YEAR) < nextCalendar.get(Calendar.YEAR)
+                        || currentCalendar.get(Calendar.DAY_OF_YEAR) < nextCalendar.get(Calendar.DAY_OF_YEAR)) {
+                    Message dateHeader = new Message(nextCalendar.getTime());
+                    items.addFirst(dateHeader);
                     currentCalendar.setTime(nextCalendar.getTime());
-                    count++;
+                    newMessages.add(dateHeader);
                 }
                 items.addFirst(newMessage);
                 this.messages.put(newMessage.getId(), newMessage);
@@ -641,15 +665,15 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                     if (FileType.voice.name().equals(media.getType()))
                         audioItems.put(media.getId(), newMessage);
                 }
-                count++;
+                newMessages.add(newMessage);
                 Log.i("my_logs", "message is detected to be added with id " + newMessage.getId());
-            } else if (oldMessage.getSendStatus() != null && oldMessage.getSendStatus() && (oldMessage.getUpdatedAt() == null && newMessage.getUpdatedAt() != null || newMessage.getUpdatedAt() != null && newMessage.getUpdatedAt().getTime() - oldMessage.getUpdatedAt().getTime() > 3000L)) {
+            } else if (oldMessage.getSendStatus() != null && oldMessage.getSendStatus() && oldMessage.getAccountId() != null && oldMessage.getAccountId() != profile.getId() && (oldMessage.getUpdatedAt() == null && newMessage.getUpdatedAt() != null || newMessage.getUpdatedAt() != null && newMessage.getUpdatedAt().getTime() - oldMessage.getUpdatedAt().getTime() > 3000L)) {
                 Log.i("my_logs", "message is detected to be changed with id " + oldMessage.getId());
                 oldMessage.setText(newMessage.getText());
                 oldMessage.setUpdatedAt(newMessage.getUpdatedAt());
                 if (oldMessage.getMedias() != null && newMessage.getMedias() != null) {
                     final int mediaSize = oldMessage.getMedias().size();
-                    if (mediaSize > 0 && mediaSize == newMessage.getMedias().size()){
+                    if (mediaSize > 0 && mediaSize == newMessage.getMedias().size()) {
                         for (int j = 0; j < mediaSize; j++) {
                             oldMessage.getMedias().valueAt(j).setDescription(newMessage.getMedias().valueAt(j).getDescription());
                         }
@@ -657,27 +681,27 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 }
             }
         }
-        return count;
+        return newMessages;
     }
 
-    public int scrolledUp(List<Message> messages) {
-        Calendar currentCalendar = Calendar.getInstance();
-        Calendar nextCalendar = Calendar.getInstance();
-        if (messages != null && messages.size() > 0)
+    public List<Message> scrolledUp(List<Message> messages) {
+        Calendar currentCalendar = Calendar.getInstance(), nextCalendar = Calendar.getInstance();
+        if (messages.size() > 0)
             currentCalendar.setTime(messages.get(0).getCreatedAt());
-        int count = 0;
-        for (Message message: messages) {
+        List<Message> newMessages = new ArrayList<>();
+        for (Message message : messages) {
             nextCalendar.setTime(message.getCreatedAt());
             if (!message.getShouldSync() && this.messages.containsKey(message.getId()))
                 continue;
-            if (currentCalendar.get(Calendar.YEAR) != nextCalendar.get(Calendar.YEAR)
-                    || currentCalendar.get(Calendar.DAY_OF_YEAR) != nextCalendar.get(Calendar.DAY_OF_YEAR)) {
+            if (currentCalendar.get(Calendar.YEAR) > nextCalendar.get(Calendar.YEAR)
+                    || currentCalendar.get(Calendar.DAY_OF_YEAR) > nextCalendar.get(Calendar.DAY_OF_YEAR)) {
+                Message headerMessage = new Message(nextCalendar.getTime());
                 items.addLast(new Message(nextCalendar.getTime()));
                 currentCalendar.setTime(nextCalendar.getTime());
-                count++;
+                newMessages.add(headerMessage);
             }
             items.addLast(message);
-            count++;
+            newMessages.add(message);
             if (!message.getShouldSync()) {
                 this.messages.put(message.getId(), message);
                 if (message.getMedias() != null && message.getMedias().size() > 0) {
@@ -687,7 +711,11 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
                 }
             }
         }
-        return count;
+        if (newMessages.size() > 0) {
+            nextCalendar.setTime(messages.get(messages.size() - 1).getCreatedAt());
+            items.addLast(new Message(nextCalendar.getTime()));
+        }
+        return newMessages;
     }
 
     private LinkedList<Message> getListWithDateHeaders(List<Message> messageList) {
@@ -703,8 +731,8 @@ public class MessageAdapter extends BaseAdapter<Message, MessageViewHolder, View
             /*if (message.getId() == anotherUser.getId() && message.getReadAt() == null)
                 messageListWithDateHeaders.addFirst(null);*/
             nextCalendar.setTime(message.getCreatedAt());
-            if (currentCalendar.get(Calendar.YEAR) != nextCalendar.get(Calendar.YEAR)
-                    || currentCalendar.get(Calendar.DAY_OF_YEAR) != nextCalendar.get(Calendar.DAY_OF_YEAR)) {
+            if (currentCalendar.get(Calendar.YEAR) < nextCalendar.get(Calendar.YEAR)
+                    || currentCalendar.get(Calendar.DAY_OF_YEAR) < nextCalendar.get(Calendar.DAY_OF_YEAR)) {
                 messageListWithDateHeaders.addFirst(new Message(nextCalendar.getTime()));
                 currentCalendar.setTime(nextCalendar.getTime());
             }

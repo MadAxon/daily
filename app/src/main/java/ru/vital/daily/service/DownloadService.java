@@ -99,7 +99,7 @@ public class DownloadService extends JobIntentService {
             switch (intent.getAction()) {
                 case ACTION_MEDIA_DOWNLOAD_START:
                     Subject<Message> messageSubject = PublishSubject.create();
-                    DisposableProvider.getDisposableItem(messageRepository.getMessage(intent.getLongExtra(ChatActivity.MESSAGE_ID_EXTRA, 0), intent.getLongExtra(ChatActivity.CHAT_ID_EXTRA, 0)), message -> {
+                    DisposableProvider.getDisposableItem(messageRepository.getMessage(intent.getLongExtra(ChatActivity.MESSAGE_ID_EXTRA, 0), intent.getLongExtra(ChatActivity.CHAT_ID_EXTRA, 0), false), message -> {
                         messageSubject.onNext(message);
                     }, throwable -> {
                         messageSubject.onNext(new Message());
@@ -204,6 +204,7 @@ public class DownloadService extends JobIntentService {
             }
             Intent intent = new Intent(ACTION_MEDIA_DOWNLOAD_SUCCESS);
             intent.putExtra(ChatActivity.CHAT_ID_EXTRA, message.getChatId());
+            intent.putExtra(ChatActivity.MEDIA_ID_EXTRA, mediaId);
             sendBroadcast(intent);
         }
         mediaProgressHelper.remove(mediaId);

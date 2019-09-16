@@ -17,8 +17,8 @@ import ru.vital.daily.repository.data.Message;
 @Dao
 public interface MessageDao {
 
-    @Query("SELECT * from messages where chatId = :chatId ORDER BY id DESC limit :offset, 100")
-    Maybe<List<Message>> getMessages(long chatId, long offset);
+    @Query("SELECT * from messages where chatId = :chatId ORDER BY createdAt DESC limit :offset, :size")
+    Maybe<List<Message>> getMessages(long chatId, int offset, int size);
 
     @Query("SELECT * from messages")
     Maybe<List<Message>> getMessages();
@@ -35,7 +35,7 @@ public interface MessageDao {
     @Update
     void update(List<Message> messages);
 
-    @Query("UPDATE messages SET createdAt = :checkedAt where id = :id and chatId = :chatId")
+    @Query("UPDATE messages SET checkedAt = :checkedAt where id = :id and chatId = :chatId")
     void updateCheckedAt(long id, long chatId, long checkedAt);
 
     @Query("UPDATE messages SET updatedAt = :updatedAt where id = :id and chatId = :chatId and shouldSync = :shouldSync")
@@ -59,6 +59,9 @@ public interface MessageDao {
     @Query("SELECT * from messages where id = :id and chatId = :chatId and shouldSync = :shouldSync")
     Single<Message> getMessage(long id, long chatId, boolean shouldSync);
 
+    @Query("UPDATE messages SET gridHeight = :height where id = :id and chatId = :chatId and shouldSync = :shouldSync")
+    void updateHeight(long id, long chatId, boolean shouldSync, int height);
+
     @Delete
     int delete(Message message);
 
@@ -70,5 +73,11 @@ public interface MessageDao {
 
     @Query("UPDATE messages SET medias = :medias where id = :id and chatId = :chatId and shouldSync = :shouldSync")
     void updateMedias(long id, long chatId, String medias, boolean shouldSync);
+
+    @Query("UPDATE messages SET readAt = :readAt where id = :id and chatId = :chatId and shouldSync = 0")
+    void updateReadAt(long id, long chatId, Date readAt);
+
+    @Query("SELECT COUNT(id) from messages where id >= :id and chatId = :chatId")
+    int findMessageIndex(long id, long chatId);
 
 }

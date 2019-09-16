@@ -50,6 +50,13 @@ public class ActionRepository {
         });
     }
 
+    public void deleteAction(long id) {
+        DisposableProvider.doCallable(() -> {
+            actionDao.delete(id);
+            return true;
+        });
+    }
+
     public void deleteDoubledActions(long id, long messageId, long chatId) {
         DisposableProvider.doCallable(() -> {
             actionDao.deleteDoubledActions(id, messageId, chatId);

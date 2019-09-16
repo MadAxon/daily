@@ -59,7 +59,8 @@
                         app:layout_constraintStart_toEndOf="@+id/roundedImageView15"
                         app:layout_constraintTop_toBottomOf="@+id/textView77"
                         app:relativeOnlineTime="@{viewModel.anotherUser.onlineAt}"
-                        app:typing="@{viewModel.typing}"/>
+                        app:typing="@{viewModel.typing}"
+                        app:online="@{viewModel.online}"/>
 
                     <TextView
                         android:id="@+id/textView77"

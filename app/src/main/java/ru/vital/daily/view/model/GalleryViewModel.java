@@ -5,6 +5,9 @@ import androidx.databinding.Observable;
 import androidx.databinding.ObservableField;
 import androidx.databinding.PropertyChangeRegistry;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import ru.vital.daily.BR;
 import ru.vital.daily.listener.SingleLiveEvent;
 import ru.vital.daily.repository.data.Media;
@@ -14,6 +17,8 @@ public class GalleryViewModel extends ViewModel implements Observable {
     public final SingleLiveEvent<Void> shareClickEvent = new SingleLiveEvent<>();
 
     public final ObservableField<String> title = new ObservableField<>();
+
+    private long chatId;
 
     @Bindable
     private Media currentMedia;
@@ -43,4 +48,11 @@ public class GalleryViewModel extends ViewModel implements Observable {
         shareClickEvent.call();
     }
 
+    public long getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(long chatId) {
+        this.chatId = chatId;
+    }
 }

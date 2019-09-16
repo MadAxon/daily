@@ -8,13 +8,16 @@ import android.util.Log;
 import java.io.File;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.collection.LongSparseArray;
 
 import dagger.android.AndroidInjection;
 import io.reactivex.Single;
@@ -52,10 +55,6 @@ import static ru.vital.daily.enums.Operation.ACTION_INTERNET_ONLINE;
 import static ru.vital.daily.enums.Operation.ACTION_JOB_DELETE;
 import static ru.vital.daily.enums.Operation.ACTION_MEDIA_CHANGE;
 import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_CANCEL;
-import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_END;
-import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_FAILED;
-import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_PROGRESS;
-import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_START;
 import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_SUCCESS;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_CANCEL;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_CHANGE;
@@ -94,6 +93,8 @@ public class MessageService extends JobIntentService {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
+    private static final Set<Long> actions = new HashSet<>();
+
     private boolean cancelled;
 
     private Message currentMessage;
@@ -102,8 +103,11 @@ public class MessageService extends JobIntentService {
 
     private int uploadsSize, currentUploadPosition;
 
+    private long jobId;
+
     public static void enqueueWork(Context context, Intent intent) {
-        enqueueWork(context, MessageService.class, 1904, intent);
+        if (!actions.contains(intent.getLongExtra(MessageBroadcast.JOB_ID_EXTRA, 0)))
+            enqueueWork(context, MessageService.class, 1904, intent);
     }
 
     @Override
@@ -142,18 +146,23 @@ public class MessageService extends JobIntentService {
         Log.i("my_logs", compositeDisposable.toString());
         if (cancelled)
             cancelled = false;
+        jobId = intent.getLongExtra(MessageBroadcast.JOB_ID_EXTRA, 0);
         if (intent.getAction() != null)
             switch (intent.getAction()) {
                 case ACTION_MESSAGE_CHANGE:
+                    actions.add(jobId);
                     initSending(intent.getLongExtra(MessageBroadcast.MESSAGE_ID_EXTRA, 0), intent.getLongExtra(MessageBroadcast.CHAT_ID_EXTRA, 0), true);
                     break;
                 case ACTION_MESSAGE_SEND:
+                    actions.add(jobId);
                     initSending(intent.getLongExtra(MessageBroadcast.MESSAGE_ID_EXTRA, 0), intent.getLongExtra(MessageBroadcast.CHAT_ID_EXTRA, 0), false);
                     break;
                 case ACTION_MESSAGE_DELETE:
+                    actions.add(jobId);
                     deleteMessage(intent.getLongArrayExtra(MessageBroadcast.MESSAGE_IDS_EXTRA), intent.getLongExtra(MessageBroadcast.CHAT_ID_EXTRA, 0), intent.getBooleanExtra(MessageBroadcast.MESSAGE_FOR_ALL_EXTRA, false));
                     break;
                 case ACTION_INTERNET_ONLINE:
+                    actions.add(jobId);
                     compositeDisposable.add(actionRepository.getActions().subscribe(new ItemsResponseHandler<>(actions -> {
                         for (Action action : actions) {
                             Intent broadcastIntent = new Intent(this, MessageBroadcast.class);
@@ -173,9 +182,11 @@ public class MessageService extends JobIntentService {
                     }));
                     break;
                 case ACTION_MEDIA_CHANGE:
-                    changeMediaDescription(intent.getLongExtra(MessageBroadcast.MEDIA_ID_EXTRA, 0), intent.getStringExtra(MessageBroadcast.MEDIA_DESCRIPTION_EXTRA));
+                    actions.add(jobId);
+                    changeMediaDescription(intent.getLongExtra(MessageBroadcast.MESSAGE_ID_EXTRA, 0), intent.getLongExtra(MessageBroadcast.CHAT_ID_EXTRA, 0), intent.getLongExtra(MessageBroadcast.MEDIA_ID_EXTRA, 0), intent.getStringExtra(MessageBroadcast.MEDIA_DESCRIPTION_EXTRA));
                     break;
                 case ACTION_MESSAGE_FORWARD:
+                    actions.add(jobId);
                     forwardMessages(intent.getLongArrayExtra(MessageBroadcast.MESSAGE_IDS_EXTRA), intent.getLongExtra(MessageBroadcast.FROM_CHAT_ID_EXTRA, 0), intent.getLongExtra(MessageBroadcast.CHAT_ID_EXTRA, 0));
                     break;
             }
@@ -191,9 +202,11 @@ public class MessageService extends JobIntentService {
                 uploadMediasAndSend(currentMessage, shouldChangeMessage);
             else sendMessage(currentMessage, shouldChangeMessage);
         }, throwable -> {
-            deleteOperation(messageId, chatId);
+            deleteOperation();
+            //deleteOperation(messageId, chatId);
         }), throwable -> {
-            deleteOperation(messageId, chatId);
+            deleteOperation();
+            //deleteOperation(messageId, chatId);
             Log.i("my_logs", throwable.getLocalizedMessage());
         }));
     }
@@ -256,9 +269,6 @@ public class MessageService extends JobIntentService {
     private void uploadMedia(Message message, boolean shouldChangeMessage) {
         if (cancelled) return;
         if (mediaIds.length <= currentUploadPosition) {
-            Intent intent = new Intent(ACTION_MEDIA_UPLOAD_END);
-            intent.putExtra(ChatActivity.CHAT_ID_EXTRA, message.getChatId());
-            sendBroadcast(intent);
             int failedUploads = uploadsSize - message.getMedias().size(); // some medias might be deleted while uploading
             if (message.getText() == null || message.getText().isEmpty())
                 for (int i = 0; i < message.getMedias().size(); i++)
@@ -300,8 +310,8 @@ public class MessageService extends JobIntentService {
             Single<ItemResponse<Media>> singleUpload;
             if (media.getDescription() != null && !media.getDescription().isEmpty())
                 singleUpload = api.uploadMedia(MultipartBody.Part.createFormData("file", /*null*/media.getName(), new ProgressRequestBody(RequestBody.create(MediaType.parse(media.getFiles().get(0).getType()), file), (bytes, contentLength, done) -> {
-                    progressSubject.onNext(done ? 1f : (float) bytes / contentLength);
-                    //progressIntent.putExtra(ChatActivity.MEDIA_PROGRESS_EXTRA, done ? 1f : (float) bytes / contentLength);
+                            progressSubject.onNext(done ? 1f : (float) bytes / contentLength);
+                            //progressIntent.putExtra(ChatActivity.MEDIA_PROGRESS_EXTRA, done ? 1f : (float) bytes / contentLength);
                             //sendBroadcast(progressIntent);
                             Log.i("my_logs", String.valueOf((float) bytes / contentLength));
                         })),
@@ -335,15 +345,17 @@ public class MessageService extends JobIntentService {
                     }, throwable -> {
                         Log.i("my_logs", "uploading failed " + (throwable != null ? throwable.toString() + " " + throwable.getMessage() : ""));
                         subject.onNext(new Media(-1));
-                        progressIntent.setAction(ACTION_MEDIA_UPLOAD_FAILED);
-                        sendBroadcast(progressIntent);
+                        Media progressMedia = mediaProgressHelper.getMedia(media.getId());
+                        if (progressMedia != null)
+                            progressMedia.setProgress(null);
                         //currentUploadPosition++;
                         //uploadMedia(message, shouldChangeMessage);
                     }), throwable -> {
                         subject.onNext(new Media(-1));
                         Log.i("my_logs", "uploading failed" + (throwable != null ? throwable.getMessage() : ""));
-                        progressIntent.setAction(ACTION_MEDIA_UPLOAD_FAILED);
-                        sendBroadcast(progressIntent);
+                        Media progressMedia = mediaProgressHelper.getMedia(media.getId());
+                        if (progressMedia != null)
+                            progressMedia.setProgress(null);
                         //currentUploadPosition++;
                         //uploadMedia(message, shouldChangeMessage);
                     }));
@@ -351,8 +363,6 @@ public class MessageService extends JobIntentService {
             subject.onComplete();
             Log.i("my_logs", "subject.blockingFirst()");
             if (uploadedMedia.getId() == -1) {
-                progressIntent.setAction(ACTION_MEDIA_UPLOAD_FAILED);
-                sendBroadcast(progressIntent);
                 currentUploadPosition++;
                 mediaProgressHelper.remove(media.getId());
                 uploadMedia(message, shouldChangeMessage);
@@ -449,7 +459,8 @@ public class MessageService extends JobIntentService {
                 intent.putExtra(ChatActivity.DATE_UPDATED_EXTRA, sentMessage.getUpdatedAt().getTime());
                 sendBroadcast(intent);
             }
-            deleteOperation(message);
+            //deleteOperation(message);
+            deleteOperation();
         } else if (sentMessage.getId() != 0) {
             handleSendingError(message);
         }
@@ -463,10 +474,11 @@ public class MessageService extends JobIntentService {
         intent.putExtra(ChatActivity.CHAT_ID_EXTRA, message.getChatId());
         intent.putExtra(ChatActivity.MESSAGE_ID_EXTRA, message.getId());
         sendBroadcast(intent);
-        deleteOperation(message);
+        //deleteOperation(message);
+        deleteOperation();
     }
 
-    private void deleteOperation(final Message message) {
+/*    private void deleteOperation(final Message message) {
         Intent messageBroadcastIntent = new Intent(this, MessageBroadcast.class);
         messageBroadcastIntent.setAction(ACTION_JOB_DELETE);
         messageBroadcastIntent.putExtra(MessageBroadcast.MESSAGE_ID_EXTRA, message.getId());
@@ -488,6 +500,14 @@ public class MessageService extends JobIntentService {
         messageBroadcastIntent.putExtra(MessageBroadcast.MESSAGE_IDS_EXTRA, messageIds);
         messageBroadcastIntent.putExtra(MessageBroadcast.CHAT_ID_EXTRA, chatId);
         sendBroadcast(messageBroadcastIntent);
+    }*/
+
+    private void deleteOperation() {
+        Intent messageBroadcastIntent = new Intent(this, MessageBroadcast.class);
+        messageBroadcastIntent.setAction(ACTION_JOB_DELETE);
+        messageBroadcastIntent.putExtra(MessageBroadcast.JOB_ID_EXTRA, jobId);
+        sendBroadcast(messageBroadcastIntent);
+        actions.remove(jobId);
     }
 
     private void deleteMessage(long[] messageIds, long chatId, boolean forAll) {
@@ -498,14 +518,23 @@ public class MessageService extends JobIntentService {
         }, throwable -> {
             Log.i("my_logs", throwable.getLocalizedMessage());
         });
-        deleteOperation(messageIds, chatId);
+        //deleteOperation(messageIds, chatId);
+        deleteOperation();
     }
 
-    private void changeMediaDescription(long mediaId, String description) {
+    private void changeMediaDescription(long messageId, long chatId, long mediaId, String description) {
         compositeDisposable.add(api.editMedia(new ItemRequest<>(new MediaEditModel(mediaId, description))).subscribe(new ItemResponseHandler<>(media -> {
-            Log.i("my_logs", "media with id " + mediaId + " was changed successful");
+            compositeDisposable.add(messageRepository.getMessage(messageId, chatId, false).subscribe(new ItemResponseHandler<>(message -> {
+                Media savedMedia = message.getMedias().get(mediaId);
+                if (savedMedia != null)
+                    savedMedia.setDescription(description);
+                messageRepository.updateMedias(messageId, chatId, message.getMedias(), false);
+                deleteOperation();
+            }, throwable -> {
+                deleteOperation();
+            })));
         }, throwable -> {
-            Log.i("my_logs", "media with id " + mediaId + " cauth a ERROR:" + throwable.getLocalizedMessage());
+            deleteOperation();
         })));
     }
 
@@ -536,6 +565,8 @@ public class MessageService extends JobIntentService {
                     }
                 }
 
+                dailySocket.emitSendMessage(sentMessageIds, toChatId);
+
                 Intent intent = new Intent(ACTION_MESSAGE_FORWARD);
                 intent.putExtra(ChatActivity.CHAT_ID_EXTRA, toChatId);
                 intent.putExtra(ChatActivity.MESSAGE_IDS_NEW_EXTRA, sentMessageIds);
@@ -543,9 +574,11 @@ public class MessageService extends JobIntentService {
                 sendBroadcast(intent);
 
                 messageRepository.saveMessages(sentMessages, toChatId);
-                deleteOperation(messageIds, toChatId);
+                //deleteOperation(messageIds, toChatId);
+                deleteOperation();
             }, throwable -> {
-                deleteOperation(messageIds, toChatId);
+                //deleteOperation(messageIds, toChatId);
+                deleteOperation();
             })));
         }, throwable -> {
 

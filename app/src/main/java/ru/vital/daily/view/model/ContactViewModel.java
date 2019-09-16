@@ -17,7 +17,7 @@ import ru.vital.daily.listener.SingleLiveEvent;
 import ru.vital.daily.repository.ChatRepository;
 import ru.vital.daily.repository.KeyRepository;
 import ru.vital.daily.repository.UserRepository;
-import ru.vital.daily.repository.api.request.AddMembersRequest;
+import ru.vital.daily.repository.api.request.JoinRequest;
 import ru.vital.daily.repository.api.request.ItemsRequest;
 import ru.vital.daily.repository.api.response.ItemsResponse;
 import ru.vital.daily.repository.api.response.handler.ItemsResponseHandler;
@@ -41,14 +41,14 @@ public class ContactViewModel extends ViewModel {
 
     private final KeyRepository keyRepository;
 
-    private final AddMembersRequest request;
+    private final JoinRequest request;
 
     private long myUserId;
 
     private final PublishSubject<String> searchPublish = PublishSubject.create();
 
     @Inject
-    public ContactViewModel(UserRepository userRepository, AddMembersRequest request, ChatRepository chatRepository, ItemsRequest itemsRequest, KeyRepository keyRepository) {
+    public ContactViewModel(UserRepository userRepository, JoinRequest request, ChatRepository chatRepository, ItemsRequest itemsRequest, KeyRepository keyRepository) {
         this.userRepository = userRepository;
         this.chatRepository = chatRepository;
         this.keyRepository = keyRepository;
@@ -128,7 +128,7 @@ public class ContactViewModel extends ViewModel {
         }
     };
 
-    public AddMembersRequest getRequest() {
+    public JoinRequest getRequest() {
         return request;
     }
 }

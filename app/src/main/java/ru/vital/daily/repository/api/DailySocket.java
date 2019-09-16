@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.bluelinelabs.logansquare.LoganSquare;
+import com.github.nkzawa.socketio.client.Ack;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
@@ -35,7 +36,8 @@ public class DailySocket {
             MESSAGE_TYPE = "chat/message/typing",
             MESSAGE_READ = "chat/message/read",
             MESSAGE_REMOVE = "chat/message/remove",
-            PROFILE_ONLINE = "profile/online";
+            PROFILE_ONLINE = "profile/online",
+            PROFILE_OFFLINE = "profile/offline";
 
     private Socket socket;
 
@@ -124,6 +126,16 @@ public class DailySocket {
                 e.printStackTrace();
             }
         });
+        socket.on(PROFILE_OFFLINE, args -> {
+            try {
+                SocketResponse response = LoganSquare.parse(args[0].toString(), SocketResponse.class);
+                Intent intent = new Intent(Operation.ACTION_PROFILE_OFFLINE);
+                intent.putExtra(ChatActivity.ACCOUNT_ID_EXTRA, response.getAccountId());
+                context.sendBroadcast(intent);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
         socket.connect();
     }
 
@@ -132,7 +144,9 @@ public class DailySocket {
             try {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("accessKey", accessKey);
-                socket.emit(AUTH_SIGN_IN, jsonObject);
+                socket.emit(AUTH_SIGN_IN, jsonObject, (Ack) args -> {
+                    emitOnline();
+                });
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -214,10 +228,22 @@ public class DailySocket {
 
     public void disconnect() {
         if (socket != null && socket.connected()) {
+            emitOffline();
             socket.disconnect();
             socket.off();
             Log.i("my_logs", "socket disconnect");
         }
     }
+
+    private void emitOnline() {
+        if (socket != null && socket.connected())
+            socket.emit(PROFILE_ONLINE, new JSONObject());
+    }
+
+    private void emitOffline() {
+        if (socket != null && socket.connected())
+            socket.emit(PROFILE_OFFLINE, new JSONObject());
+    }
+
 
 }

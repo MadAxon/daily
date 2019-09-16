@@ -21,7 +21,5 @@ public class UserStoryAdapter extends BaseAdapter<Object, UserStoryViewHolder, I
     @Override
     public void onBindViewHolder(@NonNull UserStoryViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        holder.viewModel.isMyStory = position == 0;
-        holder.viewModel.notifyChange(BR.isMyStory);
     }
 }

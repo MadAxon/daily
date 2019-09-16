@@ -177,6 +177,7 @@
     <string name="chat_new_title">Новый чат</string>
     <string name="chat_new_settings">Настройки канала</string>
     <string name="chat_status_last_online">Был(а) %s</string>
+    <string name="chat_status_online">Онлайн</string>
     <plurals name="members">
         <item quantity="zero">Нет участников</item>
         <item quantity="one">%d участник</item>
@@ -227,6 +228,8 @@
     <string name="chat_message_contact">Контакт</string>
     <string name="chat_message_image_upload_failed">Не удалось отправить\nизображение</string>
     <string name="chat_message_video_upload_failed">Не удалось отправить\nвидео</string>
+    <string name="chat_message_image_download_failed">Не удалось загрузить\nизображение</string>
+    <string name="chat_message_video_download_failed">Не удалось загрузить\nвидео</string>
     <string name="chat_message_audio_snackbar">Нажмите и удерживайте для записи аудио сообщения</string>
     <string name="chat_message_typing">печатает…</string>
     <string name="chat_message_forward">Пересланное сообщение\nОт &#160;</string>

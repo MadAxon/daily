@@ -21,4 +21,6 @@ public interface MessageMediaClickListener {
 
     boolean onImageOrVideoLongClick(Message message, Media media);
 
+    void heightChanged(Message message, int height);
+
 }

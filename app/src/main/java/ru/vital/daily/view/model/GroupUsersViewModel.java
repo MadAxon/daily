@@ -20,7 +20,7 @@ import ru.vital.daily.enums.ChatType;
 import ru.vital.daily.listener.SingleLiveEvent;
 import ru.vital.daily.repository.ChatRepository;
 import ru.vital.daily.repository.api.Api;
-import ru.vital.daily.repository.api.request.AddMembersRequest;
+import ru.vital.daily.repository.api.request.JoinRequest;
 import ru.vital.daily.repository.api.request.ItemRequest;
 import ru.vital.daily.repository.data.User;
 import ru.vital.daily.repository.model.ChatSaveModel;
@@ -48,14 +48,14 @@ public class GroupUsersViewModel extends ViewModel implements Observable {
 
     private final ChatSaveModel chatSaveModel;
 
-    private final AddMembersRequest addingMembersRequest;
+    private final JoinRequest addingMembersRequest;
 
     @Inject
-    public GroupUsersViewModel(ChatRepository chatRepository, ChatSaveModel chatSaveModel, AddMembersRequest addingMembersRequest, Api api) {
+    public GroupUsersViewModel(ChatRepository chatRepository, ChatSaveModel chatSaveModel, JoinRequest addingMembersRequest, Api api) {
         this.chatRepository = chatRepository;
         this.chatSaveModel = chatSaveModel;
         this.api = api;
-        this.chatSaveModel.setType(ChatType.conversation.name());
+        this.chatSaveModel.setType(ChatType.privateGroup.name());
         this.addingMembersRequest = addingMembersRequest;
     }
 

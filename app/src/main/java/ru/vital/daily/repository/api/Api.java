@@ -8,7 +8,7 @@ import retrofit2.http.Body;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
-import ru.vital.daily.repository.api.request.AddMembersRequest;
+import ru.vital.daily.repository.api.request.JoinRequest;
 import ru.vital.daily.repository.api.request.EmailRequest;
 import ru.vital.daily.repository.api.request.EmptyJson;
 import ru.vital.daily.repository.api.request.IdRequest;
@@ -72,8 +72,8 @@ public interface Api {
     @POST("client/chat/save")
     Single<ItemResponse<Chat>> saveChat(@Body ItemRequest<ChatSaveModel> request);
 
-    @POST("client/chat/add_member")
-    Single<BaseResponse<EmptyJson>> addMembersToChat(@Body AddMembersRequest request);
+    @POST("client/chat/join")
+    Single<BaseResponse<EmptyJson>> join(@Body JoinRequest request);
 
     @POST("client/chat/get")
     Maybe<ItemResponse<Chat>> getChat(@Body IdRequest request);

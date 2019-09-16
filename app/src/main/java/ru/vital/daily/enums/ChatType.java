@@ -4,7 +4,8 @@ public enum ChatType {
 
     privateChannel,
     publicChannel,
-    conversation,
+    privateGroup,
+    publicGroup,
     dialog
 
 }

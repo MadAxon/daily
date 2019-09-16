@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class PredictiveLinearLayoutManager extends LinearLayoutManager {
     public PredictiveLinearLayoutManager(Context context) {
@@ -21,5 +22,10 @@ public class PredictiveLinearLayoutManager extends LinearLayoutManager {
     @Override
     public boolean supportsPredictiveItemAnimations() {
         return false;
+    }
+
+    @Override
+    public void collectAdjacentPrefetchPositions(int dx, int dy, RecyclerView.State state, LayoutPrefetchRegistry layoutPrefetchRegistry) {
+        super.collectAdjacentPrefetchPositions(dx, dy, state, layoutPrefetchRegistry);
     }
 }

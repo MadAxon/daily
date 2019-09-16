@@ -74,10 +74,6 @@ import static ru.vital.daily.enums.Operation.ACTION_MEDIA_DOWNLOAD_PROGRESS;
 import static ru.vital.daily.enums.Operation.ACTION_MEDIA_DOWNLOAD_START;
 import static ru.vital.daily.enums.Operation.ACTION_MEDIA_DOWNLOAD_SUCCESS;
 import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_CANCEL;
-import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_END;
-import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_FAILED;
-import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_PROGRESS;
-import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_START;
 import static ru.vital.daily.enums.Operation.ACTION_MEDIA_UPLOAD_SUCCESS;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_CANCEL;
 import static ru.vital.daily.enums.Operation.ACTION_MESSAGE_CHANGE;
@@ -106,11 +102,10 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
             MESSAGE_ID_OLD_EXTRA = "MESSAGE_ID_OLD_EXTRA",
             MESSAGE_IDS_NEW_EXTRA = "MESSAGE_IDS_NEW_EXTRA",
             MESSAGE_IDS_OLD_EXTRA = "MESSAGE_IDS_OLD_EXTRA",
-            MEDIA_PROGRESS_EXTRA = "MEDIA_PROGRESS_EXTRA",
             MEDIA_ID_EXTRA = "MEDIA_ID_EXTRA",
-            MEDIA_ID_NEW_EXTRA = "MEDIA_ID_NEW_EXTRA",
             ACCOUNT_ID_EXTRA = "ACCOUNT_ID_EXTRA",
-            DATE_UPDATED_EXTRA = "DATE_UPDATED_EXTRA";
+            DATE_UPDATED_EXTRA = "DATE_UPDATED_EXTRA",
+            MESSAGE_INDEX_EXTRA = "MESSAGE_INDEX_EXTRA";
 
     @Inject
     ClipboardManager clipboardManager;
@@ -129,7 +124,7 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
 
     private BroadcastReceiver messageReceiver, statusReceiver;
 
-    private Message currentMessageByBottomSheet, currentMessageUploading;
+    private Message currentMessageByBottomSheet;
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -161,8 +156,62 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
         super.onCreate(savedInstanceState);
         setupToolbar(dataBinding.toolbar, true);
 
-        dataBinding.recyclerView.setLayoutManager(linearLayoutManager = new PredictiveLinearLayoutManager(this, RecyclerView.VERTICAL, true));
-        viewModel.getMessagesRequest().setPageSize(getIntent().getIntExtra(UNREAD_MESSAGE_COUNT_EXTRA, 100));
+        dataBinding.recyclerView.setItemAnimator(null);
+        dataBinding.recyclerView.setItemViewCacheSize(1000);
+        dataBinding.recyclerView.setDrawingCacheEnabled(true);
+        dataBinding.recyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+        dataBinding.recyclerView.setHasFixedSize(true);
+        dataBinding.recyclerView.getRecycledViewPool().setMaxRecycledViews(2, 100);
+        dataBinding.recyclerView.getRecycledViewPool().setMaxRecycledViews(3, 100);
+        linearLayoutManager = new PredictiveLinearLayoutManager(this, RecyclerView.VERTICAL, true);
+        linearLayoutManager.setItemPrefetchEnabled(true);
+        linearLayoutManager.setInitialPrefetchItemCount(8);
+        dataBinding.recyclerView.setLayoutManager(linearLayoutManager);
+        int index = getIntent().getIntExtra(MESSAGE_INDEX_EXTRA, 0);
+        viewModel.getMessagesRequest().setPageSize(100);
+        if (index != 0) {
+            viewModel.getMessagesRequest().setPageIndex(index / 10);
+            viewModel.setScrollDownPageIndex(index / 10);
+        }
+
+        long chatId = getIntent().getLongExtra(CHAT_ID_EXTRA, 0);
+        long memberId = getIntent().getLongExtra(MEMBER_ID_EXTRA, 0);
+        initAdapter();
+        viewModel.getChat(aVoid -> {
+            /*long messageId = getIntent().getLongExtra(MESSAGE_ID_EXTRA, 0);
+            if (messageId == 0)
+                viewModel.getMessages(messages -> {
+                    initAdapter();
+                    dataBinding.getAdapter().updateItemsFromDatabase(messages);
+                }, messages -> {
+                    initAdapter();
+                    executorService.execute(new LazyListProcess(messages, true));
+                });
+            else viewModel.findMessageIndex(consumer -> {
+                viewModel.getMessages(messages -> {
+                    initAdapter();
+                    dataBinding.getAdapter().updateItemsFromDatabase(messages);
+                    if (consumer)
+                        executorService.execute(new Process(messageId, ACTION_MESSAGE_FIND));
+                }, messages -> {
+                    initAdapter();
+                    executorService.execute(new LazyListProcess(messages, true));
+                    if (!consumer)
+                        executorService.execute(new Process(messageId, ACTION_MESSAGE_FIND));
+                });
+            }, messageId);*/
+        }, chatId, memberId);
+        dataBinding.getAdapter().updateItemsFromDatabase(viewModel.getChatData().items.get(chatId));
+        Log.i("my_logs", "the time is " + System.currentTimeMillis());
+        viewModel.getMessages(messages -> {
+            //initAdapter();
+            Log.i("my_logs", "the time is " + System.currentTimeMillis());
+            //dataBinding.getAdapter().updateItemsFromDatabase(messages);
+        }, messages -> {
+            //initAdapter();
+            executorService.execute(new LazyListProcess(messages, true));
+        });
+
         //viewModel.getMessagesRequest().setPageSize(10);
 
         viewModel.errorEvent.observe(this, throwable -> {
@@ -241,6 +290,8 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
         viewModel.changeMediaClickedEvent.observe(this, media -> {
             Intent intent = new Intent(this, MessageBroadcast.class);
             intent.setAction(ACTION_MEDIA_CHANGE);
+            intent.putExtra(MessageBroadcast.CHAT_ID_EXTRA, currentMessageByBottomSheet.getChatId());
+            intent.putExtra(MessageBroadcast.MESSAGE_ID_EXTRA, currentMessageByBottomSheet.getId());
             intent.putExtra(MessageBroadcast.MEDIA_ID_EXTRA, media.getId());
             intent.putExtra(MessageBroadcast.MEDIA_DESCRIPTION_EXTRA, viewModel.getSendMessageModel().getText());
             sendBroadcast(intent);
@@ -255,8 +306,8 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
         viewModel.emitReadMessageEvent.observe(this, ids -> {
             dailySocket.emitReadMessage(viewModel.getSendMessageModel().getChatId(), ids);
         });
-        viewModel.emitTypeMessageEvent.observe(this, chatId -> {
-            dailySocket.emitTypeMessage(chatId);
+        viewModel.emitTypeMessageEvent.observe(this, id -> {
+            dailySocket.emitTypeMessage(id);
         });
         viewModel.accountsSendEvent.observe(this, aVoid -> {
             sendAccounts();
@@ -286,36 +337,10 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                             executorService.execute(new Process(messageIds, ACTION_MESSAGE_DELETE));
                             viewModel.deleteMessages(messageIds);
                             break;
-                        case ACTION_MEDIA_UPLOAD_PROGRESS:
-                            if (currentMessageUploading != null && currentMessageUploading.getId() == intent.getLongExtra(MESSAGE_ID_EXTRA, 0)) {
-                                Media media = currentMessageUploading.getMedias().get(intent.getLongExtra(MEDIA_ID_EXTRA, 0));
-                                if (media != null) {
-                                    float progress = intent.getFloatExtra(ChatActivity.MEDIA_PROGRESS_EXTRA, 0);
-                                    if (media.getProgress() == null || media.getProgress() != progress)
-                                        media.setProgress(progress);
-                                }
-                            }
-                            break;
-                        case ACTION_MEDIA_UPLOAD_FAILED:
-                            final long failedMessageId = intent.getLongExtra(MESSAGE_ID_EXTRA, 0);
-                            if (currentMessageUploading != null && currentMessageUploading.getId() == failedMessageId) {
-                                Media media = currentMessageUploading.getMedias().get(intent.getLongExtra(MEDIA_ID_EXTRA, 0));
-                                if (media != null)
-                                    media.setProgress(null);
-                            } else {
-                                executorService.execute(new Process(failedMessageId, intent.getLongExtra(MEDIA_ID_EXTRA, 0), ACTION_MEDIA_UPLOAD_FAILED));
-                            }
-                            break;
                         case ACTION_MEDIA_UPLOAD_SUCCESS:
                             final long messageId = intent.getLongExtra(MESSAGE_ID_EXTRA, 0);
                             final long mediaId = intent.getLongExtra(MEDIA_ID_EXTRA, 0);
                             executorService.execute(new Process(messageId, mediaId, ACTION_MEDIA_UPLOAD_SUCCESS));
-                            break;
-                        case ACTION_MEDIA_UPLOAD_START:
-                            executorService.execute(new Process(intent.getLongExtra(MESSAGE_ID_EXTRA, 0), ACTION_MEDIA_UPLOAD_START));
-                            break;
-                        case ACTION_MEDIA_UPLOAD_END:
-                            currentMessageUploading = null;
                             break;
                         case ACTION_MEDIA_DOWNLOAD_SUCCESS:
                             playVideoOnVisibleViewHolder(false);
@@ -344,7 +369,7 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                 if (intent.getAction() != null)
                     switch (intent.getAction()) {
                         case ACTION_PROFILE_ONLINE:
-
+                            viewModel.setOnline(true);
                             break;
                     }
             }
@@ -419,16 +444,13 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                     } else {
                         viewModel.getMessagesRequest().setPageSize(getIntent().getIntExtra(UNREAD_MESSAGE_COUNT_EXTRA, 100));
                         dataBinding.getAdapter().clearAdapter();
-                        viewModel.getMessages(messages -> {
+                        viewModel.getChat(aVoid -> {
+                            viewModel.getMessages(messages -> {
 
-                            dataBinding.getAdapter().updateItemsFromDatabase(messages);
-                        }, messages -> {
-                            final int lastVisibleItem = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
-                            final int addedListSize = dataBinding.getAdapter().updateItemsFromApi(messages);
-                            if (lastVisibleItem == 0 && addedListSize > 0) {
-                                dataBinding.recyclerView.scrollToPosition(addedListSize - 1);
-                                if (!messages.isEmpty()) dataBinding.fab.show();
-                            }
+                                dataBinding.getAdapter().updateItemsFromDatabase(messages);
+                            }, messages -> {
+                                executorService.execute(new LazyListProcess(messages, true));
+                            });
                         }, toChatId, 0);
                     }
                     break;
@@ -443,18 +465,14 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                     } else {
                         viewModel.getMessagesRequest().setPageSize(getIntent().getIntExtra(UNREAD_MESSAGE_COUNT_EXTRA, 100));
                         dataBinding.getAdapter().clearAdapter();
-                        viewModel.getMessages(messages -> {
-                            dataBinding.getAdapter().updateItemsFromDatabase(messages);
-                        }, messages -> {
-                            final int lastVisibleItem = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
-                            final int addedListSize = dataBinding.getAdapter().updateItemsFromApi(messages);
-                            if (lastVisibleItem == 0 && addedListSize > 0) {
-                                dataBinding.recyclerView.scrollToPosition(addedListSize - 1);
-                                if (!messages.isEmpty()) dataBinding.fab.show();
-                            }
+                        viewModel.getChat(aVoid -> {
+                            viewModel.getMessages(messages -> {
+                                dataBinding.getAdapter().updateItemsFromDatabase(messages);
+                            }, messages -> {
 
-                            forwardMessages(0, fromChatId, new long[dataBinding.getAdapter().getSelectedItems().size()]);
+                                forwardMessages(0, fromChatId, new long[dataBinding.getAdapter().getSelectedItems().size()]);
 
+                            });
                         }, toChatId, 0);
                     }
                     break;
@@ -462,19 +480,7 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
             getIntent().setAction(null);
         } else {
             if (dataBinding.getAdapter() == null) {
-                viewModel.getMessages(messages -> {
-                    initAdapter();
-                    dataBinding.getAdapter().updateItemsFromDatabase(messages);
-                }, messages -> {
-                    initAdapter();
 
-                    final int lastVisibleItem = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
-                    final int addedListSize = dataBinding.getAdapter().updateItemsFromApi(messages);
-                    if (lastVisibleItem == 0 && addedListSize > 0) {
-                        dataBinding.recyclerView.scrollToPosition(addedListSize - 1);
-                        if (!messages.isEmpty()) dataBinding.fab.show();
-                    }
-                }, getIntent().getLongExtra(CHAT_ID_EXTRA, 0), getIntent().getLongExtra(MEMBER_ID_EXTRA, 0));
             } else {
                 viewModel.updateChat(unreadMessageCount -> {
                     updateAdapterLazily(viewModel.getSendMessageModel().getChatId(), unreadMessageCount + 20);
@@ -493,11 +499,7 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
         registerReceiver(messageReceiver, new IntentFilter(ACTION_MESSAGE_FORWARD));
         registerReceiver(messageReceiver, new IntentFilter(ACTION_MESSAGE_CHANGE));
 
-        registerReceiver(messageReceiver, new IntentFilter(ACTION_MEDIA_UPLOAD_PROGRESS));
         registerReceiver(messageReceiver, new IntentFilter(ACTION_MEDIA_UPLOAD_SUCCESS));
-        registerReceiver(messageReceiver, new IntentFilter(ACTION_MEDIA_UPLOAD_FAILED));
-        registerReceiver(messageReceiver, new IntentFilter(ACTION_MEDIA_UPLOAD_START));
-        registerReceiver(messageReceiver, new IntentFilter(ACTION_MEDIA_UPLOAD_END));
 
         registerReceiver(messageReceiver, new IntentFilter(ACTION_MEDIA_DOWNLOAD_PROGRESS));
         registerReceiver(messageReceiver, new IntentFilter(ACTION_MEDIA_DOWNLOAD_SUCCESS));
@@ -651,7 +653,7 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                 if (dataBinding.getAdapter().getSelectedMedias().size() == 1)
                     viewModel.changeMediaDescription(dataBinding.getAdapter().getSelectedMedias(), getString(R.string.chat_message_edit_media_sign));
                 else
-                    viewModel.changeMessage(dataBinding.getAdapter().getSelectedItems().valueAt(0));
+                    viewModel.changeMessage(currentMessageByBottomSheet = dataBinding.getAdapter().getSelectedItems().valueAt(0));
                 dataBinding.editText2.requestFocus();
                 inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
                 actionMode.finish();
@@ -669,7 +671,7 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
 
     private void initAdapter() {
         if (dataBinding.getAdapter() == null) {
-            dataBinding.setAdapter(new MessageAdapter(viewModel.getAnotherUser(), this));
+            dataBinding.setAdapter(new MessageAdapter(this));
 
             dataBinding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
@@ -684,15 +686,21 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                         case RecyclerView.SCROLL_STATE_IDLE:
                             if (linearLayoutManager.findFirstVisibleItemPosition() == 0) {
                                 dataBinding.fab.hide();
+                                if (viewModel.getScrollDownPageIndex() > 0)
+                                    viewModel.scrollDown(messages -> {
+                                        executorService.execute(new NewMessagesProcess(messages));
+                                    }, messages -> {
+                                        executorService.execute(new LazyListProcess(messages, false));
+                                    });
                             } else {
                                 dataBinding.fab.show();
                                 int size = dataBinding.getAdapter().getItemCount();
                                 if (linearLayoutManager.findLastVisibleItemPosition() == size - 1) {
-                                    if (viewModel.getMessagesRequest().getPageIndex() * viewModel.getMessagesRequest().getPageSize() + viewModel.getMessagesRequest().getPageSize() <= size)
-                                        viewModel.getMoreMessages(messages -> {
-
+                                   /*if (viewModel.getMessagesRequest().getPageIndex() * viewModel.getMessagesRequest().getPageSize() + viewModel.getMessagesRequest().getPageSize() <= size)*/
+                                        viewModel.scrollUp(messages -> {
+                                            executorService.execute(new ScrolledUpProcess(messages, false));
                                         }, messages -> {
-                                            executorService.execute(new ScrolledUpProcess(messages));
+                                            executorService.execute(new ScrolledUpProcess(messages, true));
                                         });
                                 }
                             }
@@ -716,9 +724,10 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                                 openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_share_outline, R.drawable.ic_arrow_left, R.drawable.ic_copy, R.drawable.ic_garbage}, new int[]{R.string.sheet_message_reply, R.string.sheet_message_forward, R.string.common_copy, R.string.common_delete}), viewModel.settingsMessageFragmentTag);
                             else
                                 openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_pencil, R.drawable.ic_share_outline, R.drawable.ic_arrow_left, R.drawable.ic_copy, R.drawable.ic_garbage}, new int[]{R.string.common_change, R.string.sheet_message_reply, R.string.sheet_message_forward, R.string.common_copy, R.string.common_delete}), viewModel.settingsMessageFragmentTag);
-                        } else openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_share_outline, R.drawable.ic_arrow_left, R.drawable.ic_copy}, new int[]{R.string.sheet_message_reply, R.string.sheet_message_forward, R.string.common_copy}), viewModel.settingsMessageFragmentTag);
+                        } else
+                            openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.drawable.ic_share_outline, R.drawable.ic_arrow_left, R.drawable.ic_copy}, new int[]{R.string.sheet_message_reply, R.string.sheet_message_forward, R.string.common_copy}), viewModel.settingsMessageFragmentTag);
                     } else
-                        openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.string.chat_message_retrieve}), viewModel.settingsMessageFragmentTag);
+                        openSheetFragment(SimpleSheetFragment.newInstance(new int[]{R.string.chat_message_retrieve, R.string.chat_message_cancel}), viewModel.settingsMessageFragmentTag);
                 } else toggleMessage(message);
             });
             dataBinding.getAdapter().longClickEvent.observe(this, message -> {
@@ -787,7 +796,8 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                 menuItemChange.setVisible(false);
                 menuItemReply.setVisible(false);
             }
-        }*/ else {
+        }*/
+        else {
             menuItemChange.setVisible(false);
             menuItemReply.setVisible(false);
         }
@@ -902,7 +912,7 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                 break;
             case R.string.common_change:
                 viewModel.getSendMessageModel().toDefaultNotIncludingText();
-                if (currentMessageByBottomSheet.getMedias().size() == 1)
+                if (currentMessageByBottomSheet.getMedias() != null && currentMessageByBottomSheet.getMedias().size() == 1)
                     viewModel.changeMediaDescription(currentMessageByBottomSheet.getMedias(), getString(R.string.chat_message_edit_media_sign));
                 else viewModel.changeMessage(currentMessageByBottomSheet);
                 if (!dataBinding.editText2.hasFocus()) {
@@ -961,7 +971,7 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
+            intent.putExtra(CHAT_ID_EXTRA, viewModel.getSendMessageModel().getChatId());
             startActivity(intent);
         } else currentMessageByBottomSheet = toggleMedia(message, media);
     }
@@ -1011,7 +1021,6 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                 sendBroadcast(intent);
                 viewModel.updateMedias(message, true);
             } else {
-                currentMessageUploading = null;
                 cancelSendingMessage(message);
             }
         else cancelDownload(message, media);
@@ -1048,6 +1057,11 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
             media.setProgress(0f);
             viewModel.getMediaProgressHelper().putMedia(media);
         }
+    }
+
+    @Override
+    public void heightChanged(Message message, int height) {
+        viewModel.updateMessageHeight(message, height);
     }
 
     private void copyMessageToClipboard() {
@@ -1099,11 +1113,13 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
     private void cancelSendingMessage(Message message) {
         executorService.execute(new Process(message, ACTION_MESSAGE_DELETE));
         viewModel.deleteMessage(message);
-        Intent intent = new Intent(this, MessageBroadcast.class);
-        intent.setAction(ACTION_MESSAGE_CANCEL);
-        intent.putExtra(MessageBroadcast.MESSAGE_ID_EXTRA, message.getId());
-        intent.putExtra(MessageBroadcast.CHAT_ID_EXTRA, message.getChatId());
-        sendBroadcast(intent);
+        if (message.getSendStatus() == null) {
+            Intent intent = new Intent(this, MessageBroadcast.class);
+            intent.setAction(ACTION_MESSAGE_CANCEL);
+            intent.putExtra(MessageBroadcast.MESSAGE_ID_EXTRA, message.getId());
+            intent.putExtra(MessageBroadcast.CHAT_ID_EXTRA, message.getChatId());
+            sendBroadcast(intent);
+        }
     }
 
     private void sendActionToRunBackgroundService(Action action) {
@@ -1162,8 +1178,8 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
      */
     private void updateAdapterLazily(long chatId, int pageSize) {
         viewModel.getMessages(messages -> {
-            executorService.execute(new LazyListProcess(messages));
-        }, chatId, pageSize);
+            executorService.execute(new LazyListProcess(messages, false));
+        }, chatId, 10/*pageSize*/);
     }
 
     private class Process implements Runnable {
@@ -1177,14 +1193,6 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
         private final String operation;
 
         private final long messageId, mediaId;
-
-        public Process(String operation) {
-            this.message = null;
-            this.messageIds = null;
-            this.messageId = 0;
-            this.mediaId = 0;
-            this.operation = operation;
-        }
 
         public Process(@Nullable Message message, String operation) {
             this.message = message;
@@ -1254,30 +1262,11 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                         Log.i("my_logs", "send process notify");
                         if (hasHeader) dataBinding.getAdapter().notifyItemRangeInserted(0, 2);
                         else dataBinding.getAdapter().notifyItemInserted(0);
-                        if (linearLayoutManager.findFirstCompletelyVisibleItemPosition() == 0)
-                            dataBinding.recyclerView.scrollToPosition(0);
+                        dataBinding.recyclerView.scrollToPosition(0);
                     });
                     break;
                 case ACTION_MESSAGE_SEND_UPDATED:
                     dataBinding.getAdapter().messageSent(messageIds[0], messageIds[1]);
-                    break;
-                case ACTION_MEDIA_UPLOAD_START:
-                    currentMessageUploading = dataBinding.getAdapter().findMessage(messageId);
-                    if (currentMessageUploading != null) {
-                        Log.i("my_logs", "media upload found with id " + currentMessageUploading.getId());
-                    } else {
-
-                        Log.i("my_logs", "media upload finding failed");
-                    }
-                    break;
-                case ACTION_MEDIA_UPLOAD_FAILED:
-                    if (currentMessageUploading != null) {
-                        Message message1 = dataBinding.getAdapter().findMessage(messageId);
-                        if (message1 != null) {
-                            Media media1 = currentMessageUploading.getMedias().get(mediaId);
-                            media1.setProgress(null);
-                        }
-                    }
                     break;
                 case ACTION_MESSAGE_SEND_FAILED:
                     final Message message = dataBinding.getAdapter().findMessage(messageId);
@@ -1293,10 +1282,12 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
                         });
                     break;
                 case ACTION_MESSAGE_READ:
-                    dataBinding.getAdapter().readMessages(messageIds);
+                    for (Message messageForUpdating : dataBinding.getAdapter().readMessages(messageIds))
+                        viewModel.updateMessageReadAt(messageForUpdating.getId(), messageForUpdating.getChatId(), messageForUpdating.getReadAt());
                     break;
                 case ACTION_MESSAGE_FIND:
-                    final int foundPosition = dataBinding.getAdapter().findReply(this.message);
+                    final int foundPosition = dataBinding.getAdapter().findReply(this.message != null ? this.message.getId() : messageId);
+                    Log.i("my_logs", "foundPosition " + foundPosition);
                     if (foundPosition != -1) {
                         runOnUiThread(() -> {
                             linearLayoutManager.scrollToPositionWithOffset(foundPosition, dataBinding.recyclerView.getHeight() / 2);
@@ -1336,11 +1327,11 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
         @Override
         public void run() {
             Log.i("my_logs", "send process started (list)");
-            final int count = dataBinding.getAdapter().updateLazily(messages);
+            final int count = dataBinding.getAdapter().updateLazily(messages).size();
             runOnUiThread(() -> {
                 Log.i("my_logs", "send process notify (list)");
                 if (count > 0) dataBinding.getAdapter().notifyItemRangeInserted(0, count);
-                if (count <= 2 && linearLayoutManager.findFirstCompletelyVisibleItemPosition() == 0)
+                if (viewModel.getScrollDownPageIndex() == 0 && count <= 2 && linearLayoutManager.findFirstCompletelyVisibleItemPosition() == 0)
                     dataBinding.recyclerView.scrollToPosition(0);
             });
         }
@@ -1350,17 +1341,32 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
 
         private final List<Message> messages;
 
-        private LazyListProcess(List<Message> messages) {
+        private final boolean shouldScrollToFirstUnreadMessage;
+
+        private LazyListProcess(List<Message> messages, boolean shouldScrollToFirstUnreadMessage) {
             this.messages = messages;
+            this.shouldScrollToFirstUnreadMessage = shouldScrollToFirstUnreadMessage;
         }
 
         @Override
         public void run() {
-            final int count = dataBinding.getAdapter().updateLazily(messages);
+            List<Message> newMessages = dataBinding.getAdapter().updateLazily(messages);
+            for (Message message : newMessages)
+                if (message.getId() != 0)
+                    viewModel.saveMessage(message);
+            final int count = newMessages.size();
             runOnUiThread(() -> {
                 if (count > 0) dataBinding.getAdapter().notifyItemRangeInserted(0, count);
-                if (count <= 2 && linearLayoutManager.findFirstCompletelyVisibleItemPosition() == 0)
-                    dataBinding.recyclerView.scrollToPosition(0);
+                if (viewModel.getScrollDownPageIndex() == 0) {
+                    if (shouldScrollToFirstUnreadMessage) {
+                        final int lastVisibleItem = linearLayoutManager.findFirstCompletelyVisibleItemPosition();
+                        if (lastVisibleItem == 0 && count > 0) {
+                            dataBinding.recyclerView.scrollToPosition(count - 1);
+                            if (!messages.isEmpty()) dataBinding.fab.show();
+                        }
+                    } else if (count <= 2 && linearLayoutManager.findFirstCompletelyVisibleItemPosition() == 0)
+                        dataBinding.recyclerView.scrollToPosition(0);
+                }
             });
         }
     }
@@ -1369,14 +1375,22 @@ public class ChatActivity extends BaseActivity<ChatViewModel, ActivityChatBindin
 
         private final List<Message> messages;
 
-        private ScrolledUpProcess(List<Message> messages) {
+        private final boolean shouldSaveToDB;
+
+        private ScrolledUpProcess(List<Message> messages, boolean shouldSaveToDB) {
             this.messages = messages;
+            this.shouldSaveToDB = shouldSaveToDB;
         }
 
         @Override
         public void run() {
             final int positionStart = dataBinding.getAdapter().getItemCount();
-            final int count = dataBinding.getAdapter().scrolledUp(messages);
+            List<Message> newMessages = dataBinding.getAdapter().scrolledUp(messages);
+            final int count = newMessages.size();
+            if (shouldSaveToDB)
+                for (Message message : newMessages)
+                    if (message.getId() != 0)
+                        viewModel.saveMessage(message);
             runOnUiThread(() -> {
                 dataBinding.getAdapter().notifyItemRangeInserted(positionStart, count);
             });

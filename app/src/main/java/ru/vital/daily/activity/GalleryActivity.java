@@ -4,6 +4,10 @@ import android.annotation.SuppressLint;
 
 import androidx.appcompat.app.ActionBar;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,7 +34,10 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoListener;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
+
+import javax.inject.Inject;
 
 import ru.vital.daily.BR;
 import ru.vital.daily.R;
@@ -39,7 +46,11 @@ import ru.vital.daily.adapter.GalleryPagerAdapter;
 import ru.vital.daily.databinding.ActivityGalleryBinding;
 import ru.vital.daily.enums.FileType;
 import ru.vital.daily.repository.data.Media;
+import ru.vital.daily.util.FileUtil;
+import ru.vital.daily.util.MediaProgressHelper;
 import ru.vital.daily.view.model.GalleryViewModel;
+
+import static ru.vital.daily.enums.Operation.ACTION_MEDIA_DOWNLOAD_SUCCESS;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -47,10 +58,12 @@ import ru.vital.daily.view.model.GalleryViewModel;
  */
 public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGalleryBinding> {
 
+    @Inject
+    MediaProgressHelper mediaProgressHelper;
 
     public static final String
             MEDIA_CURRENT_EXTRA = "MEDIA_CURRENT_EXTRA",
-            MEDIA_LIST_EXTRA= "MEDIA_LIST_EXTRA";
+            MEDIA_LIST_EXTRA = "MEDIA_LIST_EXTRA";
 
     private SimpleExoPlayer player;
 
@@ -115,6 +128,8 @@ public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGall
         return false;
     };
 
+    private BroadcastReceiver receiver;
+
     @Override
     protected GalleryViewModel onCreateViewModel() {
         return ViewModelProviders.of(this).get(GalleryViewModel.class);
@@ -133,7 +148,7 @@ public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGall
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         mVisible = true;
 
 
@@ -145,9 +160,19 @@ public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGall
         setupToolbar(dataBinding.toolbar, true);
         dataBinding.appBarLayout.bringToFront();
 
-
+        viewModel.setChatId(getIntent().getLongExtra(ChatActivity.CHAT_ID_EXTRA, 0));
         try {
-            pagerAdapter = new GalleryPagerAdapter(LoganSquare.parseList(getIntent().getStringExtra(MEDIA_LIST_EXTRA), Media.class));
+            List<Media> mediaList = LoganSquare.parseList(getIntent().getStringExtra(MEDIA_LIST_EXTRA), Media.class);
+            if (mediaList != null) {
+                final int size = mediaList.size();
+                for (int i = 0; i < size; i++) {
+                    long id = mediaList.get(i).getId();
+                    Media progressMedia = mediaProgressHelper.getMedia(id);
+                    if (progressMedia != null)
+                        mediaList.set(i, progressMedia);
+                }
+            }
+            pagerAdapter = new GalleryPagerAdapter(mediaList);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -193,6 +218,22 @@ public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGall
         viewModel.shareClickEvent.observe(this, aVoid -> {
 
         });
+
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction() != null)
+                    switch (intent.getAction()) {
+                        case ACTION_MEDIA_DOWNLOAD_SUCCESS:
+                            if (intent.getLongExtra(ChatActivity.CHAT_ID_EXTRA, 0) == viewModel.getChatId()) {
+                                Media media = pagerAdapter.getMedia(dataBinding.viewPager.getCurrentItem());
+                                if (media.getId() == intent.getLongExtra(ChatActivity.MEDIA_ID_EXTRA, 0) && FileType.video.name().equals(media.getType()))
+                                    prepareVideo();
+                            }
+                            break;
+                    }
+            }
+        };
     }
 
     @Override
@@ -267,9 +308,16 @@ public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGall
     @Override
     protected void onResume() {
         super.onResume();
+        registerReceiver(receiver, new IntentFilter(ACTION_MEDIA_DOWNLOAD_SUCCESS));
         initVideo();
         if (playerView != null)
             prepareVideo();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
     }
 
     @Override
@@ -289,6 +337,9 @@ public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGall
     }
 
     private void prepareVideo() {
+        String url = pagerAdapter.getMedia(dataBinding.viewPager.getCurrentItem()).getFiles().get(0).getUrl();
+        if (!FileUtil.exists(url))
+            return;
         playerView.setPlayer(player);
         //playerView.setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE);
         playerView.setControllerVisibilityListener(visibility -> {
@@ -314,7 +365,7 @@ public class GalleryActivity extends BaseActivity<GalleryViewModel, ActivityGall
             }
         });
         MediaSource videoSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(Uri.parse(pagerAdapter.getMedia(dataBinding.viewPager.getCurrentItem()).getFiles().get(0).getUrl()));
+                .createMediaSource(Uri.parse(url));
         player.prepare(videoSource);
     }
 

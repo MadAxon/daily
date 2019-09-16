@@ -6,9 +6,6 @@ import androidx.databinding.PropertyChangeRegistry;
 
 public class UserStoryItemViewModel extends ItemViewModel<Object> {
 
-    @Bindable
-    public Boolean isMyStory = null;
-
     @Override
     public void setItem(Object item) {
 

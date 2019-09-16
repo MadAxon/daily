@@ -109,9 +109,11 @@ public class HomeFragment extends BaseFragment<HomeViewModel, FragmentHomeBindin
             mainViewModel.isOnline.observe(this, isOnline -> {
                 if (isOnline) {
                     getChats();
-                    SnackbarProvider.getSuccessSnackbar(dataBinding.getRoot(), getString(R.string.connectivity_alive)).show();
+                    viewModel.setToolbarTitle(null);
+                    //SnackbarProvider.getSuccessSnackbar(dataBinding.getRoot(), getString(R.string.connectivity_alive)).show();
                 } else
-                    SnackbarProvider.getWarnSnackbar(dataBinding.getRoot(), getString(R.string.connectivity_lost)).show();
+                    viewModel.setToolbarTitle(getString(R.string.common_connecting));
+                    //SnackbarProvider.getWarnSnackbar(dataBinding.getRoot(), getString(R.string.connectivity_lost)).show();
             });
             mainViewModel.typingSocketEvent.observe(this, chatId -> {
                 dataBinding.getAdapter().setTyping(chatId);
@@ -135,6 +137,8 @@ public class HomeFragment extends BaseFragment<HomeViewModel, FragmentHomeBindin
                         e.printStackTrace();
                     }
                 intent.putExtra(ChatActivity.CHAT_ID_EXTRA, chat.getId());
+                /*intent.putExtra(ChatActivity.MESSAGE_ID_EXTRA, 114L);
+                intent.putExtra(ChatActivity.MESSAGE_INDEX_EXTRA, 38);*/
                 //intent.putExtra(ChatActivity.UNREAD_MESSAGE_COUNT_EXTRA, chat.getInfo().getUnreadMessagesCount());
                 startActivity(intent/*, CHAT_ACTIVITY_REQUEST*/);
             });

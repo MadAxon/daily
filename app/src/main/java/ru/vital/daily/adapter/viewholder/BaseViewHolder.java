@@ -8,7 +8,7 @@ import ru.vital.daily.view.model.item.ItemViewModel;
 
 public abstract class BaseViewHolder<VM extends ItemViewModel<M>, M> extends RecyclerView.ViewHolder {
 
-    protected final ViewDataBinding viewDataBinding;
+    public final ViewDataBinding viewDataBinding;
 
     public final VM viewModel;
 

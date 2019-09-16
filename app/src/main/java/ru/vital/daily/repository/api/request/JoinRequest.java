@@ -8,13 +8,13 @@ import java.util.List;
 import javax.inject.Inject;
 
 @JsonObject
-public class AddMembersRequest extends IdRequest {
+public class JoinRequest extends IdRequest {
 
     @JsonField
     private long[] memberIds;
 
     @Inject
-    public AddMembersRequest() {
+    public JoinRequest() {
     }
 
     public long[] getMemberIds() {

@@ -67,7 +67,7 @@ public class ChatItemViewModel extends ItemViewModel<Chat> {
         super.unbind();
     }
 
-    private final OnPropertyChangedCallback onPropertyChangedCallback = new OnPropertyChangedCallback() {
+    private final Observable.OnPropertyChangedCallback onPropertyChangedCallback = new Observable.OnPropertyChangedCallback() {
         @Override
         public void onPropertyChanged(Observable sender, int propertyId) {
             switch (propertyId) {

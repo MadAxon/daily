@@ -51,6 +51,13 @@ public class MessageRepository {
         this.messageDao = messageDao;
     }
 
+    public void updateGridHeight(Message message, int height) {
+        DisposableProvider.doCallable(() -> {
+            messageDao.updateHeight(message.getId(), message.getChatId(), message.getShouldSync(), height);
+            return true;
+        });
+    }
+
     public Single<ItemsResponse<Message>> getMessages() {
         return messageDao.getMessages().toSingle().map(ItemsResponse::new);
     }
@@ -59,13 +66,17 @@ public class MessageRepository {
         return messageDao.getMessages(ids, chatId, true).toSingle().map(ItemsResponse::new);
     }
 
-    public Flowable<ItemsResponse<Message>> getMessages(MessagesRequest request) {
+    /*public Flowable<ItemsResponse<Message>> getMessages(MessagesRequest request) {
         return api.getMessages(request).toFlowable().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+    }*/
+
+    public Flowable<ItemsResponse<Message>> getMessages(MessagesRequest request) {
+        return Single.concatArrayEager(messageDao.getMessages(request.getChatId(), request.getPageIndex() * request.getPageSize(), request.getPageSize()).map(ItemsResponse::new).toSingle(), api.getMessages(request).onErrorResumeNext(throwable -> Single.just(new ItemsResponse<>()))).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }
 
-    /*public Flowable<ItemsResponse<Message>> getMessages(MessagesRequest request) {
-        return Single.concatArray(messageDao.getMessages(request.getChatId(), 0).map(ItemsResponse::new).toSingle(), api.getMessages(request).onErrorResumeNext(throwable -> messageDao.getMessages(request.getChatId(), 0).map(ItemsResponse::new).toSingle())).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
-    }*/
+    public Single<ItemsResponse<Message>> getMessages(long chatId) {
+        return messageDao.getMessages(chatId, 0, 100).map(ItemsResponse::new).toSingle();
+    }
 
     public Single<ItemsResponse<Message>> getMessages(long[] ids, Long chatId) {
         return api.getMessages(new MessagesRequest(ids, chatId));
@@ -73,12 +84,6 @@ public class MessageRepository {
 
     public Single<ItemsResponse<Message>> getMessages(Long chatId, int pageSize) {
         return api.getMessages(new MessagesRequest(chatId, pageSize));
-    }
-
-    public Single<ItemsResponse<Message>> getMoreMessages(MessagesRequest request) {
-        return messageDao.getMessages(request.getChatId(), request.getPageIndex() * request.getPageSize())
-                .map(ItemsResponse::new)
-                .switchIfEmpty(Maybe.defer(() -> api.getMessages(request).toMaybe())).toSingle();
     }
 
     public void saveMessages(List<Message> messages, long checkedAt) {
@@ -132,10 +137,6 @@ public class MessageRepository {
             });
         else
             return DisposableProvider.getCallable(() -> messageDao.updateMessage(message.getId(), message.getChatId(), message.getText(), message.getUpdatedAt()));
-    }
-
-    public Single<ItemResponse<Message>> getMessage(long id, long chatId) {
-        return messageDao.getMessage(id, chatId).map(ItemResponse::new);
     }
 
     public Single<ItemResponse<Message>> getMessage(long id, long chatId, boolean shouldSync) {
@@ -196,5 +197,16 @@ public class MessageRepository {
             messageDao.updateUpdatedAt(id, chatId, updatedAt.getTime(), false);
             return true;
         });
+    }
+
+    public void updateMessageReadAt(long id, long chatId, Date readAt) {
+        DisposableProvider.doCallable(() -> {
+            messageDao.updateReadAt(id, chatId, readAt);
+            return true;
+        });
+    }
+
+    public Observable<Integer> findMessageIndex(long id, long chatId) {
+        return DisposableProvider.getCallable(() -> messageDao.findMessageIndex(id, chatId));
     }
 }

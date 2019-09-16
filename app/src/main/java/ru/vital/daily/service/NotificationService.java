@@ -46,6 +46,7 @@ import dagger.android.AndroidInjection;
 import ru.vital.daily.R;
 import ru.vital.daily.activity.ChatActivity;
 import ru.vital.daily.broadcast.NotificationBroadcast;
+import ru.vital.daily.enums.MessageContentType;
 import ru.vital.daily.enums.PushNotificationType;
 import ru.vital.daily.repository.ChatRepository;
 import ru.vital.daily.repository.UserRepository;
@@ -118,9 +119,11 @@ public class NotificationService extends FirebaseMessagingService {
                     String authorUname = remoteMessage.getData().get("authorUname");
                     String imageUrl = remoteMessage.getData().get("authorAvatarUrl");
 
-                    String body = null;
+                    String body;
                     if (remoteMessage.getData().get("medias") != null && remoteMessage.getData().get("medias").length() > 5)
                         body = getString(R.string.chat_message_file);
+                    else if (MessageContentType.contact.name().equals(remoteMessage.getData().get("contentType")) || remoteMessage.getData().get("accountId") != null)
+                        body = getString(R.string.chat_message_contact);
                     else body = remoteMessage.getData().get("_body");
                     long when = 0;
                     try {
@@ -197,7 +200,7 @@ public class NotificationService extends FirebaseMessagingService {
     }
 
     private void updateNotification(int id, String body, long when) {
-        cancelNotification(id);
+        notificationManager.cancel(id);
         NotificationCompat.Builder builder = notifications.sparseArray.get(id);
         Bundle bundle = builder.getExtras();
         int number = bundle.getInt(NUMBER_EXTRA, 1);
