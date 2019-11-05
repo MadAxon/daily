@@ -1,3 +1,3 @@
 # daily
-Frameworks is in description.
+Frameworks are in description.
 This is PREALPHA VERSION!
